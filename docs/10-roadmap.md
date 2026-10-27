@@ -10,8 +10,8 @@
 | 3 | API Hono + SSE + CLI + MCP | ✅ |
 | 4 | UI Elur + design system | ✅ |
 | 5 | Plantillas, Docker, tests, hardening | 🚧 |
-| 5.5 | Calidad creativa y QA | 🔜 |
-| 5.6 | Fiabilidad del agente | 🔜 |
+| 5.5 | Calidad creativa y QA | 🚧 portada + audio QA |
+| 5.6 | Fiabilidad del agente | 🚧 presupuesto + planificación |
 | 6 | Assets, media generativa y timeline | 🔮 |
 | 7 | Producto y operación (opcional) | 🔮 |
 
@@ -25,7 +25,8 @@
 - **CLI:** doctor, project:create/list/show, render, renders, probe, contact-sheet, agent, templates, serve, mcp, db:migrate.
 - **MCP:** initialize, tools/list, tools/call, resources.
 - **UI:** dashboard, proyectos, wizard, workspace, detalle de render, plantillas, settings, 404.
-- **Tests:** 40 tests unitarios/integración; smoke FFmpeg reproducible. CI con typecheck, tests, build web y build Docker.
+- **QA:** metadata, resolución, fps, `yuv420p`, audio, frames negros, movimiento, portada, LUFS y true peak.
+- **Tests:** 42 tests unitarios/integración; smoke FFmpeg reproducible. CI con typecheck, tests, build web y build Docker.
 
 ## Fase 0 · Documentación (completada)
 
@@ -116,15 +117,15 @@ Criterio: un usuario puede crear, editar, renderizar, inspeccionar y configurar 
 Entregables:
 
 - Dockerfile + compose.
-- Tests de integración con FFmpeg, Pillow y Remotion.
-- Recuperación de renders huérfanos: detectar, marcar y permitir reintentar/reanudar.
-- Redacción de secretos en logs.
-- Límites de tamaño, tiempo y concurrencia.
-- Documentación de troubleshooting.
-- CI en GitHub Actions: typecheck, tests, build y smoke.
-- Backup/restore documentado y probado.
-- Limpieza de `node_modules`, renders y cachés (GC).
-- Criterio de build Docker < 10 min en frío.
+- Tests de integración con FFmpeg, Pillow y Remotion. ✅ 42 tests.
+- Recuperación de renders huérfanos: detectar, marcar y permitir reintentar/reanudar. ✅ detección + retry; reanudación pendiente.
+- Redacción de secretos en logs. ✅ `redactSecrets` + tests.
+- Límites de tamaño, tiempo y concurrencia. ✅
+- Documentación de troubleshooting. ✅
+- CI en GitHub Actions: typecheck, tests, build y smoke. ✅
+- Backup/restore documentado y probado. ✅ documentado; script automático pendiente.
+- Limpieza de `node_modules`, renders y cachés (GC). 🚧 pendiente.
+- Criterio de build Docker < 10 min en frío. 🚧 medir build completo.
 
 Criterio: `docker compose up --build` funciona, un render fallido no corrompe datos y CI queda verde.
 
@@ -142,7 +143,7 @@ Criterio: `docker compose up --build` funciona, un render fallido no corrompe da
 
 ### Portada y marca
 
-- **Portada automática:** elegir el frame más claro del gancho, renderizar `cover.png` y registrarlo como artefacto del render.
+- **Portada automática:** elegir el frame más claro del gancho, renderizar `cover.png` y registrarlo como artefacto del render. ✅ implementada (8% de duración, máx. 3 s).
 - **Brand kit por proyecto:** logo, paleta, fuentes, intro/outro y plantillas de marca.
 - **Gestión de fuentes:** subida, validación, licencia, fallback y empaquetado. Incluir Source Code Pro.
 - **Safe zones y smart crop** por plataforma (LinkedIn, TikTok, Reels, YouTube).
@@ -151,7 +152,7 @@ Criterio: `docker compose up --build` funciona, un render fallido no corrompe da
 ### QA creativo
 
 - **Layout:** bounding boxes, texto que se sale del panel, solapamientos, contraste y tamaño mínimo.
-- **Audio:** LUFS, true peak, pops/clicks, clipping y ducking.
+- **Audio:** LUFS, true peak, pops/clicks, clipping y ducking. ✅ LUFS + true peak con `ebur128`; pops/clipping/ducking pendientes.
 - **Video:** flashes de 1 frame, frames congelados y motion blur excesivo.
 - **Legibilidad:** duración mínima por texto, líneas máximas y contraste sobre fondo.
 - **Draft/master:** render de borrador rápido (menor resolución/fps), aprobación y master final.
@@ -164,10 +165,10 @@ Criterio: `docker compose up --build` funciona, un render fallido no corrompe da
 
 - **Checkpoint y reanudación:** guardar plan, archivos y estado; reanudar un run sin empezar de cero.
 - **Compactación de contexto:** resumir historial y archivos para prompts largos.
-- **Presupuesto de tokens/costos:** límite por run, aviso y corte controlado.
+- **Presupuesto de tokens/costos:** límite por run, aviso y corte controlado. ✅ `maxTokensPerRun` (400k por defecto).
 - **Fallback de proveedor/modelo:** reintentos, backoff y cambio a otro proveedor compatible.
 - **Verificación de datos:** investigación previa, lista de fuentes, citas y bloqueo de cifras no verificadas. El render sigue sin red; las fuentes se consultan antes y se cachean.
-- **Planificación y autocrítica:** plan explícito, checklist de escenas y revisión antes de renderizar.
+- **Planificación y autocrítica:** plan explícito, checklist de escenas y revisión antes de renderizar. ✅ plan de 3-6 pasos en el prompt; falta autocrítica estructurada.
 - **Aprobación humana opcional** para escrituras destructivas o renders largos.
 - **Prompt injection:** tratar assets y archivos como datos, no instrucciones; sandbox y allowlist.
 - **Observabilidad:** trazas por tool, duración, tokens, costo y resumen del run.

@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Estudio local-first de generación de video programática con IA, FFmpeg, Manim y Remotion.",
+  "description": "Estudio local-first de generaci\u00f3n de video program\u00e1tica con IA, FFmpeg, Manim y Remotion.",
   "license": "Apache-2.0",
   "workspaces": [
     "apps/*",
@@ -32,7 +32,8 @@
     "typecheck:web": "tsc -p apps/web/tsconfig.json --noEmit",
     "typecheck:scripts": "tsc -p tsconfig.json --noEmit",
     "db:migrate": "bun apps/cli/src/index.ts db:migrate",
-    "smoke": "bun run scripts/smoke.ts"
+    "smoke": "bun run scripts/smoke.ts",
+    "backup": "bun run scripts/backup.ts"
   },
   "dependencies": {
     "@elurjs/core": "^4.0.5",

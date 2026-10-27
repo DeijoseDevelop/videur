@@ -185,7 +185,10 @@ Sin `proxy_buffering off`, el progreso SSE se acumula y la UI parece congelada.
 # Detener la app
 docker compose stop
 
-# Backup
+# Backup SQLite (rápido)
+bun run backup
+
+# Backup completo (DB + secretos + renders)
 tar -czf videur-backup-$(date +%F).tar.gz data/
 
 # Restaurar
