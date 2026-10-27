@@ -91,7 +91,7 @@ export function createConfig(overrides: ConfigOverrides = {}, env: NodeJS.Proces
 
   const agent: AgentConfig = {
     maxIterations:
-      overrides.agent?.maxIterations ?? intEnv(env.VIDEUR_AGENT_MAX_ITERATIONS, 12),
+      overrides.agent?.maxIterations ?? intEnv(env.VIDEUR_AGENT_MAX_ITERATIONS, 30),
     timeoutMs: overrides.agent?.timeoutMs ?? intEnv(env.VIDEUR_AGENT_TIMEOUT_MS, 900_000),
     maxTokens: overrides.agent?.maxTokens ?? intEnv(env.VIDEUR_AGENT_MAX_TOKENS, 8192),
   };

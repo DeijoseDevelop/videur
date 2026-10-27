@@ -1,5 +1,6 @@
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { extname, isAbsolute, join, resolve } from "node:path";
+import { UpdateProjectSchema } from "@videur/contracts";
 import type {
   EngineId,
   Render,
@@ -13,6 +14,7 @@ import { assertAllowedCommand } from "../process/allowlist";
 import { runCommand } from "../process/runner";
 import { resolveInside } from "../storage/paths";
 import type { WorkspaceService } from "../services/workspace";
+import type { ProjectService } from "../services/projects";
 import type { RenderService } from "../services/renders";
 import type { MediaService } from "../services/media";
 import type { SettingsService } from "../services/settings";
@@ -48,12 +50,17 @@ export const AGENT_TOOL_DEFINITIONS: ToolDefinition[] = [
   },
   {
     name: "write_file",
-    description: "Crea o reemplaza un archivo de texto en el workspace.",
+    description:
+      "Crea o reemplaza un archivo de texto en el workspace. Para archivos grandes (más de ~120 líneas), escribe en varias llamadas: la primera con append=false y las siguientes con append=true. No envíes más de ~12 KB por llamada.",
     parameters: {
       type: "object",
       properties: {
         path: { type: "string" },
         content: { type: "string" },
+        append: {
+          type: "boolean",
+          description: "Si es true, añade content al final del archivo en lugar de reemplazarlo.",
+        },
       },
       required: ["path", "content"],
       additionalProperties: false,
@@ -66,6 +73,26 @@ export const AGENT_TOOL_DEFINITIONS: ToolDefinition[] = [
       type: "object",
       properties: { path: { type: "string" } },
       required: ["path"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "update_project",
+    description:
+      "Actualiza la configuración del proyecto actual (duración, resolución, FPS, aspecto, nombre o brief). Úsala si el usuario pide una duración o formato distinto al del proyecto.",
+    parameters: {
+      type: "object",
+      properties: {
+        name: { type: "string" },
+        brief: { type: "string" },
+        engine: { type: "string", enum: ["ffmpeg", "pillow", "manim", "remotion"] },
+        aspectRatio: { type: "string" },
+        width: { type: "number" },
+        height: { type: "number" },
+        fps: { type: "number" },
+        durationTarget: { type: "number" },
+        style: { type: "string" },
+      },
       additionalProperties: false,
     },
   },
@@ -156,6 +183,7 @@ export interface AgentToolboxDeps {
   projectId: string;
   runId: string;
   workspace: WorkspaceService;
+  projects: ProjectService;
   renders: RenderService;
   media: MediaService;
   settings: SettingsService;
@@ -206,6 +234,23 @@ export class AgentToolbox {
   }
 
   private async dispatch(name: string, args: Record<string, unknown>): Promise<string> {
+    // Algunos proveedores devuelven los argumentos como un string JSON dentro de
+    // `_raw` cuando la llamada es muy grande o el JSON original llegó truncado.
+    if (args && typeof args._raw === "string" && Object.keys(args).length === 1) {
+      try {
+        const parsed = JSON.parse(args._raw) as unknown;
+        if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+          args = parsed as Record<string, unknown>;
+        }
+      } catch {
+        throw new AppError(
+          "TOOL_ARGS_TRUNCATED",
+          "La llamada llegó con argumentos JSON incompletos (probable límite de tokens). No la repitas igual: divide el contenido en partes de máximo ~12 KB y usa write_file con append=false la primera vez y append=true las siguientes.",
+          422,
+        );
+      }
+    }
+
     switch (name) {
       case "list_files":
         return this.listFiles(args);
@@ -215,6 +260,8 @@ export class AgentToolbox {
         return this.writeFile(args);
       case "delete_file":
         return this.deleteFile(args);
+      case "update_project":
+        return this.updateProject(args);
       case "run_command":
         return this.runCommand(args);
       case "run_render":
@@ -258,14 +305,39 @@ export class AgentToolbox {
   private writeFile(args: Record<string, unknown>): string {
     const path = requireString(args, "path");
     const content = requireString(args, "content");
-    const result = this.deps.workspace.write(this.deps.projectId, path, content);
-    return JSON.stringify({ ok: true, ...result }, null, 2);
+    const append = args.append === true;
+    const result = this.deps.workspace.write(this.deps.projectId, path, content, { append });
+    return JSON.stringify({ ok: true, ...result, append }, null, 2);
   }
 
   private deleteFile(args: Record<string, unknown>): string {
     const path = requireString(args, "path");
     this.deps.workspace.remove(this.deps.projectId, path);
     return JSON.stringify({ ok: true, path }, null, 2);
+  }
+
+  private updateProject(args: Record<string, unknown>): string {
+    const patch = UpdateProjectSchema.parse(args);
+    const project = this.deps.projects.update(this.deps.projectId, patch);
+    return JSON.stringify(
+      {
+        ok: true,
+        project: {
+          id: project.id,
+          name: project.name,
+          engine: project.engine,
+          width: project.width,
+          height: project.height,
+          fps: project.fps,
+          durationTarget: project.durationTarget,
+          aspectRatio: project.aspectRatio,
+          brief: project.brief,
+        },
+        hint: "La configuración cambió. Vuelve a renderizar para aplicar la nueva duración/resolución.",
+      },
+      null,
+      2,
+    );
   }
 
   private async runCommand(args: Record<string, unknown>): Promise<string> {
@@ -284,17 +356,18 @@ export class AgentToolbox {
       signal: this.deps.signal,
       maxLogBytes: 200_000,
     });
-    return JSON.stringify(
-      {
-        exitCode: result.exitCode,
-        timedOut: result.timedOut,
-        durationMs: result.durationMs,
-        stdout: truncate(result.stdout, 30_000),
-        stderr: truncate(result.stderr, 30_000),
-      },
-      null,
-      2,
-    );
+    const payload = {
+      exitCode: result.exitCode,
+      timedOut: result.timedOut,
+      durationMs: result.durationMs,
+      stdout: truncate(result.stdout, 8_000),
+      stderr: truncate(result.stderr, 8_000),
+      ...(result.exitCode !== 0 ? { hint: filterHint(result.stderr) } : {}),
+    };
+    if (result.exitCode !== 0) {
+      throw new AppError("TOOL_COMMAND_FAILED", JSON.stringify(payload, null, 2), 422);
+    }
+    return JSON.stringify(payload, null, 2);
   }
 
   private async runRender(args: Record<string, unknown>): Promise<string> {
@@ -310,6 +383,22 @@ export class AgentToolbox {
       throw new AppError("CANCELLED", "Render cancelado", 499);
     }
     if (!final) throw new AppError("RENDER_NOT_FOUND", "El render desapareció", 500);
+    if (final.status !== "succeeded") {
+      throw new AppError(
+        "TOOL_RENDER_FAILED",
+        JSON.stringify(
+          {
+            renderId: final.id,
+            status: final.status,
+            error: truncate(final.error ?? "El render no terminó correctamente", 3_000),
+            hint: filterHint(final.error ?? ""),
+          },
+          null,
+          2,
+        ),
+        422,
+      );
+    }
     return JSON.stringify(this.renderSummary(final), null, 2);
   }
 
@@ -337,7 +426,7 @@ export class AgentToolbox {
     if (!this.deps.provider.supportsVision) {
       throw new AppError(
         "VISION_UNAVAILABLE",
-        "El proveedor actual no soporta visión. Revisa la hoja de contactos manualmente o configura un modelo con visión.",
+        "El proveedor actual no soporta visión. No intentes inspeccionar imágenes ni extraer frames: usa el QA técnico de run_render y llama finalize si el render fue exitoso.",
         422,
       );
     }
@@ -440,6 +529,17 @@ export class AgentToolbox {
     }
     throw new AppError("MEDIA_NOT_FOUND", `No existe el archivo: ${value}`, 404);
   }
+}
+
+function filterHint(stderr: string): string | undefined {
+  if (
+    /No option name|Invalid argument|Error parsing a filter|No such filter|Unable to parse option|Error reinitializing filters|Error parsing filterchain/i.test(
+      stderr,
+    )
+  ) {
+    return "FFmpeg filter syntax: revisa las comas dentro de expresiones (clip, min, max, if, pow). Deben escaparse con una barra invertida en el filtro real; en render.json usa dos barras, no cuatro. Prueba el filtro mínimo con run_command antes de renderizar.";
+  }
+  return undefined;
 }
 
 function requireString(args: Record<string, unknown>, key: string): string {

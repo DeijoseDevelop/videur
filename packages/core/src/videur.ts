@@ -76,6 +76,7 @@ export class Videur {
       config: this.config,
       settings: this.settings,
       workspace: this.workspace,
+      projects: this.projects,
       renders: this.renders,
       media: this.media,
       providers: this.providers,

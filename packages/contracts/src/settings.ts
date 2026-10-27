@@ -39,7 +39,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
     providerId: null,
   },
   agent: {
-    maxIterations: 12,
+    maxIterations: 30,
     maxTokens: 8192,
     visionReview: true,
   },

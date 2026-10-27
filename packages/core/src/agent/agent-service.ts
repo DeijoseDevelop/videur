@@ -25,6 +25,7 @@ import {
 import { newId } from "../utils/id";
 import { nowIso } from "../utils/time";
 import type { WorkspaceService } from "../services/workspace";
+import type { ProjectService } from "../services/projects";
 import type { RenderService } from "../services/renders";
 import type { MediaService } from "../services/media";
 import type { ProviderService } from "../services/providers";
@@ -39,6 +40,7 @@ export interface AgentServiceDeps {
   config: VideurConfig;
   settings: SettingsService;
   workspace: WorkspaceService;
+  projects: ProjectService;
   renders: RenderService;
   media: MediaService;
   providers: ProviderService;
@@ -153,7 +155,7 @@ export class AgentService {
       });
     };
 
-    const persist = (role: "user" | "assistant" | "tool", content: string, toolCalls?: ToolCall[], toolResults?: Message["toolResults"]): Message => {
+    const persist = (role: "system" | "user" | "assistant" | "tool", content: string, toolCalls?: ToolCall[], toolResults?: Message["toolResults"]): Message => {
       const message = createMessage(this.deps.db, {
         projectId,
         runId,
@@ -194,12 +196,30 @@ export class AgentService {
         projectId,
         runId,
         workspace: this.deps.workspace,
+        projects: this.deps.projects,
         renders: this.deps.renders,
         media: this.deps.media,
         settings: this.deps.settings,
         provider: selection.runtime,
         signal,
       });
+
+      const tools = selection.runtime.supportsVision
+        ? AGENT_TOOL_DEFINITIONS
+        : AGENT_TOOL_DEFINITIONS.filter((tool) => tool.name !== "inspect_image");
+
+      let stopRequested = false;
+      let summaryOverride: string | null = null;
+      let lastToolSignature = "";
+      let repeatedToolCount = 0;
+      const initialRenderId =
+        this.deps.renders.list(projectId, { limit: 1 }).items[0]?.id ?? null;
+      const hasNewSuccessfulRender = () => {
+        const latest = this.deps.renders.list(projectId, { limit: 1 }).items[0];
+        return latest?.status === "succeeded" && latest.id !== initialRenderId
+          ? latest
+          : null;
+      };
 
       for (iterations = 1; iterations <= maxIterations; iterations++) {
         if (signal.aborted) throw new CancelledError(toErrorMessage(signal.reason));
@@ -208,7 +228,7 @@ export class AgentService {
         const response = await provider.chat({
           model: selection.model,
           messages,
-          tools: AGENT_TOOL_DEFINITIONS,
+          tools,
           temperature: 0.4,
           maxTokens: this.deps.config.agent.maxTokens,
           signal,
@@ -230,8 +250,7 @@ export class AgentService {
 
         if (response.toolCalls.length === 0) {
           if (toolbox.finalized) break;
-          const latest = this.deps.renders.list(projectId, { limit: 1 }).items[0];
-          if (latest?.status === "succeeded") break;
+          if (hasNewSuccessfulRender()) break;
           if (nudges === 0 && !signal.aborted) {
             nudges++;
             const nudge =
@@ -251,6 +270,18 @@ export class AgentService {
 
         for (const call of response.toolCalls) {
           if (signal.aborted) throw new CancelledError(toErrorMessage(signal.reason));
+
+          const signature = `${call.name}:${JSON.stringify(call.arguments)}`;
+          if (signature === lastToolSignature) repeatedToolCount += 1;
+          else {
+            lastToolSignature = signature;
+            repeatedToolCount = 1;
+          }
+          if (repeatedToolCount >= 3) {
+            stopRequested = true;
+            break;
+          }
+
           this.deps.bus.emit({
             type: "agent.tool",
             projectId,
@@ -279,23 +310,42 @@ export class AgentService {
           if (call.name === "finalize" && result.ok) break;
         }
 
+        if (stopRequested) {
+          if (hasNewSuccessfulRender()) {
+            summaryOverride =
+              "Render completado; el agente repitió la misma comprobación y se detuvo para no agotar iteraciones.";
+            break;
+          }
+          throw new AppError(
+            "AGENT_LOOP",
+            "El agente repitió la misma herramienta 3 veces sin avanzar y no hay un render exitoso",
+            422,
+          );
+        }
+
         if (toolbox.finalized) break;
       }
 
       if (signal.aborted) throw new CancelledError(toErrorMessage(signal.reason));
+
+      const latest = hasNewSuccessfulRender();
       if (iterations > maxIterations) {
-        throw new AppError("AGENT_MAX_ITERATIONS", `El agente alcanzó ${maxIterations} iteraciones`, 422);
+        if (latest) {
+          summaryOverride =
+            "Render completado; se alcanzó el límite de iteraciones sin que el agente llamara a finalize.";
+        } else {
+          throw new AppError("AGENT_MAX_ITERATIONS", `El agente alcanzó ${maxIterations} iteraciones`, 422);
+        }
       }
 
-      const latest = this.deps.renders.list(projectId, { limit: 1 }).items[0];
-      if (!toolbox.finalized && latest?.status !== "succeeded") {
+      if (!toolbox.finalized && !latest) {
         throw new AppError("AGENT_NO_OUTPUT", "El agente no completó un render exitoso", 422);
       }
 
-      const summary = toolbox.finalized?.summary ?? "Render completado y verificado";
+      const summary = summaryOverride ?? toolbox.finalized?.summary ?? "Render completado y verificado";
       updateAgentRun(this.deps.db, runId, {
         status: "succeeded",
-        iterations,
+        iterations: Math.min(iterations, maxIterations),
         inputTokens,
         outputTokens,
         finishedAt: nowIso(),
@@ -313,7 +363,7 @@ export class AgentService {
       const message = cancelled ? "Agente cancelado" : toErrorMessage(error);
       const status = cancelled ? "cancelled" : "failed";
       try {
-        persist("assistant", `⚠️ ${message}`);
+        persist("system", `⚠️ ${message}`);
       } catch {
         // Si la DB falla, no ocultar el error original.
       }

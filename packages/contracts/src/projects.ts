@@ -53,6 +53,8 @@ const description = z.string().trim().max(500).default("");
 const brief = z.string().trim().max(8000).default("");
 const fps = z.number().int().min(1).max(120).default(30);
 const duration = z.number().min(0.5).max(600).default(6);
+const fpsUpdate = z.number().int().min(1).max(120);
+const durationUpdate = z.number().min(0.5).max(600);
 const width = z.number().int().min(320).max(7680).optional();
 const height = z.number().int().min(320).max(4320).optional();
 
@@ -92,8 +94,8 @@ export const UpdateProjectSchema = z
     aspectRatio: AspectRatioSchema.optional(),
     width: width,
     height: height,
-    fps: fps.optional(),
-    durationTarget: duration.optional(),
+    fps: fpsUpdate.optional(),
+    durationTarget: durationUpdate.optional(),
     style: z.string().trim().max(60).optional(),
     status: ProjectStatusSchema.optional(),
   })

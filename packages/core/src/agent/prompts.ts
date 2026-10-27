@@ -8,7 +8,29 @@ const ENGINE_INSTRUCTIONS: Record<Project["engine"], string> = {
 - El comando debe terminar en {{output}}.
 - No uses shell. No uses render.sh.
 - Escapa los dos puntos dentro de drawtext como \\:.
-- Añade audio sintético con -f lavfi -i "aevalsrc=..." y -map 1:a si el video lo necesita.`,
+- Añade audio sintético con -f lavfi -i "aevalsrc=..." y -map 1:a si el video lo necesita.
+
+ESCAPADO CRÍTICO DE FILTROS (causa #1 de fallos):
+- En filter_complex, la coma separa filtros. Una coma dentro de una expresión
+  (clip, min, max, if, pow, etc.) rompe el grafo.
+- Para una coma dentro de una expresión, escribe una barra invertida antes de la
+  coma en el filtro real.
+- En render.json (JSON), esa barra se escribe como dos barras. No la dupliques
+  otra vez: si ves cuatro barras en el archivo, está mal.
+- Ejemplo conceptual: para que FFmpeg reciba clip(x,0,1) con comas escapadas,
+  el filtro real debe llevar una barra antes de cada coma, y el JSON debe
+  contener exactamente dos barras por cada barra del filtro real.
+- Si puedes, EVITA funciones con comas. Para easing usa expresiones sin comas:
+  1-exp(-k*t), sin(t), cos(t), abs(sin(t)), pow solo si dominas el escape.
+- IMPORTANTE: drawbox evalúa sus expresiones una sola vez; no se anima con t.
+  Para mover formas usa overlay con eval=frame y x/y animados. Para texto
+  animado usa drawtext (x/y/alpha sí se evalúan por frame).
+- Para barras animadas, no uses solo 1-exp(-k*t): eso se congela. Usa
+  abs(sin(t*frecuencia + fase)) o una oscilación similar para que sigan
+  moviéndose durante todo el video.
+- Prueba primero el filtro mínimo con run_command (-frames:v 1 -f null -) antes
+  de escribir el comando completo. Si falla, corrige la causa; no repitas el
+  mismo filtro con más barras.`,
   pillow: `MOTOR Python/Pillow:
 - El entrypoint es render.py.
 - Dibuja cada frame en memoria y envía bytes rgb24 a ffmpeg por stdin.
@@ -24,7 +46,11 @@ const ENGINE_INSTRUCTIONS: Record<Project["engine"], string> = {
 - El entrypoint es src/index.ts y la composición se llama VideurVideo.
 - Usa useCurrentFrame(), interpolate() y spring(); prohibido setTimeout y CSS transitions.
 - render.json puede definir {"entry":"src/index.ts","composition":"VideurVideo"}.
-- Requiere Node y dependencias instaladas.`,
+- Requiere Node, dependencias instaladas y tsconfig.json.
+- No dejes la animación solo en la entrada: añade oscilación/loop continuo
+  con Math.sin(frame / fps * frecuencia + fase), partículas, scanline o progreso.
+- Para motion graphics, promos, UI y tipografía cinética, Remotion es el motor
+  preferido por su calidad visual.`,
 };
 
 export function buildSystemPrompt(
@@ -68,18 +94,33 @@ REGLAS OBLIGATORIAS
 8. SIN RED: no descargues assets ni dependencias durante el render.
 9. SIN ALEATORIEDAD NO SEMBRADA: si usas random, fija una semilla.
 10. DURACIÓN: respeta VIDEUR_DURATION; no inventes un valor distinto.
+11. MOVIMIENTO CONTINUO: la animación debe evolucionar durante TODA la duración.
+    No uses solo un ease-out que llega a un estado final a los 2 s y se congela.
+    Combina la entrada con oscilación/pulso/loop (sin, cos, abs(sin(...))) o
+    cambia de escena. Un video con barras que dejan de moverse es un fallo.
+12. DURACIÓN/FORMATO SOLICITADO: si el usuario pide una duración, resolución,
+    FPS o aspecto distinto al proyecto, llama primero a update_project y luego
+    renderiza. No reutilices un render viejo como si correspondiera a la nueva
+    petición.
 
 ${ENGINE_INSTRUCTIONS[project.engine]}
 
 FLUJO OBLIGATORIO
-1. Inspecciona el workspace con list_files y read_file.
-2. Escribe o corrige los archivos con write_file.
+1. Inspecciona el workspace: con leer render.json es suficiente. No leas
+   project.json/README salvo que render.json no exista o esté incompleto.
+2. Escribe o corrige los archivos con write_file. Si un archivo supera ~120
+   líneas o ~12 KB, divídelo en varias llamadas: la primera con append=false y
+   las siguientes con append=true. No envíes todo el archivo en una sola
+   llamada: el proveedor puede truncar el JSON y perder la llamada.
 3. Ejecuta run_render({engine:"${project.engine}"}).
-4. Si falla, lee el error/log y corrige. Repite.
+4. Si falla, lee el error/log y corrige la causa. Repite.
 5. Si tienes visión, usa inspect_image() sobre la hoja de contactos y busca:
    texto cortado, solapamientos, contraste bajo, frames negros, animaciones raras.
+   Si NO tienes visión, sáltate este paso: no uses inspect_image, no extraigas
+   frames con ffmpeg y no intentes "ver" el video. Usa ffprobe/qa y finaliza.
 6. Corrige y vuelve a renderizar si hay problemas.
 7. Cuando el MP4 esté listo, llama finalize({summary, outputPath:"output.mp4"}).
+   No sigas haciendo comprobaciones después de un render exitoso.
 
 REGLAS DE HERRAMIENTAS
 - No inventes rutas: usa el workspace y las tools.
@@ -97,6 +138,9 @@ PROVEEDOR
 - Etiqueta: ${provider.label} (${provider.kind})
 - Modelo: ${provider.model}
 - Visión: ${provider.supportsVision ? "sí" : "no"}
+${provider.supportsVision
+  ? ""
+  : "- No tienes visión. No uses inspect_image ni extraigas frames. Tras un render exitoso, revisa el QA técnico y llama finalize."}
 
 Responde en español, de forma concisa. No expliques teoría; actúa, renderiza y verifica.`;
 }

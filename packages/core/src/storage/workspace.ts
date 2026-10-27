@@ -1,4 +1,13 @@
-import { existsSync, lstatSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
+import {
+  appendFileSync,
+  existsSync,
+  lstatSync,
+  mkdirSync,
+  readFileSync,
+  statSync,
+  unlinkSync,
+  writeFileSync,
+} from "node:fs";
 import { dirname, extname, join, relative } from "node:path";
 import type { FileContent, FileNode } from "@videur/contracts";
 import type { VideurConfig } from "../config";
@@ -79,17 +88,26 @@ export function writeWorkspaceFile(
   projectId: string,
   relativePath: string,
   content: string,
+  options: { append?: boolean } = {},
 ): { path: string; size: number } {
   const root = ensureWorkspace(config, projectId);
   const absolute = resolveInside(root, relativePath);
-  const size = Buffer.byteLength(content, "utf8");
-  if (size > MAX_EDITABLE_BYTES) throw new ValidationError("El archivo supera 1 MB");
+  const incoming = Buffer.byteLength(content, "utf8");
+  if (incoming > MAX_EDITABLE_BYTES) throw new ValidationError("El archivo supera 1 MB");
   if (!isTextExtension(absolute) && !relativePath.endsWith("Dockerfile")) {
     throw new ValidationError("Extensión no editable", { path: relativePath });
   }
   mkdirSync(dirname(absolute), { recursive: true, mode: 0o700 });
-  writeFileSync(absolute, content, { mode: 0o600 });
-  return { path: relativePath, size };
+  const previous = options.append && existsSync(absolute) ? statSync(absolute).size : 0;
+  if (previous + incoming > MAX_EDITABLE_BYTES) {
+    throw new ValidationError("El archivo supera 1 MB");
+  }
+  if (options.append) {
+    appendFileSync(absolute, content, { mode: 0o600 });
+  } else {
+    writeFileSync(absolute, content, { mode: 0o600 });
+  }
+  return { path: relativePath, size: previous + incoming };
 }
 
 export function deleteWorkspaceFile(

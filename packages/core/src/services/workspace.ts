@@ -31,9 +31,14 @@ export class WorkspaceService {
     return readWorkspaceFile(this.config, projectId, path);
   }
 
-  write(projectId: string, path: string, content: string): { path: string; size: number } {
+  write(
+    projectId: string,
+    path: string,
+    content: string,
+    options: { append?: boolean } = {},
+  ): { path: string; size: number } {
     this.requireProject(projectId);
-    const result = writeWorkspaceFile(this.config, projectId, path, content);
+    const result = writeWorkspaceFile(this.config, projectId, path, content, options);
     const project = updateProject(this.db, projectId, { status: "ready" });
     if (project) this.emitProject(projectId);
     return result;
