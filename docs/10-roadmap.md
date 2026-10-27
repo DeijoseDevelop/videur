@@ -10,9 +10,9 @@
 | 3 | API Hono + SSE + CLI + MCP | ✅ |
 | 4 | UI Elur + design system | ✅ |
 | 5 | Plantillas, Docker, tests, hardening | ✅ CI/tests/backup/GC; build full pendiente |
-| 5.5 | Calidad creativa y QA | 🚧 assets + portada + audio QA |
+| 5.5 | Calidad creativa y QA | 🚧 assets + referencia + portada + audio QA |
 | 5.6 | Fiabilidad del agente | 🚧 presupuesto + planificación |
-| 6 | Assets, media generativa y timeline | 🚧 assets upload |
+| 6 | Assets, media generativa y timeline | 🚧 assets + referencia; media/timeline pendientes |
 | 7 | Producto y operación (opcional) | 🔮 |
 
 ## Estado de implementación v0.1
