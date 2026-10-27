@@ -49,6 +49,12 @@ blob-report/
 templates/*/node_modules/
 templates/*/out/
 
+# Documentos internos de diseño/referencia (no se publican)
+*.pdf
+*.doc
+*.docx
+*.pptx
+
 # Editores y sistema
 .DS_Store
 .idea/
