@@ -268,7 +268,7 @@ bun run smoke
 ## Roadmap
 
 - **Fase 5:** hardening, CI, tests, backups y recuperación de renders.
-- **Fase 5.5:** 3D ASCII real, motion blur, QA de layout/flash y export presets.
+- **Fase 5.5:** QA de layout/flash, brand kit, safe zones y export presets; 3D y motion trail ya existen.
 - **Fase 5.6:** checkpoint/reanudación del agente, presupuesto de tokens y verificación con fuentes.
 - **v0.2:** TTS, música y subtítulos; la subida de assets ya está implementada.
 - **v0.3:** timeline multipista e incremental.

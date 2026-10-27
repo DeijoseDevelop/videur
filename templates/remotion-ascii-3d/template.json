@@ -1,0 +1,11 @@
+{
+  "id": "remotion-ascii-3d",
+  "name": "ASCII 3D · Raycast Cube",
+  "engine": "remotion",
+  "description": "Cubo 3D real por raycast por celda, depth buffer, rampa ASCII, suelo de puntos y motion trail opcional.",
+  "aspectRatio": "16:9",
+  "duration": 10,
+  "fps": 30,
+  "tags": ["remotion", "ascii", "3d", "raycast", "terminal"],
+  "preview": "preview.png"
+}

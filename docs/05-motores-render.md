@@ -81,6 +81,21 @@ El entorno del proceso padre se filtra: no se pasan claves de API ni variables q
 - **Logs:** stdout/stderr se reenvían al `EventBus` y a `render.log`.
 - **Límite:** `VIDEUR_MAX_LOG_BYTES` (2 MB). Al superarlo se conserva la cola y se inserta `… log truncado …`.
 
+## 3.1 Post-proceso opcional
+
+Cualquier motor puede pedir un **motion trail** determinista en `render.json`:
+
+```json
+{
+  "command": ["ffmpeg", "..."],
+  "postProcess": { "motionBlur": 2 }
+}
+```
+
+`motionBlur` acepta 2–8 frames. Videur re-encodea el master con
+`tmix=frames=N` antes del QA. Es una mezcla de frames, no un shutter físico:
+para texto pequeño conviene 2–3. Si falla, conserva el master original.
+
 ## 4. Motor FFmpeg sintético
 
 ### 4.1 Entrada
@@ -390,6 +405,7 @@ Salida `qa.json`:
 | `pillow-data-bars` | pillow | Barras con easing y pipe RGB | v0.1 |
 | `manim-pythagoras` | manim | Explicación visual del teorema | v0.1 |
 | `remotion-promo` | remotion | Promo SaaS con spring physics | v0.1 (requiere instalación) |
+| `remotion-ascii-3d` | remotion | Cubo 3D real por raycast ASCII + motion trail | v0.1 |
 
 Cada plantilla incluye `README.md` con instrucciones y un `render.json` o entrypoint.
 

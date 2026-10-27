@@ -44,6 +44,7 @@ blob-report/
 !apps/web/public/**/*.svg
 !docs/**/*.png
 !docs/**/*.svg
+!templates/**/preview.png
 
 # Remotion
 templates/*/node_modules/

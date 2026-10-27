@@ -10,7 +10,7 @@
 | 3 | API Hono + SSE + CLI + MCP | ✅ |
 | 4 | UI Elur + design system | ✅ |
 | 5 | Plantillas, Docker, tests, hardening | ✅ CI/tests/backup/GC; build full pendiente |
-| 5.5 | Calidad creativa y QA | 🚧 assets + referencia + portada + audio QA |
+| 5.5 | Calidad creativa y QA | 🚧 3D + motion trail + assets + referencia + portada + audio QA |
 | 5.6 | Fiabilidad del agente | 🚧 presupuesto + planificación |
 | 6 | Assets, media generativa y timeline | 🚧 assets + referencia; media/timeline pendientes |
 | 7 | Producto y operación (opcional) | 🔮 |
@@ -135,9 +135,9 @@ Criterio: `docker compose up --build` funciona, un render fallido no corrompe da
 
 ### 3D y movimiento
 
-- **3D ASCII real:** cubo/objetos con 6 caras, rotación, depth buffer, normales, iluminación por celda, rampa `.,:;=+*#%@`, bordes y sombra en suelo de puntos.
+- **3D ASCII real:** cubo/objetos con 6 caras, rotación, depth buffer, normales, iluminación por celda, rampa `.,:;=+*#%@`, bordes y sombra en suelo de puntos. ✅ plantilla `remotion-ascii-3d` con raycast por celda.
 - **Raycast por celda** o integración Three.js + post-proceso ASCII.
-- **Motion blur** de cámara/shutter en el master; presets 30/60 fps.
+- **Motion blur** de cámara/shutter en el master; presets 30/60 fps. ✅ `postProcess.motionBlur` con `tmix` (trail determinista); shutter físico pendiente.
 - **Cámara y composición:** casi isométrica, zoom, parallax y transiciones deterministas.
 - **Referencia visual:** ingesta de un video de referencia, extracción de frames/contact sheet, análisis de tipografía, paleta, ritmo y transiciones; guía de estilo para el agente. ✅ subida de video + `analyze_reference` (requiere proveedor con visión para el análisis de estilo).
 

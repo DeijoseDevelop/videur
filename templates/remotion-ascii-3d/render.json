@@ -1,0 +1,8 @@
+{
+  "entry": "src/index.ts",
+  "composition": "VideurVideo",
+  "timeoutMs": 900000,
+  "postProcess": {
+    "motionBlur": 2
+  }
+}

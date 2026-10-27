@@ -1,5 +1,5 @@
-import { appendFileSync, existsSync, mkdirSync, statSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { appendFileSync, existsSync, mkdirSync, readFileSync, renameSync, statSync, unlinkSync, writeFileSync } from "node:fs";
+import { join, resolve } from "node:path";
 import type { Database } from "bun:sqlite";
 import {
   type MediaMetadata,
@@ -320,6 +320,8 @@ export class RenderService {
         throw new AppError("ENGINE_OUTPUT", "El motor no generó el archivo de salida", 422);
       }
 
+      await this.applyPostProcess(workspaceDir, result.outputPath, appendLog);
+
       setStatus("inspecting", "probing");
       progress(0.99, "probing");
       const metadata = await probeMedia(result.outputPath, this.deps.config.binaries.ffprobe);
@@ -517,6 +519,67 @@ export class RenderService {
       });
     }
     this.emitProject(projectId);
+  }
+
+  private async applyPostProcess(
+    workspaceDir: string,
+    outputPath: string,
+    appendLog: (stream: "stdout" | "stderr" | "system", line: string) => void,
+  ): Promise<void> {
+    const configPath = join(workspaceDir, "render.json");
+    if (!existsSync(configPath)) return;
+    let config: { postProcess?: { motionBlur?: number } };
+    try {
+      config = JSON.parse(readFileSync(configPath, "utf8")) as typeof config;
+    } catch {
+      return;
+    }
+    const frames = Number(config.postProcess?.motionBlur ?? 0);
+    if (!Number.isFinite(frames) || frames < 2) return;
+    const count = Math.min(8, Math.max(2, Math.round(frames)));
+    const postPath = join(resolve(outputPath, ".."), "output-post.mp4");
+    const rawPath = join(resolve(outputPath, ".."), "output-raw.mp4");
+    appendLog("system", `Aplicando motion blur (${count} frames)…`);
+    const result = await runCommand(
+      [
+        this.deps.config.binaries.ffmpeg,
+        "-y",
+        "-v",
+        "error",
+        "-i",
+        outputPath,
+        "-vf",
+        `tmix=frames=${count}`,
+        "-c:v",
+        "libx264",
+        "-pix_fmt",
+        "yuv420p",
+        "-preset",
+        "fast",
+        "-crf",
+        "18",
+        "-c:a",
+        "copy",
+        "-movflags",
+        "+faststart",
+        postPath,
+      ],
+      { timeoutMs: 120_000, maxLogBytes: 300_000 },
+    );
+    if (result.exitCode !== 0) {
+      appendLog("stderr", `Motion blur falló: ${result.stderr.slice(-1000)}`);
+      return;
+    }
+    try {
+      renameSync(outputPath, rawPath);
+      renameSync(postPath, outputPath);
+      unlinkSync(rawPath);
+      appendLog("system", "Motion blur aplicado");
+    } catch (error) {
+      appendLog("stderr", `No se pudo reemplazar el master con motion blur: ${toErrorMessage(error)}`);
+      if (existsSync(rawPath) && !existsSync(outputPath)) renameSync(rawPath, outputPath);
+      if (existsSync(postPath)) unlinkSync(postPath);
+    }
   }
 
   private indexArtifacts(
