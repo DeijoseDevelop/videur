@@ -113,7 +113,7 @@ Docker    29.9.2
 
 ## 10. Licencias
 
-- Videur: MIT.
+- Videur: Apache 2.0.
 - Elur: MIT.
 - FFmpeg: LGPL/GPL según build.
 - Manim: MIT.

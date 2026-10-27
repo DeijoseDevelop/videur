@@ -189,4 +189,6 @@ Videur ejecuta código generado por IA. En modo nativo se asume **confianza loca
 
 ## Licencia
 
-MIT © 2026 Videur contributors.
+Apache License 2.0 © 2026 **Deiver Vasquez**.
+
+Videur se distribuye bajo Apache 2.0. Si redistribuyes el proyecto o una obra derivada, debes conservar el aviso de copyright y el archivo [`NOTICE`](NOTICE); no se permite eliminar la atribución. Consulta [`LICENSE`](LICENSE) y [`NOTICE`](NOTICE).
