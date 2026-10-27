@@ -82,3 +82,18 @@ El acento vive en `<html data-accent="...">` y se guarda en `videur.accent`. Cam
 - [Design Tokens Format](https://www.designtokens.org/): nomenclatura y capas.
 
 No se añadió una dependencia de diseño: el sistema es CSS nativo para mantener el runtime de Elur y el build de Vite simples.
+
+## Marca
+
+El logo es la **V de Videur** construida como dos tiras de película con un play en negativo. Hay dos variantes para que funcione a cualquier tamaño:
+
+| Archivo | Uso |
+|---|---|
+| [`brand-mark.svg`](../apps/web/public/brand-mark.svg) | Marca principal: README, presentaciones, banners, tamaño grande |
+| [`brand-mark-small.svg`](../apps/web/public/brand-mark-small.svg) | Favicon y sidebar: play blanco, sin agujeros, legible a 16–38 px |
+| [`brand-mark-mono.svg`](../apps/web/public/brand-mark-mono.svg) | Monocromo oscuro para fondos claros |
+| [`brand-mark-mono-inverse.svg`](../apps/web/public/brand-mark-mono-inverse.svg) | Monocromo claro para fondos oscuros |
+
+El favicon **no es un `.ico`**: es un SVG (`brand-mark-small.svg`) enlazado desde `apps/web/index.html`. El sidebar usa el mismo archivo, así que favicon y marca siempre coinciden.
+
+Regla: no metas la versión detallada en 16–32 px; usa la variante small. No cambies el play por una letra.

@@ -194,6 +194,8 @@ La UI no tiene colores sueltos: tiene **tokens en capas** y dos ejes de personal
 
 Cambia tema y acento en **Ajustes → General → Apariencia**, o edita `tokens.css` para cambiar el look global. Los componentes solo consumen tokens semánticos.
 
+La marca es la misma **V de película** en favicon, sidebar y documentación. `brand-mark-small.svg` es la variante óptica para 16–38 px; `brand-mark.svg` es la versión detallada para tamaños grandes.
+
 - Documentación: [docs/16-design-system.md](docs/16-design-system.md)
 - Skill para agentes: [skills/videur-design/SKILL.md](skills/videur-design/SKILL.md)
 

@@ -58,7 +58,7 @@ export class App extends ElurComponent {
               closeMobile();
             }}
           >
-            <span class="brand__mark">V</span>
+            <img class="brand__mark" src="/brand-mark-small.svg" width="38" height="38" alt="" aria-hidden="true" />
             <span class="brand__text">
               <strong>Videur</strong>
               <small>video studio</small>
