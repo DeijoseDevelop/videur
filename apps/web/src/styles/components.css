@@ -45,13 +45,13 @@
 }
 
 .btn--primary {
-  background: linear-gradient(135deg, #22d3ee, #0891b2 55%, #7c3aed);
-  color: #041016;
-  box-shadow: 0 8px 24px rgba(34, 211, 238, 0.15);
+  background: linear-gradient(135deg, var(--accent-1), var(--accent-1-strong) 55%, var(--accent-2));
+  color: var(--accent-contrast);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--accent-1) 15%, transparent);
 }
 
 .btn--primary:hover {
-  box-shadow: 0 10px 30px rgba(34, 211, 238, 0.24);
+  box-shadow: 0 10px 30px color-mix(in srgb, var(--accent-1) 24%, transparent);
 }
 
 .btn--secondary {
@@ -76,18 +76,18 @@
 }
 
 .btn--danger {
-  background: rgba(248, 113, 113, 0.12);
-  border-color: rgba(248, 113, 113, 0.28);
-  color: #fca5a5;
+  background: color-mix(in srgb, var(--red) 12%, transparent);
+  border-color: color-mix(in srgb, var(--red) 28%, transparent);
+  color: var(--red);
 }
 
 .btn--danger:hover {
-  background: rgba(248, 113, 113, 0.2);
+  background: color-mix(in srgb, var(--red) 20%, transparent);
 }
 
 .btn--subtle {
-  background: rgba(34, 211, 238, 0.08);
-  border-color: rgba(34, 211, 238, 0.18);
+  background: color-mix(in srgb, var(--accent-1) 8%, transparent);
+  border-color: color-mix(in srgb, var(--accent-1) 18%, transparent);
   color: var(--cyan);
 }
 
@@ -140,7 +140,7 @@
 }
 
 .link-btn:hover {
-  color: #67e8f9;
+  color: var(--accent-1);
 }
 
 /* ── Badges ──────────────────────────────────────────────────────────────── */
@@ -170,33 +170,33 @@
 }
 
 .badge--cyan {
-  border-color: rgba(34, 211, 238, 0.28);
+  border-color: color-mix(in srgb, var(--accent-1) 28%, transparent);
   background: var(--cyan-soft);
-  color: #67e8f9;
+  color: var(--accent-1);
 }
 
 .badge--violet {
-  border-color: rgba(139, 92, 246, 0.28);
+  border-color: color-mix(in srgb, var(--accent-2) 28%, transparent);
   background: var(--violet-soft);
-  color: #c4b5fd;
+  color: var(--accent-2);
 }
 
 .badge--success {
-  border-color: rgba(52, 211, 153, 0.28);
+  border-color: color-mix(in srgb, var(--green) 28%, transparent);
   background: var(--green-soft);
-  color: #6ee7b7;
+  color: var(--accent-4);
 }
 
 .badge--warn {
-  border-color: rgba(245, 158, 11, 0.28);
+  border-color: color-mix(in srgb, var(--amber) 28%, transparent);
   background: var(--amber-soft);
-  color: #fcd34d;
+  color: var(--accent-3);
 }
 
 .badge--danger {
-  border-color: rgba(248, 113, 113, 0.28);
+  border-color: color-mix(in srgb, var(--red) 28%, transparent);
   background: var(--red-soft);
-  color: #fca5a5;
+  color: var(--red);
 }
 
 .badge--neutral {
@@ -317,23 +317,23 @@
   width: 130px;
   height: 130px;
   border-radius: 50%;
-  background: radial-gradient(circle, var(--tone-glow, rgba(34, 211, 238, 0.16)), transparent 68%);
+  background: radial-gradient(circle, var(--tone-glow, color-mix(in srgb, var(--accent-1) 16%, transparent)), transparent 68%);
 }
 
 .stat-card--cyan {
-  --tone-glow: rgba(34, 211, 238, 0.18);
+  --tone-glow: color-mix(in srgb, var(--accent-1) 18%, transparent);
 }
 
 .stat-card--violet {
-  --tone-glow: rgba(139, 92, 246, 0.2);
+  --tone-glow: color-mix(in srgb, var(--accent-2) 20%, transparent);
 }
 
 .stat-card--success {
-  --tone-glow: rgba(52, 211, 153, 0.18);
+  --tone-glow: color-mix(in srgb, var(--green) 18%, transparent);
 }
 
 .stat-card--warn {
-  --tone-glow: rgba(245, 158, 11, 0.18);
+  --tone-glow: color-mix(in srgb, var(--amber) 18%, transparent);
 }
 
 .stat-card__top {
@@ -400,7 +400,7 @@
   width: 100%;
   border: 1px solid var(--border);
   border-radius: 9px;
-  background: #08111b;
+  background: var(--surface-1);
   color: var(--text);
   font-size: 13px;
   transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
@@ -434,14 +434,14 @@
 .textarea:focus,
 .select:focus {
   outline: none;
-  border-color: rgba(34, 211, 238, 0.5);
-  box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.09);
-  background: #0a1521;
+  border-color: color-mix(in srgb, var(--accent-1) 50%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-1) 9%, transparent);
+  background: var(--surface-2);
 }
 
 .input::placeholder,
 .textarea::placeholder {
-  color: #52677e;
+  color: var(--ink-3);
 }
 
 .select {
@@ -551,7 +551,7 @@
   height: 52px;
   margin-bottom: 4px;
   border-radius: 15px;
-  background: rgba(34, 211, 238, 0.07);
+  background: color-mix(in srgb, var(--accent-1) 7%, transparent);
   color: var(--cyan);
 }
 
@@ -605,7 +605,7 @@
   height: 5px;
   overflow: hidden;
   border-radius: 999px;
-  background: #0a1420;
+  background: var(--surface-1);
 }
 
 .progress__fill {
@@ -632,7 +632,7 @@
 .skeleton {
   height: 11px;
   border-radius: 5px;
-  background: linear-gradient(90deg, #101b29 25%, #172538 50%, #101b29 75%);
+  background: linear-gradient(90deg, var(--surface-2) 25%, var(--surface-3) 50%, var(--surface-2) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
@@ -741,21 +741,21 @@
 }
 
 .alert--error {
-  border-color: rgba(248, 113, 113, 0.28);
+  border-color: color-mix(in srgb, var(--red) 28%, transparent);
   background: var(--red-soft);
-  color: #fca5a5;
+  color: var(--red);
 }
 
 .alert--warn {
-  border-color: rgba(245, 158, 11, 0.26);
+  border-color: color-mix(in srgb, var(--amber) 26%, transparent);
   background: var(--amber-soft);
-  color: #fcd34d;
+  color: var(--accent-3);
 }
 
 .alert--info {
-  border-color: rgba(34, 211, 238, 0.22);
+  border-color: color-mix(in srgb, var(--accent-1) 22%, transparent);
   background: var(--cyan-soft);
-  color: #a5f3fc;
+  color: var(--accent-1);
 }
 
 /* ── Project cards ───────────────────────────────────────────────────────── */
@@ -793,7 +793,7 @@
   left: 18px;
   right: 18px;
   height: 1px;
-  background: linear-gradient(90deg, transparent, var(--card-accent, rgba(34, 211, 238, 0.4)), transparent);
+  background: linear-gradient(90deg, transparent, var(--card-accent, color-mix(in srgb, var(--accent-1) 40%, transparent)), transparent);
   opacity: 0.5;
 }
 
@@ -804,19 +804,19 @@
 }
 
 .project-card--ffmpeg {
-  --card-accent: rgba(34, 211, 238, 0.55);
+  --card-accent: color-mix(in srgb, var(--accent-1) 55%, transparent);
 }
 
 .project-card--pillow {
-  --card-accent: rgba(245, 158, 11, 0.55);
+  --card-accent: color-mix(in srgb, var(--amber) 55%, transparent);
 }
 
 .project-card--manim {
-  --card-accent: rgba(139, 92, 246, 0.55);
+  --card-accent: color-mix(in srgb, var(--accent-2) 55%, transparent);
 }
 
 .project-card--remotion {
-  --card-accent: rgba(52, 211, 153, 0.55);
+  --card-accent: color-mix(in srgb, var(--green) 55%, transparent);
 }
 
 .project-card__top {
@@ -944,8 +944,8 @@
 }
 
 .file-tree__row--active {
-  background: rgba(34, 211, 238, 0.1);
-  color: #a5f3fc;
+  background: color-mix(in srgb, var(--accent-1) 10%, transparent);
+  color: var(--accent-1);
 }
 
 .file-tree__icon {
@@ -972,7 +972,7 @@
   height: 100%;
   min-height: 0;
   border-radius: 12px;
-  background: #07101a;
+  background: var(--surface-1);
   overflow: hidden;
 }
 
@@ -983,7 +983,7 @@
   gap: 12px;
   padding: 9px 12px;
   border-bottom: 1px solid var(--border-soft);
-  background: #0a1521;
+  background: var(--surface-2);
 }
 
 .editor__file {
@@ -1038,7 +1038,7 @@
   flex: 0 0 46px;
   padding: 12px 8px 40px 0;
   border-right: 1px solid var(--border-soft);
-  color: #3c526b;
+  color: var(--ink-3);
   font-family: var(--font-mono);
   font-size: 11.5px;
   line-height: 1.65;
@@ -1055,7 +1055,7 @@
   border: 0;
   outline: 0;
   background: transparent;
-  color: #d8e4f3;
+  color: var(--ink-1);
   font-family: var(--font-mono);
   font-size: 11.5px;
   line-height: 1.65;
@@ -1070,7 +1070,7 @@
   gap: 16px;
   padding: 6px 12px;
   border-top: 1px solid var(--border-soft);
-  background: #0a1521;
+  background: var(--surface-2);
   color: var(--text-dim);
   font-family: var(--font-mono);
   font-size: 9px;
@@ -1102,8 +1102,8 @@
 }
 
 .render-item--active {
-  border-color: rgba(34, 211, 238, 0.35);
-  background: rgba(34, 211, 238, 0.05);
+  border-color: color-mix(in srgb, var(--accent-1) 35%, transparent);
+  background: color-mix(in srgb, var(--accent-1) 5%, transparent);
 }
 
 .render-item__top {
@@ -1157,12 +1157,12 @@
   overflow: hidden;
   border: 1px solid var(--border);
   border-radius: 13px;
-  background: #05090f;
+  background: var(--surface-0);
 }
 
 .video-preview__frame {
   aspect-ratio: 16 / 9;
-  background: #02060b;
+  background: var(--surface-0);
 }
 
 .video-preview__frame video {
@@ -1193,7 +1193,7 @@
   overflow: hidden;
   border: 1px solid var(--border);
   border-radius: 13px;
-  background: #05090f;
+  background: var(--surface-0);
 }
 
 .contact-sheet img {
@@ -1278,12 +1278,12 @@
 
 .qa-panel__score--ok {
   background: var(--green-soft);
-  color: #6ee7b7;
+  color: var(--accent-4);
 }
 
 .qa-panel__score--bad {
   background: var(--red-soft);
-  color: #fca5a5;
+  color: var(--red);
 }
 
 .qa-panel__counts {
@@ -1307,18 +1307,18 @@
 }
 
 .qa-check--success {
-  background: rgba(52, 211, 153, 0.05);
-  color: #9ae6c5;
+  background: color-mix(in srgb, var(--green) 5%, transparent);
+  color: var(--accent-4);
 }
 
 .qa-check--warn {
-  background: rgba(245, 158, 11, 0.06);
-  color: #fcd34d;
+  background: color-mix(in srgb, var(--amber) 6%, transparent);
+  color: var(--accent-3);
 }
 
 .qa-check--danger {
-  background: rgba(248, 113, 113, 0.06);
-  color: #fca5a5;
+  background: color-mix(in srgb, var(--red) 6%, transparent);
+  color: var(--red);
 }
 
 .qa-check--neutral {
@@ -1363,7 +1363,7 @@
   overflow: hidden;
   border: 1px solid var(--border);
   border-radius: 10px;
-  background: #050a10;
+  background: var(--surface-0);
 }
 
 .log-viewer__bar {
@@ -1373,7 +1373,7 @@
   gap: 10px;
   padding: 7px 9px;
   border-bottom: 1px solid var(--border-soft);
-  background: #0a1521;
+  background: var(--surface-2);
   color: var(--text-dim);
   font-size: 10px;
 }
@@ -1408,15 +1408,15 @@
 .log-line {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
-  color: #94a9c1;
+  color: var(--ink-2);
 }
 
 .log-line--stderr {
-  color: #fca5a5;
+  color: var(--red);
 }
 
 .log-line--system {
-  color: #67e8f9;
+  color: var(--accent-1);
 }
 
 /* ── Agent ───────────────────────────────────────────────────────────────── */
@@ -1449,10 +1449,10 @@
   place-items: center;
   width: 34px;
   height: 34px;
-  border: 1px solid rgba(139, 92, 246, 0.25);
+  border: 1px solid color-mix(in srgb, var(--accent-2) 25%, transparent);
   border-radius: 10px;
   background: var(--violet-soft);
-  color: #c4b5fd;
+  color: var(--accent-2);
 }
 
 .agent__identity div {
@@ -1536,7 +1536,7 @@
 }
 
 .suggestion:hover {
-  border-color: rgba(34, 211, 238, 0.3);
+  border-color: color-mix(in srgb, var(--accent-1) 30%, transparent);
   background: var(--cyan-soft);
   color: var(--text);
 }
@@ -1560,7 +1560,7 @@
   padding: 10px 11px;
   border: 1px solid var(--border);
   border-radius: 10px;
-  background: #07101a;
+  background: var(--surface-1);
   color: var(--text);
   font-size: 12px;
   line-height: 1.5;
@@ -1569,8 +1569,8 @@
 
 .agent__input:focus {
   outline: none;
-  border-color: rgba(34, 211, 238, 0.45);
-  box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.07);
+  border-color: color-mix(in srgb, var(--accent-1) 45%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-1) 7%, transparent);
 }
 
 .agent__composer-bar {
@@ -1589,10 +1589,10 @@
   gap: 10px;
   margin-bottom: 8px;
   padding: 8px 10px;
-  border: 1px solid rgba(245, 158, 11, 0.22);
+  border: 1px solid color-mix(in srgb, var(--amber) 22%, transparent);
   border-radius: 8px;
   background: var(--amber-soft);
-  color: #fcd34d;
+  color: var(--accent-3);
   font-size: 10.5px;
 }
 
@@ -1621,7 +1621,7 @@
 
 .message--assistant .message__avatar {
   background: var(--violet-soft);
-  color: #c4b5fd;
+  color: var(--accent-2);
 }
 
 .message__body {
@@ -1666,11 +1666,11 @@
 }
 
 .tool-card--running {
-  border-color: rgba(245, 158, 11, 0.2);
+  border-color: color-mix(in srgb, var(--amber) 20%, transparent);
 }
 
 .tool-card--error {
-  border-color: rgba(248, 113, 113, 0.22);
+  border-color: color-mix(in srgb, var(--red) 22%, transparent);
 }
 
 .tool-card__summary {
@@ -1723,8 +1723,8 @@
   margin: 0;
   padding: 8px 9px;
   border-top: 1px solid var(--border-soft);
-  background: #050a10;
-  color: #94a9c1;
+  background: var(--surface-0);
+  color: var(--ink-2);
   font-family: var(--font-mono);
   font-size: 9px;
   line-height: 1.5;
@@ -1734,7 +1734,7 @@
 }
 
 .tool-card__pre--result {
-  color: #9ae6c5;
+  color: var(--accent-4);
 }
 
 /* ── Templates ───────────────────────────────────────────────────────────── */
@@ -1762,9 +1762,9 @@
 }
 
 .chip--active {
-  border-color: rgba(34, 211, 238, 0.3);
+  border-color: color-mix(in srgb, var(--accent-1) 30%, transparent);
   background: var(--cyan-soft);
-  color: #a5f3fc;
+  color: var(--accent-1);
 }
 
 .template-grid {
@@ -1795,26 +1795,26 @@
   overflow: hidden;
   border-bottom: 1px solid var(--border);
   background:
-    radial-gradient(180px 90px at 50% 10%, rgba(139, 92, 246, 0.22), transparent 70%),
-    linear-gradient(145deg, #0b1522, #070d16);
+    radial-gradient(180px 90px at 50% 10%, color-mix(in srgb, var(--accent-2) 22%, transparent), transparent 70%),
+    linear-gradient(145deg, var(--surface-2), var(--surface-0));
 }
 
 .template-card--ffmpeg .template-card__preview {
   background:
-    radial-gradient(180px 90px at 50% 10%, rgba(34, 211, 238, 0.2), transparent 70%),
-    linear-gradient(145deg, #0b1522, #070d16);
+    radial-gradient(180px 90px at 50% 10%, color-mix(in srgb, var(--accent-1) 20%, transparent), transparent 70%),
+    linear-gradient(145deg, var(--surface-2), var(--surface-0));
 }
 
 .template-card--pillow .template-card__preview {
   background:
-    radial-gradient(180px 90px at 50% 10%, rgba(245, 158, 11, 0.16), transparent 70%),
-    linear-gradient(145deg, #161207, #070d16);
+    radial-gradient(180px 90px at 50% 10%, color-mix(in srgb, var(--amber) 16%, transparent), transparent 70%),
+    linear-gradient(145deg, color-mix(in srgb, var(--amber) 8%, var(--surface-2)), var(--surface-0));
 }
 
 .template-card--remotion .template-card__preview {
   background:
-    radial-gradient(180px 90px at 50% 10%, rgba(52, 211, 153, 0.16), transparent 70%),
-    linear-gradient(145deg, #08150f, #070d16);
+    radial-gradient(180px 90px at 50% 10%, color-mix(in srgb, var(--green) 16%, transparent), transparent 70%),
+    linear-gradient(145deg, color-mix(in srgb, var(--green) 8%, var(--surface-2)), var(--surface-0));
 }
 
 .template-card__pattern {
@@ -1999,9 +1999,9 @@
 .provider-form {
   margin-bottom: 16px;
   padding: 15px;
-  border: 1px solid rgba(34, 211, 238, 0.18);
+  border: 1px solid color-mix(in srgb, var(--accent-1) 18%, transparent);
   border-radius: 13px;
-  background: linear-gradient(160deg, rgba(34, 211, 238, 0.035), rgba(139, 92, 246, 0.025));
+  background: linear-gradient(160deg, color-mix(in srgb, var(--accent-1) 3.5%, transparent), color-mix(in srgb, var(--accent-2) 2.5%, transparent));
 }
 
 .provider-form__head {
@@ -2042,7 +2042,7 @@
 }
 
 .preset-card--active {
-  border-color: rgba(34, 211, 238, 0.34);
+  border-color: color-mix(in srgb, var(--accent-1) 34%, transparent);
   background: var(--cyan-soft);
 }
 
@@ -2115,7 +2115,7 @@
   padding: 2px;
   border: 1px solid var(--border);
   border-radius: 8px;
-  background: #08111b;
+  background: var(--surface-1);
 }
 
 .segmented__item {

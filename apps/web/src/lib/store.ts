@@ -24,6 +24,36 @@ import { api, ApiError } from "./api";
 
 export type ToastKind = "info" | "success" | "warning" | "error";
 
+export type ThemeId = "midnight" | "aurora" | "ember" | "mono";
+export type AccentId = "cyan" | "violet" | "emerald" | "rose" | "amber";
+
+const THEME_KEY = "videur.theme";
+const ACCENT_KEY = "videur.accent";
+
+function storedTheme(): ThemeId {
+  if (typeof localStorage === "undefined") return "midnight";
+  const value = localStorage.getItem(THEME_KEY);
+  return value === "aurora" || value === "ember" || value === "mono" ? value : "midnight";
+}
+
+function storedAccent(): AccentId {
+  if (typeof localStorage === "undefined") return "cyan";
+  const value = localStorage.getItem(ACCENT_KEY);
+  return value === "violet" || value === "emerald" || value === "rose" || value === "amber"
+    ? value
+    : "cyan";
+}
+
+export function applyAppearance(theme: ThemeId, accent: AccentId, persist = true): void {
+  if (typeof document === "undefined") return;
+  document.documentElement.dataset.theme = theme;
+  document.documentElement.dataset.accent = accent;
+  if (persist && typeof localStorage !== "undefined") {
+    localStorage.setItem(THEME_KEY, theme);
+    localStorage.setItem(ACCENT_KEY, accent);
+  }
+}
+
 export interface Toast {
   id: string;
   message: string;
@@ -85,6 +115,8 @@ export interface AppState {
   sseConnected: boolean;
   toasts: Toast[];
   workspaceTab: WorkspaceTab;
+  theme: ThemeId;
+  accent: AccentId;
 }
 
 const initialState: AppState = {
@@ -112,6 +144,8 @@ const initialState: AppState = {
   sseConnected: false,
   toasts: [],
   workspaceTab: "agent",
+  theme: storedTheme(),
+  accent: storedAccent(),
 };
 
 function id(prefix = "id"): string {
@@ -234,8 +268,25 @@ export const appStore = createStore(
         s.workspaceTab.value = tab;
       };
 
+      const setTheme = (theme: ThemeId): void => {
+        s.theme.value = theme;
+        applyAppearance(theme, s.accent.value);
+      };
+
+      const setAccent = (accent: AccentId): void => {
+        s.accent.value = accent;
+        applyAppearance(s.theme.value, accent);
+      };
+
+      const resetAppearance = (): void => {
+        s.theme.value = "midnight";
+        s.accent.value = "cyan";
+        applyAppearance("midnight", "cyan");
+      };
+
       const bootstrap = async (): Promise<void> => {
         if (s.booted.value) return;
+        applyAppearance(s.theme.value, s.accent.value, false);
         s.loading.value = true;
         const results = await Promise.allSettled([
           api.stats(),
@@ -766,6 +817,9 @@ export const appStore = createStore(
         dismissToast,
         setSseConnected,
         setWorkspaceTab,
+        setTheme,
+        setAccent,
+        resetAppearance,
         handleEvent,
       };
     },

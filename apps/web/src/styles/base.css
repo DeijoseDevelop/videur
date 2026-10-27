@@ -44,11 +44,11 @@
   height: 38px;
   border-radius: 12px;
   background: linear-gradient(135deg, var(--cyan), var(--violet));
-  color: #041016;
+  color: var(--accent-contrast);
   font-size: 20px;
   font-weight: 900;
   letter-spacing: -0.08em;
-  box-shadow: 0 0 26px rgba(34, 211, 238, 0.24);
+  box-shadow: 0 0 26px color-mix(in srgb, var(--accent-1) 24%, transparent);
 }
 
 .brand__text {
@@ -305,7 +305,7 @@
 }
 
 .gradient-text {
-  background: linear-gradient(92deg, var(--cyan), #a78bfa 58%, var(--violet));
+  background: linear-gradient(92deg, var(--accent-1), var(--accent-2) 58%, var(--accent-2));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -327,7 +327,7 @@
   height: 6px;
   border-radius: 50%;
   background: var(--green);
-  box-shadow: 0 0 10px rgba(52, 211, 153, 0.8);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--green) 80%, transparent);
 }
 
 .dot {
@@ -340,26 +340,26 @@
 
 .dot--success {
   background: var(--green);
-  box-shadow: 0 0 8px rgba(52, 211, 153, 0.55);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--green) 55%, transparent);
 }
 
 .dot--warn {
   background: var(--amber);
-  box-shadow: 0 0 8px rgba(245, 158, 11, 0.55);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--amber) 55%, transparent);
 }
 
 .dot--danger {
   background: var(--red);
-  box-shadow: 0 0 8px rgba(248, 113, 113, 0.55);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--red) 55%, transparent);
 }
 
 .dot--info {
   background: var(--cyan);
-  box-shadow: 0 0 8px rgba(34, 211, 238, 0.55);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--cyan) 55%, transparent);
 }
 
 .dot--neutral {
-  background: #34465d;
+  background: var(--line-strong);
 }
 
 .live-dot {
@@ -367,7 +367,7 @@
   height: 7px;
   border-radius: 50%;
   background: var(--green);
-  box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.12);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--green) 12%, transparent);
   animation: pulse 1.8s ease-in-out infinite;
 }
 

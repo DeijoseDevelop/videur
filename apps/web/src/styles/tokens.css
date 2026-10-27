@@ -1,35 +1,97 @@
+/* ==========================================================================
+   Videur Design Tokens
+   --------------------------------------------------------------------------
+   Capas:
+   1. Primitivos   → valores crudos (no usar en componentes)
+   2. Semánticos   → surface / ink / line / accent / state / space / type
+   3. Legacy       → alias de compatibilidad con la UI existente
+   4. Temas        → data-theme="midnight|aurora|ember|mono"
+   5. Acentos      → data-accent="cyan|violet|emerald|rose|amber"
+
+   Para cambiar el look global, edita los semánticos o añade un tema.
+   Los componentes deben usar SIEMPRE tokens semánticos, nunca hex directos.
+   ========================================================================== */
+
 :root {
   color-scheme: dark;
 
-  --bg: #060a10;
-  --bg-soft: #080e17;
-  --bg-elevated: #0a111b;
-  --panel: #0d1521;
-  --panel-2: #111b29;
-  --panel-3: #162233;
-  --panel-glass: rgba(13, 21, 33, 0.78);
+  /* ── Semánticos · superficies ─────────────────────────────────────────── */
+  --surface-0: #060a10;
+  --surface-1: #080e17;
+  --surface-2: #0d1521;
+  --surface-3: #111b29;
+  --surface-4: #162233;
+  --surface-glass: rgba(13, 21, 33, 0.78);
 
-  --border: #1b2a3c;
-  --border-soft: #162334;
-  --border-strong: #2a405a;
+  /* ── Semánticos · texto ───────────────────────────────────────────────── */
+  --ink-1: #e7eef8;
+  --ink-2: #8ea3bb;
+  --ink-3: #627890;
+  --ink-inverse: #061018;
 
-  --text: #e7eef8;
-  --text-muted: #8ea3bb;
-  --text-dim: #627890;
-  --text-inverse: #061018;
+  /* ── Semánticos · líneas ──────────────────────────────────────────────── */
+  --line-subtle: #162334;
+  --line: #1b2a3c;
+  --line-strong: #2a405a;
 
-  --cyan: #22d3ee;
-  --cyan-strong: #06b6d4;
-  --cyan-soft: rgba(34, 211, 238, 0.12);
-  --violet: #8b5cf6;
-  --violet-soft: rgba(139, 92, 246, 0.14);
-  --amber: #f59e0b;
-  --amber-soft: rgba(245, 158, 11, 0.13);
-  --green: #34d399;
-  --green-soft: rgba(52, 211, 153, 0.12);
-  --red: #f87171;
-  --red-soft: rgba(248, 113, 113, 0.12);
+  /* ── Semánticos · acento (default: cyan) ──────────────────────────────── */
+  --accent-1: #22d3ee;
+  --accent-1-strong: #06b6d4;
+  --accent-2: #8b5cf6;
+  --accent-3: #f59e0b;
+  --accent-4: #34d399;
+  --accent-5: #f472b6;
+  --accent-contrast: #041016;
 
+  --accent-1-soft: color-mix(in srgb, var(--accent-1) 12%, transparent);
+  --accent-2-soft: color-mix(in srgb, var(--accent-2) 14%, transparent);
+  --accent-3-soft: color-mix(in srgb, var(--accent-3) 13%, transparent);
+  --accent-4-soft: color-mix(in srgb, var(--accent-4) 12%, transparent);
+  --accent-5-soft: color-mix(in srgb, var(--accent-5) 12%, transparent);
+  --focus-ring: var(--accent-1);
+  --glow-color: color-mix(in srgb, var(--accent-1) 18%, transparent);
+
+  /* ── Semánticos · estado ──────────────────────────────────────────────── */
+  --state-success: #34d399;
+  --state-warning: #f59e0b;
+  --state-danger: #f87171;
+  --state-info: #22d3ee;
+  --state-success-soft: color-mix(in srgb, var(--state-success) 12%, transparent);
+  --state-warning-soft: color-mix(in srgb, var(--state-warning) 13%, transparent);
+  --state-danger-soft: color-mix(in srgb, var(--state-danger) 12%, transparent);
+  --state-info-soft: color-mix(in srgb, var(--state-info) 12%, transparent);
+
+  /* ── Primitivos · escala espacial ─────────────────────────────────────── */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 28px;
+  --space-8: 32px;
+  --space-9: 40px;
+  --space-10: 48px;
+  --space-11: 64px;
+  --space-12: 80px;
+
+  /* ── Primitivos · tipografía ──────────────────────────────────────────── */
+  --text-xs: 11px;
+  --text-sm: 12.5px;
+  --text-md: 14px;
+  --text-lg: 16px;
+  --text-xl: 20px;
+  --text-2xl: 26px;
+  --text-3xl: 34px;
+  --text-4xl: 44px;
+  --leading-tight: 1.08;
+  --leading-normal: 1.55;
+  --tracking-tight: -0.03em;
+  --tracking-wide: 0.14em;
+  --font-sans: "Manrope", "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", "SFMono-Regular", ui-monospace, monospace;
+
+  /* ── Primitivos · radios ──────────────────────────────────────────────── */
   --radius-xs: 6px;
   --radius-sm: 9px;
   --radius: 13px;
@@ -37,19 +99,162 @@
   --radius-xl: 26px;
   --radius-full: 999px;
 
+  /* ── Primitivos · sombras ─────────────────────────────────────────────── */
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.25);
   --shadow: 0 14px 40px rgba(0, 0, 0, 0.38);
-  --shadow-glow: 0 0 0 1px rgba(34, 211, 238, 0.1), 0 18px 50px rgba(34, 211, 238, 0.06);
+  --shadow-glow:
+    0 0 0 1px color-mix(in srgb, var(--accent-1) 10%, transparent),
+    0 18px 50px color-mix(in srgb, var(--accent-1) 6%, transparent);
 
-  --font-sans: "Manrope", "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
-  --font-mono: "JetBrains Mono", "Fira Code", "SFMono-Regular", ui-monospace, monospace;
+  /* ── Primitivos · movimiento ──────────────────────────────────────────── */
+  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --duration-fast: 120ms;
+  --duration-normal: 160ms;
+  --duration-slow: 280ms;
+  --transition: var(--duration-normal) var(--ease-out);
 
+  /* ── Layout ───────────────────────────────────────────────────────────── */
   --sidebar-width: 264px;
   --topbar-height: 64px;
   --content-max: 1520px;
 
-  --transition: 160ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  /* ── Legacy aliases · compatibilidad con la UI actual ─────────────────── */
+  --bg: var(--surface-0);
+  --bg-soft: var(--surface-1);
+  --bg-elevated: var(--surface-2);
+  --panel: var(--surface-2);
+  --panel-2: var(--surface-3);
+  --panel-3: var(--surface-4);
+  --panel-glass: var(--surface-glass);
+  --border: var(--line);
+  --border-soft: var(--line-subtle);
+  --border-strong: var(--line-strong);
+  --text: var(--ink-1);
+  --text-muted: var(--ink-2);
+  --text-dim: var(--ink-3);
+  --text-inverse: var(--ink-inverse);
+  --cyan: var(--accent-1);
+  --cyan-strong: var(--accent-1-strong);
+  --cyan-soft: var(--accent-1-soft);
+  --violet: var(--accent-2);
+  --violet-soft: var(--accent-2-soft);
+  --amber: var(--accent-3);
+  --amber-soft: var(--accent-3-soft);
+  --green: var(--accent-4);
+  --green-soft: var(--accent-4-soft);
+  --red: var(--state-danger);
+  --red-soft: var(--state-danger-soft);
 }
+
+/* ==========================================================================
+   Temas · solo superficies, líneas y tinta.
+   Los acentos se combinan con data-accent.
+   ========================================================================== */
+
+[data-theme="aurora"] {
+  --surface-0: #04100d;
+  --surface-1: #061713;
+  --surface-2: #0a201b;
+  --surface-3: #0e2b24;
+  --surface-4: #13372d;
+  --surface-glass: rgba(8, 28, 23, 0.8);
+  --line-subtle: #14352c;
+  --line: #1b4438;
+  --line-strong: #2a5d4d;
+  --ink-1: #e6fff8;
+  --ink-2: #93b8ad;
+  --ink-3: #66877d;
+  --ink-inverse: #04100d;
+}
+
+[data-theme="ember"] {
+  --surface-0: #0d0806;
+  --surface-1: #140d09;
+  --surface-2: #1d120d;
+  --surface-3: #291a12;
+  --surface-4: #352217;
+  --surface-glass: rgba(27, 16, 11, 0.82);
+  --line-subtle: #332015;
+  --line: #432b1d;
+  --line-strong: #5c3b28;
+  --ink-1: #fff0e6;
+  --ink-2: #c2a08c;
+  --ink-3: #8a6f5e;
+  --ink-inverse: #0d0806;
+}
+
+[data-theme="mono"] {
+  --surface-0: #08080a;
+  --surface-1: #0d0d10;
+  --surface-2: #141418;
+  --surface-3: #1c1c22;
+  --surface-4: #26262e;
+  --surface-glass: rgba(18, 18, 22, 0.82);
+  --line-subtle: #24242b;
+  --line: #303039;
+  --line-strong: #464652;
+  --ink-1: #f4f4f5;
+  --ink-2: #a1a1aa;
+  --ink-3: #71717a;
+  --ink-inverse: #08080a;
+}
+
+/* ==========================================================================
+   Acentos · el usuario elige el par primario/secundario.
+   ========================================================================== */
+
+[data-accent="cyan"] {
+  --accent-1: #22d3ee;
+  --accent-1-strong: #06b6d4;
+  --accent-2: #8b5cf6;
+  --accent-3: #f59e0b;
+  --accent-contrast: #041016;
+}
+
+[data-accent="violet"] {
+  --accent-1: #a78bfa;
+  --accent-1-strong: #8b5cf6;
+  --accent-2: #22d3ee;
+  --accent-3: #f472b6;
+  --accent-contrast: #0b0614;
+}
+
+[data-accent="emerald"] {
+  --accent-1: #34d399;
+  --accent-1-strong: #10b981;
+  --accent-2: #22d3ee;
+  --accent-3: #fbbf24;
+  --accent-contrast: #04120c;
+}
+
+[data-accent="rose"] {
+  --accent-1: #fb7185;
+  --accent-1-strong: #f43f5e;
+  --accent-2: #a78bfa;
+  --accent-3: #fbbf24;
+  --accent-contrast: #17060a;
+}
+
+[data-accent="amber"] {
+  --accent-1: #fbbf24;
+  --accent-1-strong: #f59e0b;
+  --accent-2: #fb7185;
+  --accent-3: #22d3ee;
+  --accent-contrast: #171004;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0.01ms;
+    --duration-normal: 0.01ms;
+    --duration-slow: 0.01ms;
+  }
+}
+
+/* ==========================================================================
+   Base global · reset mínimo y superficie raíz
+   ========================================================================== */
 
 *,
 *::before,
@@ -71,24 +276,24 @@ body {
   margin: 0;
   min-height: 100%;
   background:
-    radial-gradient(1200px 700px at 78% -10%, rgba(139, 92, 246, 0.09), transparent 60%),
-    radial-gradient(900px 600px at 10% 0%, rgba(34, 211, 238, 0.07), transparent 55%),
-    var(--bg);
-  color: var(--text);
+    radial-gradient(1200px 700px at 78% -10%, color-mix(in srgb, var(--accent-2) 9%, transparent), transparent 60%),
+    radial-gradient(900px 600px at 10% 0%, color-mix(in srgb, var(--accent-1) 7%, transparent), transparent 55%),
+    var(--surface-0);
+  color: var(--ink-1);
   font-family: var(--font-sans);
-  font-size: 14px;
-  line-height: 1.55;
+  font-size: var(--text-md);
+  line-height: var(--leading-normal);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 ::selection {
-  background: rgba(34, 211, 238, 0.28);
+  background: color-mix(in srgb, var(--accent-1) 28%, transparent);
   color: #fff;
 }
 
 :focus-visible {
-  outline: 2px solid var(--cyan);
+  outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
 }
 
@@ -105,12 +310,12 @@ button {
 }
 
 a {
-  color: var(--cyan);
+  color: var(--accent-1);
   text-decoration: none;
 }
 
 a:hover {
-  color: #67e8f9;
+  color: color-mix(in srgb, var(--accent-1) 78%, white);
 }
 
 img,
@@ -148,7 +353,7 @@ samp {
 
 hr {
   border: 0;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--line);
 }
 
 ::-webkit-scrollbar {
@@ -161,18 +366,18 @@ hr {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1d2c40;
+  background: color-mix(in srgb, var(--line-strong) 80%, var(--surface-2));
   border-radius: 999px;
-  border: 2px solid var(--bg);
+  border: 2px solid var(--surface-0);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #2a405a;
+  background: var(--line-strong);
 }
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: #1d2c40 transparent;
+  scrollbar-color: var(--line-strong) transparent;
 }
 
 @media (prefers-reduced-motion: reduce) {

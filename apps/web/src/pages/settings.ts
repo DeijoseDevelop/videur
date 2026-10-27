@@ -1,12 +1,27 @@
 import { defineComponent, elurRouter, html, signal } from "@elurjs/core";
 import type { AspectRatio, EngineId, Provider, ProviderPreset, ProviderPresetInfo } from "@videur/contracts";
 import { raw } from "@elurjs/core";
-import { appStore } from "../lib/store";
+import { appStore, type AccentId, type ThemeId } from "../lib/store";
 import { aspectOptions, engineLabel } from "../lib/format";
 import { icon } from "../lib/icons";
 import { badge, button, emptyState, field, pageHeader, spinner } from "../components/ui";
 
 type SettingsTab = "general" | "providers" | "engines" | "about";
+
+const THEMES: Array<{ id: ThemeId; label: string; hint: string; colors: [string, string, string] }> = [
+  { id: "midnight", label: "Midnight", hint: "Azul profundo · el original", colors: ["#060a10", "#22d3ee", "#8b5cf6"] },
+  { id: "aurora", label: "Aurora", hint: "Verde glacial · fresco", colors: ["#04100d", "#5eead4", "#60a5fa"] },
+  { id: "ember", label: "Ember", hint: "Cálido · estudio nocturno", colors: ["#0d0806", "#fb923c", "#f43f5e"] },
+  { id: "mono", label: "Mono", hint: "Grafito · alto contraste", colors: ["#08080a", "#e4e4e7", "#a1a1aa"] },
+];
+
+const ACCENTS: Array<{ id: AccentId; label: string; color: string }> = [
+  { id: "cyan", label: "Cian", color: "#22d3ee" },
+  { id: "violet", label: "Violeta", color: "#a78bfa" },
+  { id: "emerald", label: "Esmeralda", color: "#34d399" },
+  { id: "rose", label: "Rosa", color: "#fb7185" },
+  { id: "amber", label: "Ámbar", color: "#fbbf24" },
+];
 
 export const SettingsPage = defineComponent((_props, ctx) => {
   const router = elurRouter();
@@ -213,6 +228,58 @@ export const SettingsPage = defineComponent((_props, ctx) => {
           <h2>Preferencias del estudio</h2>
           <p>Se aplican a los nuevos proyectos. Puedes cambiarlas por proyecto.</p>
         </div>
+        <div class="appearance-block">
+          <div class="appearance-block__head">
+            <div>
+              <h3>Apariencia</h3>
+              <p>Tokens semánticos en <code>styles/tokens.css</code>. El tema y el acento se guardan en este navegador.</p>
+            </div>
+            ${button("Restablecer", {
+              variant: "ghost",
+              icon: "refresh",
+              onClick: () => appStore.resetAppearance(),
+            })}
+          </div>
+
+          <div class="theme-grid" role="radiogroup" aria-label="Tema de la interfaz">
+            ${THEMES.map(
+              (theme) => html`
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked=${() => appStore.theme.value === theme.id}
+                  class=${() => `theme-card ${appStore.theme.value === theme.id ? "theme-card--active" : ""}`}
+                  @click=${() => appStore.setTheme(theme.id)}
+                >
+                  <span class="theme-card__preview" style=${`background: linear-gradient(135deg, ${theme.colors[0]}, ${theme.colors[0]} 45%, ${theme.colors[1]} 46%, ${theme.colors[1]} 68%, ${theme.colors[2]} 69%);`}>
+                    <span class="theme-card__swatch" style=${`background:${theme.colors[1]}`}></span>
+                    <span class="theme-card__swatch" style=${`background:${theme.colors[2]}`}></span>
+                  </span>
+                  <strong>${theme.label}</strong>
+                  <small>${theme.hint}</small>
+                </button>
+              `,
+            )}
+          </div>
+
+          <div class="accent-row">
+            <span class="accent-row__label">Acento</span>
+            ${ACCENTS.map(
+              (accent) => html`
+                <button
+                  type="button"
+                  class=${() => `accent-swatch ${appStore.accent.value === accent.id ? "accent-swatch--active" : ""}`}
+                  style=${`--swatch:${accent.color}`}
+                  title=${accent.label}
+                  aria-label=${`Acento ${accent.label}`}
+                  aria-pressed=${() => appStore.accent.value === accent.id}
+                  @click=${() => appStore.setAccent(accent.id)}
+                ></button>
+              `,
+            )}
+          </div>
+        </div>
+
         <div class="form-grid">
           ${field(
             "Motor por defecto",
