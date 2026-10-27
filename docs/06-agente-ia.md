@@ -95,6 +95,7 @@ list_files({ path?: string })
 read_file({ path: string, maxBytes?: number })       // ≤ 256 KB
 write_file({ path: string, content: string, append?: boolean }) // ≤ 1 MB
 list_assets({})                                       // assets del proyecto
+analyze_reference({ path: string, prompt?: string })  // video de referencia → metadata + contact sheet + estilo
 delete_file({ path: string })
 update_project({ durationTarget?, width?, height?, fps?, aspectRatio?, engine?, name?, brief? })
 run_command({ command: string[], cwd?: string, timeoutMs?: number })
@@ -112,8 +113,10 @@ finalize({ summary: string, outputPath?: string })
 - `write_file` crea o reemplaza archivos. Para archivos grandes (> ~12 KB), el agente
   debe escribir por partes con `append: true`; si el proveedor trunca el JSON, la tool
   devuelve `TOOL_ARGS_TRUNCATED` con instrucciones para dividir la escritura.
-- `list_assets` lista las imágenes, audios y fuentes subidas; los paths `assets/...`
+- `list_assets` lista las imágenes, audios, videos y fuentes subidas; los paths `assets/...`
   se usan directamente en el código. En Remotion el motor copia `assets/` a `public/assets/`.
+- `analyze_reference` genera metadata + contact sheet de un video de referencia y, si el
+  proveedor tiene visión, devuelve una guía de estilo JSON.
 - `update_project` cambia duración/resolución/FPS/aspecto cuando el usuario pide algo distinto.
 - `run_render` crea un render real y espera; devuelve metadata, QA y rutas. Si falla,
   la tool devuelve `ok: false` con un error compacto y un hint de sintaxis FFmpeg.

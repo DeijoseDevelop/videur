@@ -10,4 +10,4 @@ export interface ProjectAsset {
   url: string;
 }
 
-export const MAX_ASSET_BYTES = 25 * 1024 * 1024;
+export const MAX_ASSET_BYTES = 100 * 1024 * 1024;

@@ -17,6 +17,9 @@ const ACCEPT = [
   "audio/mp4",
   "audio/aac",
   "audio/flac",
+  "video/mp4",
+  "video/webm",
+  "video/quicktime",
   ".ttf",
   ".otf",
   ".woff",
@@ -44,7 +47,9 @@ function assetCard(projectId: string, asset: ProjectAsset) {
                 <span class="asset-card__audio-icon">${raw(icon("activity", 24))}</span>
                 <audio controls preload="metadata" src=${asset.url}></audio>
               </div>`
-            : html`<div class="asset-card__font">
+            : asset.kind === "video"
+              ? html`<video class="asset-card__video" controls preload="metadata" src=${asset.url}></video>`
+              : html`<div class="asset-card__font">
                 <span>Aa</span>
                 <small>${asset.kind}</small>
               </div>`}
@@ -132,7 +137,7 @@ export function AssetsPanel(projectId: string) {
       </div>
 
       <div class="assets-panel__hint muted">
-        También puedes arrastrar archivos aquí. Máximo 25 MB por asset. Formatos: PNG, JPG, WebP, GIF, AVIF, MP3, WAV, OGG, M4A, FLAC, TTF, OTF, WOFF, WOFF2.
+        También puedes arrastrar archivos aquí. Máximo 100 MB por asset. Formatos: PNG, JPG, WebP, GIF, AVIF, MP4, WebM, MOV, MP3, WAV, OGG, M4A, FLAC, TTF, OTF, WOFF, WOFF2.
       </div>
     </div>
   `;

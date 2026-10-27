@@ -1,4 +1,5 @@
 import { existsSync, readFileSync, statSync } from "node:fs";
+import { randomUUID } from "node:crypto";
 import { basename, extname, isAbsolute, join, resolve } from "node:path";
 import { UpdateProjectSchema } from "@videur/contracts";
 import type {
@@ -121,6 +122,20 @@ export const AGENT_TOOL_DEFINITIONS: ToolDefinition[] = [
       properties: {
         engine: { type: "string", enum: ["ffmpeg", "pillow", "manim", "remotion"] },
       },
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "analyze_reference",
+    description:
+      "Analiza un video de referencia subido como asset: metadata, hoja de contactos y guía de estilo si el proveedor tiene visión. Úsala antes de escribir el guion cuando el usuario pida copiar el estilo de un video.",
+    parameters: {
+      type: "object",
+      properties: {
+        path: { type: "string", description: "Path del asset, por ejemplo assets/referencia.mp4" },
+        prompt: { type: "string", description: "Instrucciones extra para el análisis de estilo" },
+      },
+      required: ["path"],
       additionalProperties: false,
     },
   },
@@ -279,6 +294,8 @@ export class AgentToolbox {
         return this.runRender(args);
       case "list_assets":
         return this.listAssets();
+      case "analyze_reference":
+        return this.analyzeReference(args);
       case "list_renders":
         return this.listRenders(args);
       case "probe_video":
@@ -413,6 +430,48 @@ export class AgentToolbox {
       );
     }
     return JSON.stringify(this.renderSummary(final), null, 2);
+  }
+
+  private async analyzeReference(args: Record<string, unknown>): Promise<string> {
+    const input = this.resolveMediaInput(args.path);
+    const metadata = await this.deps.media.probe(input);
+    if (!metadata.video) {
+      throw new AppError("REFERENCE_NOT_VIDEO", "El archivo de referencia no tiene stream de video", 422);
+    }
+    const output = join(
+      resolve(input, ".."),
+      `reference-${randomUUID().slice(0, 8)}.png`,
+    );
+    const contactSheet = await this.deps.media.contactSheet(input, output, metadata.duration);
+    let style: string | null = null;
+    let visionError: string | null = null;
+    if (this.deps.provider.supportsVision) {
+      try {
+        style = await this.inspectImage({
+          path: contactSheet,
+          prompt:
+            typeof args.prompt === "string" && args.prompt.trim()
+              ? args.prompt
+              : "Analiza este mosaico 4x4 de un video de referencia. Devuelve JSON válido con: palette (hex), typography, pacing, transitions, composition, motion, do, dont. Extrae reglas de estilo, no copies branding exacto.",
+        });
+      } catch (error) {
+        visionError = toErrorMessage(error);
+      }
+    }
+    return JSON.stringify(
+      {
+        path: input,
+        metadata,
+        contactSheet,
+        style,
+        visionError,
+        hint: this.deps.provider.supportsVision
+          ? "Usa style como guía; no copies logos ni marcas."
+          : "El proveedor no tiene visión: usa metadata y contactSheet como referencia técnica, no inventes el estilo visual.",
+      },
+      null,
+      2,
+    );
   }
 
   private listAssets(): string {

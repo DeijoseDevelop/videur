@@ -71,7 +71,7 @@ Videur es **local-first**: SQLite, archivos en `./data`, claves cifradas con AES
 ## Qué incluye
 
 - **Estudio web** con dashboard, proyectos, editor, chat de agente, assets, cola de renders, preview y QA.
-- **Assets**: subida por drag & drop de imágenes, audio y fuentes (25 MB), preview, copia de ruta y borrado.
+- **Assets**: subida por drag & drop de imágenes, audio, videos de referencia y fuentes (100 MB), preview, copia de ruta y borrado.
 - **Agente multi-proveedor**: OpenAI, Anthropic, Gemini, OpenRouter, DeepSeek, Kimi, GLM, Ollama, LM Studio y cualquier endpoint OpenAI-compatible.
 - **Loop de autocorrección**: escribir → renderizar → `ffprobe` → hoja de contactos → inspección visual → corregir.
 - **CLI `videur` y servidor MCP** para OpenCode, Claude Code, Cursor y agentes compatibles.
@@ -251,7 +251,7 @@ Lee [docs/08-seguridad.md](docs/08-seguridad.md).
 
 ## Calidad
 
-- **44 tests** unitarios/de integración.
+- **45 tests** unitarios/de integración.
 - **CI** con typecheck, tests, build web, smoke real de FFmpeg y build de Docker.
 - QA de metadata, resolución, fps, `yuv420p`, audio, LUFS, true peak, frames negros, movimiento y portada automática.
 - Hoja de contactos 4×4 y portada PNG como artefactos del render.

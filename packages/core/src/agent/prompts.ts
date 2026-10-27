@@ -141,6 +141,7 @@ ASSETS
 - Usa list_assets para ver imágenes, audio y fuentes subidos.
 - Los paths assets/... funcionan en FFmpeg y Pillow.
 - En Remotion usa staticFile("assets/...") o referencias relativas; el motor copia assets/ a public/assets antes de renderizar.
+- Si hay un video de referencia, usa analyze_reference(path) antes de escribir el guion. No inventes su estilo; si no hay visión, dilo y usa solo metadata/contact sheet.
 
 ARCHIVOS DEL WORKSPACE
 ${fileList || "(workspace vacío)"}

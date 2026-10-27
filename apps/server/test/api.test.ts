@@ -250,6 +250,26 @@ describe("API HTTP", () => {
     expect((await json<{ total: number }>(after)).total).toBe(0);
   });
 
+  it("acepta videos de referencia como assets", async () => {
+    const { app } = createTestApp();
+    const create = await app.request("/api/projects", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ name: "Referencia", engine: "remotion" }),
+    });
+    const project = await json<{ id: string }>(create);
+    const form = new FormData();
+    form.append("file", new File(["fake-video"], "referencia.mp4", { type: "video/mp4" }));
+    const upload = await app.request(`/api/projects/${project.id}/assets`, {
+      method: "POST",
+      body: form,
+    });
+    expect(upload.status).toBe(201);
+    const asset = await json<{ kind: string; mime: string }>(upload);
+    expect(asset.kind).toBe("video");
+    expect(asset.mime).toBe("video/mp4");
+  });
+
   it("rechaza assets con extensión no permitida", async () => {
     const { app } = createTestApp();
     const create = await app.request("/api/projects", {

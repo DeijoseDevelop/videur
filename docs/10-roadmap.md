@@ -26,7 +26,7 @@
 - **MCP:** initialize, tools/list, tools/call, resources.
 - **UI:** dashboard, proyectos, wizard, workspace, detalle de render, plantillas, settings, 404.
 - **QA:** metadata, resolución, fps, `yuv420p`, audio, frames negros, movimiento, portada, LUFS y true peak.
-- **Tests:** 44 tests unitarios/integración; smoke FFmpeg reproducible. CI con typecheck, tests, build web y build Docker.
+- **Tests:** 45 tests unitarios/integración; smoke FFmpeg reproducible. CI con typecheck, tests, build web y build Docker.
 
 ## Fase 0 · Documentación (completada)
 
@@ -117,7 +117,7 @@ Criterio: un usuario puede crear, editar, renderizar, inspeccionar y configurar 
 Entregables:
 
 - Dockerfile + compose.
-- Tests de integración con FFmpeg, Pillow y Remotion. ✅ 44 tests.
+- Tests de integración con FFmpeg, Pillow y Remotion. ✅ 45 tests.
 - Recuperación de renders huérfanos: detectar, marcar y permitir reintentar/reanudar. ✅ detección + retry; reanudación pendiente.
 - Redacción de secretos en logs. ✅ `redactSecrets` + tests.
 - Límites de tamaño, tiempo y concurrencia. ✅
@@ -139,7 +139,7 @@ Criterio: `docker compose up --build` funciona, un render fallido no corrompe da
 - **Raycast por celda** o integración Three.js + post-proceso ASCII.
 - **Motion blur** de cámara/shutter en el master; presets 30/60 fps.
 - **Cámara y composición:** casi isométrica, zoom, parallax y transiciones deterministas.
-- **Referencia visual:** ingesta de un video de referencia, extracción de frames/contact sheet, análisis de tipografía, paleta, ritmo y transiciones; guía de estilo para el agente.
+- **Referencia visual:** ingesta de un video de referencia, extracción de frames/contact sheet, análisis de tipografía, paleta, ritmo y transiciones; guía de estilo para el agente. ✅ subida de video + `analyze_reference` (requiere proveedor con visión para el análisis de estilo).
 
 ### Portada y marca
 

@@ -9,7 +9,7 @@ const server = Bun.serve({
   port: videur.config.port,
   fetch: app.fetch,
   idleTimeout: 120,
-  maxRequestBodySize: 10 * 1024 * 1024,
+  maxRequestBodySize: 110 * 1024 * 1024,
 });
 
 videur.logger.info(`Videur ${videur.version} escuchando en http://${videur.config.host}:${videur.config.port}`);
