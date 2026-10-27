@@ -22,6 +22,7 @@ Esta carpeta es la fuente de verdad técnica de Videur. Los documentos se escrib
 | 13 | [Manual de usuario](13-manual-usuario.md) | Uso paso a paso |
 | 14 | [Referencias](14-referencias.md) | Fuentes, versiones y proyectos similares |
 | 15 | [Media generativa futura](15-media-generativa-futuro.md) | TTS, imágenes, música y video IA |
+| 16 | [Sistema de diseño](16-design-system.md) | Tokens, temas, acentos, componentes y accesibilidad |
 | — | [ADRs](adr/) | Decisiones arquitectónicas registradas |
 
 ## Estado

@@ -65,6 +65,13 @@ data/              Datos locales (no commitear)
 - Atributos completos aceptan señales; texto no.
 - `props=` es reservado en templates.
 
+## Reglas de diseño
+
+- Usa los tokens de `apps/web/src/styles/tokens.css`; no escribas hex en componentes.
+- Temas: `data-theme="midnight|aurora|ember|mono"`; acentos: `data-accent="cyan|violet|emerald|rose|amber"`.
+- Para UI nueva, carga la skill `videur-design` y revisa `docs/16-design-system.md`.
+- Mantén contraste 4.5:1, foco visible y `prefers-reduced-motion`.
+
 ## Reglas de video
 
 - Tiempo determinista: `t = frame / fps`.
