@@ -9,8 +9,8 @@
 | 2 | Motores: FFmpeg, Pillow, Manim, Remotion | ✅ FFmpeg, Pillow y Remotion probados; Manim requiere runtime |
 | 3 | API Hono + SSE + CLI + MCP | ✅ |
 | 4 | UI Elur + design system | ✅ |
-| 5 | Plantillas, Docker, tests, hardening | 🚧 |
-| 5.5 | Calidad creativa y QA | 🚧 portada + audio QA |
+| 5 | Plantillas, Docker, tests, hardening | ✅ CI/tests/backup/GC; build full pendiente |
+| 5.5 | Calidad creativa y QA | 🚧 assets + portada + audio QA |
 | 5.6 | Fiabilidad del agente | 🚧 presupuesto + planificación |
 | 6 | Assets, media generativa y timeline | 🚧 assets upload |
 | 7 | Producto y operación (opcional) | 🔮 |
@@ -124,7 +124,7 @@ Entregables:
 - Documentación de troubleshooting. ✅
 - CI en GitHub Actions: typecheck, tests, build y smoke. ✅
 - Backup/restore documentado y probado. ✅ documentado; script automático pendiente.
-- Limpieza de `node_modules`, renders y cachés (GC). 🚧 pendiente.
+- Limpieza de `node_modules`, renders y cachés (GC). ✅ `bun run gc` (huérfanos, dry-run por defecto).
 - Criterio de build Docker < 10 min en frío. 🚧 medir build completo.
 
 Criterio: `docker compose up --build` funciona, un render fallido no corrompe datos y CI queda verde.

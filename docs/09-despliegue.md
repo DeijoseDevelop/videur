@@ -191,6 +191,10 @@ bun run backup
 # Backup completo (DB + secretos + renders)
 tar -czf videur-backup-$(date +%F).tar.gz data/
 
+# Limpieza de workspaces/renders huérfanos (dry-run por defecto)
+bun run gc
+bun run gc -- --yes
+
 # Restaurar
 rm -rf data/
 tar -xzf videur-backup-2026-10-26.tar.gz

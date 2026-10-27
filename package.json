@@ -33,7 +33,8 @@
     "typecheck:scripts": "tsc -p tsconfig.json --noEmit",
     "db:migrate": "bun apps/cli/src/index.ts db:migrate",
     "smoke": "bun run scripts/smoke.ts",
-    "backup": "bun run scripts/backup.ts"
+    "backup": "bun run scripts/backup.ts",
+    "gc": "bun run scripts/gc.ts"
   },
   "dependencies": {
     "@elurjs/core": "^4.0.5",
