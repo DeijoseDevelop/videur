@@ -93,8 +93,9 @@ export interface ChatProvider {
 ```ts
 list_files({ path?: string })
 read_file({ path: string, maxBytes?: number })       // ≤ 256 KB
-write_file({ path: string, content: string })        // ≤ 1 MB
+write_file({ path: string, content: string, append?: boolean }) // ≤ 1 MB
 delete_file({ path: string })
+update_project({ durationTarget?, width?, height?, fps?, aspectRatio?, engine?, name?, brief? })
 run_command({ command: string[], cwd?: string, timeoutMs?: number })
 run_render({ engine?: "ffmpeg" | "pillow" | "manim" | "remotion" })
 probe_video({ path?: string })
@@ -107,7 +108,14 @@ finalize({ summary: string, outputPath?: string })
 
 - Todas las rutas se resuelven contra el workspace y no pueden escapar.
 - `run_command` no usa shell y solo acepta binarios de la allowlist.
-- `run_render` crea un render real y espera; devuelve metadata, QA y rutas.
+- `write_file` crea o reemplaza archivos. Para archivos grandes (> ~12 KB), el agente
+  debe escribir por partes con `append: true`; si el proveedor trunca el JSON, la tool
+  devuelve `TOOL_ARGS_TRUNCATED` con instrucciones para dividir la escritura.
+- `update_project` cambia duración/resolución/FPS/aspecto cuando el usuario pide algo distinto.
+- `run_render` crea un render real y espera; devuelve metadata, QA y rutas. Si falla,
+  la tool devuelve `ok: false` con un error compacto y un hint de sintaxis FFmpeg.
+- El QA incluye `motion` (freezedetect): si > 50% del video está congelado, el agente
+  debe añadir movimiento continuo en lugar de un ease-out que se detiene.
 - `inspect_image` usa el mismo proveedor si soporta visión; si no, devuelve un error explicativo.
 - `finalize` cierra el loop; si no se llama, el agente puede terminar con un mensaje final.
 - Cada tool tiene timeout y límite de output (64 KB por resultado; el resto se trunca).
@@ -176,7 +184,7 @@ start
 
 Límites:
 
-- `VIDEUR_AGENT_MAX_ITERATIONS` (12).
+- `VIDEUR_AGENT_MAX_ITERATIONS` (16).
 - `VIDEUR_AGENT_TIMEOUT_MS` (15 min).
 - `VIDEUR_AGENT_MAX_TOKENS` (8192 por respuesta).
 - Cancelación por `AbortController`.

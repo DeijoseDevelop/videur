@@ -6,7 +6,7 @@ Videur convierte una idea en un video MP4 determinista. La IA no inventa píxele
 
 > Inspirado en la arquitectura descrita en *“Cómo Generar Videos con IA y FFmpeg (La Arquitectura de Claude)”* y construido con **Elur**, el framework reactivo de señales y plantillas etiquetadas.
 
-**Estado v0.1:** core, API, CLI, MCP y UI implementados. FFmpeg y Pillow verificados end-to-end con renders reales; Manim y Remotion implementados y detectados, pero requieren instalar sus runtimes. 24 tests pasan y el smoke de FFmpeg es reproducible.
+**Estado v0.1:** core, API, CLI, MCP y UI implementados. FFmpeg, Pillow y Remotion verificados end-to-end con renders reales; Manim está implementado pero requiere instalar su runtime. 40 tests pasan, el smoke de FFmpeg es reproducible y CI cubre typecheck, tests, build y Docker.
 
 ---
 

@@ -208,5 +208,5 @@ Idea → Plantilla → Render → Revisar hoja → Ajustar
 - 1 MB por archivo editable.
 - 120 s de video recomendado.
 - 1 render concurrente por defecto.
-- 12 iteraciones de agente.
+- 30 iteraciones de agente (configurable).
 - Sin TTS/imágenes generativas en v0.1.

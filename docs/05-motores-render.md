@@ -147,6 +147,13 @@ Se ejecuta con `bash render.sh` dentro del workspace. **No se recomienda en modo
 - Márgenes seguros del 10% (72 px en 720p, 108 px en 1080p).
 - Nada de rutas absolutas fuera del workspace/render.
 - Fuentes del sistema o copiadas al workspace.
+- **`drawbox` no anima con `t`:** sus expresiones se evalúan una vez. Para
+  movimiento usa `overlay` con `eval=frame` (x/y animados), `drawtext`
+  (x/y/alpha animados), `geq` o el motor Pillow. La plantilla de barras usa
+  `overlay` para que las barras se muevan durante todo el video.
+- **Movimiento continuo:** no uses solo `1-exp(-k*t)`; la animación debe
+  evolucionar toda la duración. QA detecta congelamientos con `freezedetect`
+  y emite un warning `motion` si > 50% del video está estático.
 
 ## 5. Motor Python + Pillow
 
@@ -351,6 +358,7 @@ Si `drawtext` falla (fuente ausente), se reintenta sin timestamps.
 | `pixel_format` | warning | `yuv420p` |
 | `audio` | info | Presencia/ausencia |
 | `black_frames` | warning | > 80% de duración negra |
+| `motion` | warning | `freezedetect`: > 50% del video congelado |
 | `contact_sheet` | warning | PNG generado |
 | `vision_review` | info | Veredicto del LLM (opcional) |
 

@@ -6,22 +6,26 @@
 |---|---|---|
 | 0 | Documentación técnica, ADRs y modelo de datos | ✅ |
 | 1 | Core: config, SQLite, repositorios, storage, cola, eventos | ✅ |
-| 2 | Motores: FFmpeg, Pillow, Manim, Remotion | ✅ código · FFmpeg/Pillow probados; Manim/Remotion requieren instalación |
+| 2 | Motores: FFmpeg, Pillow, Manim, Remotion | ✅ FFmpeg, Pillow y Remotion probados; Manim requiere runtime |
 | 3 | API Hono + SSE + CLI + MCP | ✅ |
 | 4 | UI Elur + design system | ✅ |
 | 5 | Plantillas, Docker, tests, hardening | 🚧 |
-| 6 | Media generativa (TTS/imágenes/música) | 🔮 |
+| 5.5 | Calidad creativa y QA | 🔜 |
+| 5.6 | Fiabilidad del agente | 🔜 |
+| 6 | Assets, media generativa y timeline | 🔮 |
+| 7 | Producto y operación (opcional) | 🔮 |
 
 ## Estado de implementación v0.1
 
 - **Core:** migraciones, repositorios, cola, storage, secretos, QA, eventos.
-- **Motores:** FFmpeg y Pillow probados end-to-end; Manim y Remotion implementados con detección y ejecución.
-- **Agente:** loop con tools, OpenAI/Anthropic/Gemini, presets DeepSeek/Kimi/GLM/OpenRouter/Ollama, vision QA.
-- **API:** proyectos, archivos, renders, SSE, agentes, providers, settings, templates, media.
+- **Motores:** FFmpeg, Pillow y Remotion probados end-to-end. Remotion funciona en Docker con Node/Chromium, audio nativo y renders a 60 fps. Manim está implementado pero requiere instalar su runtime.
+- **Audio:** un proyecto Remotion puede incluir `public/*.wav` con `<Audio>`; el MP4 sale con AAC sin post-proceso.
+- **Agente:** loop con tools, OpenAI/Anthropic/Gemini, presets DeepSeek/Kimi/GLM/OpenRouter/Ollama, visión vía proveedor, escritura por partes con `append`, guardia contra renders viejos y errores de proveedor fuera del historial.
+- **API:** proyectos, archivos de texto, renders, SSE, agentes, providers, settings, templates, media y portada (`cover`).
 - **CLI:** doctor, project:create/list/show, render, renders, probe, contact-sheet, agent, templates, serve, mcp, db:migrate.
 - **MCP:** initialize, tools/list, tools/call, resources.
 - **UI:** dashboard, proyectos, wizard, workspace, detalle de render, plantillas, settings, 404.
-- **Tests:** 24 tests unitarios/integración; smoke FFmpeg reproducible.
+- **Tests:** 40 tests unitarios/integración; smoke FFmpeg reproducible. CI con typecheck, tests, build web y build Docker.
 
 ## Fase 0 · Documentación (completada)
 
@@ -112,36 +116,87 @@ Criterio: un usuario puede crear, editar, renderizar, inspeccionar y configurar 
 Entregables:
 
 - Dockerfile + compose.
-- Tests de integración con FFmpeg.
-- Recuperación de renders huérfanos.
+- Tests de integración con FFmpeg, Pillow y Remotion.
+- Recuperación de renders huérfanos: detectar, marcar y permitir reintentar/reanudar.
 - Redacción de secretos en logs.
-- Límites de tamaño/tiempo.
+- Límites de tamaño, tiempo y concurrencia.
 - Documentación de troubleshooting.
-- CI.
-- Backup/restore documentado.
+- CI en GitHub Actions: typecheck, tests, build y smoke.
+- Backup/restore documentado y probado.
+- Limpieza de `node_modules`, renders y cachés (GC).
+- Criterio de build Docker < 10 min en frío.
 
-Criterio: `docker compose up --build` funciona y un render fallido no corrompe datos.
+Criterio: `docker compose up --build` funciona, un render fallido no corrompe datos y CI queda verde.
+
+## Fase 5.5 · Calidad creativa y QA
+
+**Objetivo:** que el video no solo sea técnicamente válido, sino legible, coherente y con acabado profesional.
+
+### 3D y movimiento
+
+- **3D ASCII real:** cubo/objetos con 6 caras, rotación, depth buffer, normales, iluminación por celda, rampa `.,:;=+*#%@`, bordes y sombra en suelo de puntos.
+- **Raycast por celda** o integración Three.js + post-proceso ASCII.
+- **Motion blur** de cámara/shutter en el master; presets 30/60 fps.
+- **Cámara y composición:** casi isométrica, zoom, parallax y transiciones deterministas.
+- **Referencia visual:** ingesta de un video de referencia, extracción de frames/contact sheet, análisis de tipografía, paleta, ritmo y transiciones; guía de estilo para el agente.
+
+### Portada y marca
+
+- **Portada automática:** elegir el frame más claro del gancho, renderizar `cover.png` y registrarlo como artefacto del render.
+- **Brand kit por proyecto:** logo, paleta, fuentes, intro/outro y plantillas de marca.
+- **Gestión de fuentes:** subida, validación, licencia, fallback y empaquetado. Incluir Source Code Pro.
+- **Safe zones y smart crop** por plataforma (LinkedIn, TikTok, Reels, YouTube).
+- **Presets de exportación:** MP4 H.264, ProRes, WebM, GIF, alpha y HDR.
+
+### QA creativo
+
+- **Layout:** bounding boxes, texto que se sale del panel, solapamientos, contraste y tamaño mínimo.
+- **Audio:** LUFS, true peak, pops/clicks, clipping y ducking.
+- **Video:** flashes de 1 frame, frames congelados y motion blur excesivo.
+- **Legibilidad:** duración mínima por texto, líneas máximas y contraste sobre fondo.
+- **Draft/master:** render de borrador rápido (menor resolución/fps), aprobación y master final.
+- **SFX por evento:** teclado por carácter, Enter, CRT on/off, blips, dings y crashes sincronizados con el timeline.
+- **Licencias y procedencia de assets:** registrar origen, licencia y moderación de contenido.
+
+## Fase 5.6 · Fiabilidad del agente
+
+**Objetivo:** que un prompt largo no se quede a medias ni invente datos.
+
+- **Checkpoint y reanudación:** guardar plan, archivos y estado; reanudar un run sin empezar de cero.
+- **Compactación de contexto:** resumir historial y archivos para prompts largos.
+- **Presupuesto de tokens/costos:** límite por run, aviso y corte controlado.
+- **Fallback de proveedor/modelo:** reintentos, backoff y cambio a otro proveedor compatible.
+- **Verificación de datos:** investigación previa, lista de fuentes, citas y bloqueo de cifras no verificadas. El render sigue sin red; las fuentes se consultan antes y se cachean.
+- **Planificación y autocrítica:** plan explícito, checklist de escenas y revisión antes de renderizar.
+- **Aprobación humana opcional** para escrituras destructivas o renders largos.
+- **Prompt injection:** tratar assets y archivos como datos, no instrucciones; sandbox y allowlist.
+- **Observabilidad:** trazas por tool, duración, tokens, costo y resumen del run.
+- **Visión:** se usarán modelos que ya soporten imágenes (OpenAI, Anthropic, Gemini, etc.). **La visión local no es necesaria por ahora.**
 
 ## Fase 6 · Futuro
 
 ### v0.2 · Assets y media
 
-- Subida de imágenes, audio y fuentes.
-- Biblioteca de assets por proyecto.
+- Subida de imágenes, audio y fuentes con validación MIME/tamaño.
+- Biblioteca de assets por proyecto, thumbnails, metadatos y borrado seguro.
+- Assets accesibles por API, CLI, MCP y tools del agente (`list_assets`, `use_asset`).
+- Helpers para FFmpeg/Remotion/Pillow y `public/` de Remotion.
+- Procedencia, licencia y moderación de assets.
 - TTS local (Piper) y cloud (OpenAI/ElevenLabs).
-- Música de fondo con ducking.
-- Subtítulos automáticos (Whisper local).
+- Música de fondo con ducking y loudness normalization.
+- Subtítulos automáticos (Whisper local) y burn-in/sidecar.
+- Imágenes generativas (ComfyUI/OpenAI/fal) como proveedores opcionales.
 
 ### v0.3 · Timeline
 
 - Editor multipista.
-- Clips, transiciones, keyframes.
+- Clips, transiciones y keyframes.
 - IR de timeline (`plan.json`) editable por agentes.
-- Re-render incremental.
+- Re-render incremental y caché por escena.
 
 ### v0.4 · Colaboración
 
-- Multiusuario, equipos, roles.
+- Multiusuario, equipos y roles.
 - Cola distribuida (Postgres/Redis).
 - Workers en contenedores efímeros.
 - Almacenamiento S3.
@@ -154,6 +209,26 @@ Criterio: `docker compose up --build` funciona y un render fallido no corrompe d
 - Marketplace de plantillas.
 - SDK de motores de terceros.
 
+## Fase 7 · Producto y operación (opcional/futuro)
+
+No bloquea v0.1. Se prioriza solo si el producto lo necesita.
+
+- **Versionado/undo del workspace:** snapshots, historial y comparación de renders.
+- **Plantillas con parámetros** y plantillas de marca reutilizables.
+- **OpenAPI, SDK y webhooks** para integraciones externas.
+- **Claude Docs y publicación social** (LinkedIn, YouTube, TikTok) con cola y programación.
+- **Auth/RBAC, audit log y rate limits**.
+- **Backups automáticos y GC** de renders, assets y cachés.
+- **GPU y render distribuido**; presets 4K/HDR.
+- **Panel de costos** por proyecto, proveedor y run.
+- **Analytics de publicación** y feedback loop.
+
+## Fuera de alcance por ahora
+
+- **Visión local** (Ollama/llama.cpp): no se implementa. Se usan modelos con visión.
+- **Edición colaborativa en tiempo real:** queda para v0.4 si hay demanda.
+- **Publicación automática:** fase 7/v1.0, no v0.1.
+
 ## Prioridades
 
 | Prioridad | Trabajo | Motivo |
@@ -162,10 +237,14 @@ Criterio: `docker compose up --build` funciona y un render fallido no corrompe d
 | P0 | Seguridad de paths y secretos | Evitar daños |
 | P1 | Agente multi-proveedor | Propuesta de valor |
 | P1 | CLI/MCP | Integración con agentes |
+| P1 | Fiabilidad del agente (resume, fact-check, presupuesto) | Evitar runs a medias y datos inventados |
 | P2 | Pillow/Manim | Cobertura técnica |
-| P2 | Remotion | Motion graphics |
+| P2 | Remotion + 3D/motion/cover | Calidad creativa |
+| P2 | Assets upload/library | Flujo con imágenes/audio/fuentes |
+| P2 | QA creativo (layout, audio, flashes) | Acabado profesional |
 | P3 | TTS/imágenes/música | Alcance futuro |
 | P3 | Timeline | Producto maduro |
+| P3 | Producto/operación (fase 7) | Opcional/futuro |
 
 ## Métricas por fase
 
@@ -175,8 +254,11 @@ Criterio: `docker compose up --build` funciona y un render fallido no corrompe d
 | 2 | Renders smoke | 2 motores |
 | 3 | Endpoints | ≥ 25 |
 | 4 | Pantallas | 8 |
-| 5 | Docker build | < 10 min |
-| 6 | — | — |
+| 5 | CI + build Docker | CI verde, build < 10 min |
+| 5.5 | QA creativo | 3D real, portada automática, layout/audio/flash pass |
+| 5.6 | Fiabilidad | Reanudar run, citas de fuentes, 0 falsos éxito |
+| 6 | Assets/media | Subida + biblioteca + TTS/música |
+| 7 | Producto | Opcional, según demanda |
 
 ## Riesgos de calendario
 
@@ -184,15 +266,24 @@ Criterio: `docker compose up --build` funciona y un render fallido no corrompe d
 - La visión de los modelos chinos es limitada; el fallback técnico es esencial.
 - El editor de código puede crecer; en v0.1 es un textarea con gutter.
 - La UI Elur requiere cuidado con la reactividad (`${() => signal.value}`).
+- El 3D ASCII real y el motion blur pueden disparar el tiempo de render.
+- Un render de 80 s a 1080×1920 y 60 fps tarda ~14,5 min; 4K/HDR será mucho más caro.
+- La verificación de datos añade latencia y costo por run.
+- Los assets externos requieren licencias y trazabilidad.
 
 ## Definición de “terminado” v0.1
 
-- [ ] Documentación completa.
-- [ ] Core con tests.
-- [ ] FFmpeg y Pillow funcionando.
-- [ ] Manim y Remotion detectados y ejecutables si están instalados.
-- [ ] API, CLI y MCP.
-- [ ] UI completa.
-- [ ] Docker.
-- [ ] Smoke test reproducible.
-- [ ] README con inicio rápido.
+- [x] Documentación completa.
+- [x] Core con tests (40).
+- [x] FFmpeg y Pillow funcionando.
+- [x] Remotion funcionando en Docker; Manim requiere runtime.
+- [x] API, CLI y MCP.
+- [x] UI completa.
+- [x] Docker.
+- [x] Smoke test reproducible.
+- [x] README con inicio rápido.
+- [x] CI.
+- [x] Tests ≥ 40.
+- [ ] Assets upload/library.
+- [ ] QA creativo (layout/audio/flash).
+- [ ] Fiabilidad del agente (resume/fact-check).

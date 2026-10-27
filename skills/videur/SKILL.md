@@ -105,6 +105,8 @@ Si dudas, FFmpeg es el default.
 - Usa `render.json` con un array `command` (sin shell).
 - Placeholders: `{{width}}`, `{{height}}`, `{{fps}}`, `{{duration}}`, `{{output}}`, `{{fadeOutStart}}`.
 - Escapa `:` dentro de textos de filtros como `\:`.
+- **`drawbox` no anima con `t`: evalúa sus expresiones una vez.** Para mover formas usa `overlay` con `eval=frame` y `x`/`y` animados. Para texto animado usa `drawtext`.
+- No conviertas la animación en un ease-out que se congela a los 2 s; usa oscilación/pulso/loop durante toda la duración.
 - Añade `-progress pipe:1 -nostats` si necesitas progreso.
 - Para audio: `-f lavfi -i "aevalsrc=..."` + `-map 1:a`.
 - No uses `render.sh` salvo que el usuario lo pida y el modo lo permita.

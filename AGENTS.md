@@ -69,7 +69,10 @@ data/              Datos locales (no commitear)
 
 - Tiempo determinista: `t = frame / fps`.
 - Sin `setTimeout`, CSS transitions ni esperas reales para animar.
-- Easing obligatorio; nada de lineal brusco.
+- **FFmpeg `drawbox` evalúa sus expresiones una sola vez: no anima con `t`.**
+  Para movimiento usa `overlay` con `eval=frame`; para texto, `drawtext`.
+- Easing obligatorio; nada de lineal brusco, pero la animación debe seguir
+  durante todo el video (no un ease-out que se congela a los 2 s).
 - MP4: `libx264`, `-pix_fmt yuv420p`, `-preset fast`, `-crf 18`.
 - Márgenes seguros del 10%.
 - Python: pipe `rgb24` a FFmpeg; no PNG sueltos.
