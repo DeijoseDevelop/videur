@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createVideur } from "@videur/core";
@@ -132,6 +132,95 @@ describe("API HTTP", () => {
     const body = await json<{ render: { maxConcurrent: number }; agent: { visionReview: boolean } }>(update);
     expect(body.render.maxConcurrent).toBe(2);
     expect(body.agent.visionReview).toBe(false);
+  });
+
+  it("crea un proyecto vertical y conserva su configuración al renombrar", async () => {
+    const { app } = createTestApp();
+    const create = await app.request("/api/projects", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        name: "Vertical",
+        engine: "remotion",
+        aspectRatio: "9:16",
+        width: 1080,
+        height: 1920,
+        fps: 60,
+        durationTarget: 79.2,
+      }),
+    });
+    expect(create.status).toBe(201);
+    const project = await json<{ id: string; width: number; height: number; fps: number; durationTarget: number }>(create);
+    expect(project.width).toBe(1080);
+    expect(project.height).toBe(1920);
+    expect(project.fps).toBe(60);
+    expect(project.durationTarget).toBe(79.2);
+
+    const patch = await app.request(`/api/projects/${project.id}`, {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ name: "Vertical renombrado" }),
+    });
+    expect(patch.status).toBe(200);
+    const updated = await json<{ name: string; fps: number; durationTarget: number }>(patch);
+    expect(updated.name).toBe("Vertical renombrado");
+    expect(updated.fps).toBe(60);
+    expect(updated.durationTarget).toBe(79.2);
+  });
+
+  it("rechaza escribir imágenes por la API de texto", async () => {
+    const { app } = createTestApp();
+    const create = await app.request("/api/projects", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ name: "Binarios", engine: "remotion" }),
+    });
+    const project = await json<{ id: string }>(create);
+    const write = await app.request(`/api/projects/${project.id}/file`, {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ path: "assets/foto.png", content: "no-es-un-png" }),
+    });
+    expect(write.status).not.toBe(200);
+  });
+
+  it("lee un binario como metadata, no como texto", async () => {
+    const { app, videur } = createTestApp();
+    const create = await app.request("/api/projects", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ name: "Binario real", engine: "remotion" }),
+    });
+    const project = await json<{ id: string }>(create);
+    const dir = videur.workspace.dir(project.id);
+    mkdirSync(join(dir, "assets"), { recursive: true });
+    writeFileSync(join(dir, "assets", "pixel.png"), Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x00, 0x01]));
+
+    const read = await app.request(`/api/projects/${project.id}/file?path=assets/pixel.png`);
+    expect(read.status).toBe(200);
+    const body = await json<{ binary: boolean; size: number }>(read);
+    expect(body.binary).toBe(true);
+    expect(body.size).toBeGreaterThan(0);
+  });
+
+  it("elimina proyectos y devuelve 404 al consultarlos", async () => {
+    const { app } = createTestApp();
+    const create = await app.request("/api/projects", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ name: "Borrar", engine: "ffmpeg" }),
+    });
+    const project = await json<{ id: string }>(create);
+    const remove = await app.request(`/api/projects/${project.id}`, { method: "DELETE" });
+    expect(remove.status).toBe(200);
+    const detail = await app.request(`/api/projects/${project.id}`);
+    expect(detail.status).toBe(404);
+  });
+
+  it("devuelve 404 en rutas desconocidas", async () => {
+    const { app } = createTestApp();
+    const response = await app.request("/api/no-existe");
+    expect(response.status).toBe(404);
   });
 
   it("protege la API si hay token", async () => {

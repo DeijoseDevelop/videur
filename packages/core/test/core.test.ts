@@ -2,22 +2,30 @@ import { afterEach, describe, expect, it } from "bun:test";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { CreateProjectSchema } from "@videur/contracts";
+import { CreateProjectSchema, aspectForDimensions } from "@videur/contracts";
 import {
+  AgentToolbox,
   Logger,
   RenderQueue,
   SecretStore,
+  assertAllowedCommand,
   buildContactSheetFilter,
   createConfig,
   createProject,
+  createQaReport,
   createVideur,
+  isTextExtension,
   openDatabase,
   parseBlackDetect,
+  parseFreezeDetect,
+  parseJson,
   parseProbe,
   resolveInside,
   runCommand,
   slugify,
+  truncate,
   uniqueSlug,
+  writeWorkspaceFile,
 } from "../src/index";
 import { OpenAICompatibleProvider } from "../src/agent/providers/openai";
 
@@ -42,7 +50,7 @@ describe("config", () => {
     expect(config.dataDir).toBe(dir);
     expect(config.paths.db).toBe(join(dir, "videur.sqlite"));
     expect(config.maxConcurrentRenders).toBe(1);
-    expect(config.agent.maxIterations).toBe(12);
+    expect(config.agent.maxIterations).toBe(30);
   });
 
   it("respeta variables de entorno", () => {
@@ -72,6 +80,21 @@ describe("rutas y slugs", () => {
     const used = new Set(["demo", "demo-2"]);
     expect(uniqueSlug("Demo", (slug) => used.has(slug))).toBe("demo-3");
   });
+
+  it("escribe por partes con append", async () => {
+    const dir = tempDir();
+    const config = createConfig({ dataDir: dir, templatesDir: join(dir, "templates") }, {});
+    const first = writeWorkspaceFile(config, "prj_test", "src/big.tsx", "line 1\n");
+    const second = writeWorkspaceFile(config, "prj_test", "src/big.tsx", "line 2\n", {
+      append: true,
+    });
+    expect(first.size).toBe(7);
+    expect(second.size).toBe(14);
+    const content = await Bun.file(
+      join(dir, "workspaces", "prj_test", "src", "big.tsx"),
+    ).text();
+    expect(content).toBe("line 1\nline 2\n");
+  });
 });
 
 describe("sqlite y proyectos", () => {
@@ -95,8 +118,13 @@ describe("sqlite y proyectos", () => {
     expect(project.height).toBe(1280);
     expect(app.projects.get(project.id).name).toBe("Demo DB");
 
-    const updated = app.projects.update(project.id, { name: "Demo DB 2", fps: 60 });
-    expect(updated.name).toBe("Demo DB 2");
+    const renamed = app.projects.update(project.id, { name: "Demo DB 2" });
+    expect(renamed.name).toBe("Demo DB 2");
+    expect(renamed.durationTarget).toBe(5);
+    expect(renamed.fps).toBe(30);
+
+    const updated = app.projects.update(project.id, { name: "Demo DB 3", fps: 60 });
+    expect(updated.name).toBe("Demo DB 3");
     expect(updated.fps).toBe(60);
 
     const list = app.projects.list({ q: "Demo" });
@@ -160,6 +188,17 @@ describe("media helpers", () => {
     );
     expect(intervals).toHaveLength(2);
     expect(intervals[1]?.duration).toBe(1);
+  });
+
+  it("parsea freezedetect", () => {
+    const intervals = parseFreezeDetect(
+      "[freezedetect @ 0x1] lavfi.freezedetect.freeze_start: 2.5\n" +
+        "[freezedetect @ 0x1] lavfi.freezedetect.freeze_end: 7.5\n" +
+        "[freezedetect @ 0x1] lavfi.freezedetect.freeze_duration: 5.0",
+    );
+    expect(intervals).toHaveLength(1);
+    expect(intervals[0]?.start).toBe(2.5);
+    expect(intervals[0]?.duration).toBe(5);
   });
 });
 
@@ -253,6 +292,37 @@ describe("proveedor OpenAI-compatible", () => {
   });
 });
 
+describe("toolbox del agente", () => {
+  it("recupera argumentos de _raw y explica un JSON truncado", async () => {
+    const writes: Array<{ path: string; content: string; append?: boolean }> = [];
+    const toolbox = new AgentToolbox({
+      projectId: "prj_test",
+      workspace: {
+        write: (_projectId: string, path: string, content: string, options?: { append?: boolean }) => {
+          writes.push({ path, content, append: options?.append });
+          return { path, size: content.length };
+        },
+      },
+    } as unknown as ConstructorParameters<typeof AgentToolbox>[0]);
+
+    const recovered = await toolbox.execute({
+      id: "call_1",
+      name: "write_file",
+      arguments: { _raw: JSON.stringify({ path: "src/a.ts", content: "hola" }) },
+    });
+    expect(recovered.ok).toBe(true);
+    expect(writes[0]).toEqual({ path: "src/a.ts", content: "hola", append: false });
+
+    const truncated = await toolbox.execute({
+      id: "call_2",
+      name: "write_file",
+      arguments: { _raw: '{"path":"src/b.ts","content":"hola' },
+    });
+    expect(truncated.ok).toBe(false);
+    expect(truncated.content).toContain("12 KB");
+  });
+});
+
 describe("agente con proveedor mock", () => {
   it("ejecuta tools y finaliza", async () => {
     const server = Bun.serve({
@@ -330,6 +400,100 @@ describe("agente con proveedor mock", () => {
     expect(messages.some((message) => message.role === "tool")).toBe(true);
     expect(messages.some((message) => message.content.includes("ok"))).toBe(true);
   }, 10_000);
+});
+
+describe("hardening", () => {
+  it("normaliza dimensiones por aspecto", () => {
+    expect(aspectForDimensions(1080, 1920)).toBe("9:16");
+    expect(aspectForDimensions(1280, 720)).toBe("16:9");
+    const square = CreateProjectSchema.parse({ name: "Cuadrado", aspectRatio: "1:1" });
+    expect(square.width).toBe(1080);
+    expect(square.height).toBe(1080);
+  });
+
+  it("rechaza comandos fuera de la allowlist", () => {
+    expect(() => assertAllowedCommand(["ffmpeg", "-version"])).not.toThrow();
+    expect(() => assertAllowedCommand(["bash", "-c", "rm -rf /"])).toThrow();
+    expect(() => assertAllowedCommand(["curl", "https://example.com"])).toThrow();
+    expect(() => assertAllowedCommand([])).toThrow();
+  });
+
+  it("distingue extensiones de texto y binarias", () => {
+    expect(isTextExtension("src/render.ts")).toBe(true);
+    expect(isTextExtension("assets/logo.svg")).toBe(true);
+    expect(isTextExtension("assets/foto.png")).toBe(false);
+    expect(isTextExtension("video.mp4")).toBe(false);
+  });
+
+  it("rechaza escribir binarios y archivos de más de 1 MB", () => {
+    const dir = tempDir();
+    const config = createConfig({ dataDir: dir, templatesDir: join(dir, "templates") }, {});
+    expect(() => writeWorkspaceFile(config, "prj_test", "assets/foto.png", "x")).toThrow();
+    expect(() =>
+      writeWorkspaceFile(config, "prj_test", "big.txt", "x".repeat(1024 * 1024 + 1)),
+    ).toThrow();
+  });
+
+  it("QA: movimiento continuo sin congelamientos", () => {
+    const metadata = {
+      duration: 79.2,
+      size: 1000,
+      bitrate: 1000,
+      format: "mp4",
+      video: { codec: "h264", profile: "High", width: 1080, height: 1920, fps: 60, pixFmt: "yuv420p", frames: 4752 },
+      audio: null,
+    };
+    const report = createQaReport({
+      metadata,
+      project: { width: 1080, height: 1920, fps: 60, durationTarget: 79.2 },
+      fileExists: true,
+      contactSheetExists: true,
+      freezeChecked: true,
+      freezeIntervals: [],
+    });
+    expect(report.checks.find((c) => c.id === "motion")?.status).toBe("pass");
+    expect(report.checks.find((c) => c.id === "fps")?.status).toBe("pass");
+  });
+
+  it("QA: advierte si el video está congelado más de la mitad", () => {
+    const metadata = {
+      duration: 10,
+      size: 1000,
+      bitrate: 1000,
+      format: "mp4",
+      video: { codec: "h264", profile: "High", width: 720, height: 1280, fps: 30, pixFmt: "yuv420p", frames: 300 },
+      audio: null,
+    };
+    const report = createQaReport({
+      metadata,
+      project: { width: 720, height: 1280, fps: 30, durationTarget: 10 },
+      fileExists: true,
+      contactSheetExists: true,
+      freezeChecked: true,
+      freezeIntervals: [{ start: 0, end: 6, duration: 6 }],
+    });
+    expect(report.checks.find((c) => c.id === "motion")?.status).toBe("warn");
+    expect(report.warnings.some((c) => c.id === "motion")).toBe(true);
+  });
+
+  it("QA: falla si no hay metadata", () => {
+    const report = createQaReport({
+      metadata: null,
+      project: { width: 1280, height: 720, fps: 30, durationTarget: 5 },
+      fileExists: false,
+      contactSheetExists: false,
+    });
+    expect(report.ok).toBe(false);
+    expect(report.checks.some((c) => c.id === "metadata" && c.status === "fail")).toBe(true);
+  });
+
+  it("parsea JSON de forma segura y trunca textos largos", () => {
+    expect(parseJson('{"ok":true}', { ok: false })).toEqual({ ok: true });
+    expect(parseJson("no-json", { ok: false })).toEqual({ ok: false });
+    const cut = truncate("x".repeat(100), 40);
+    expect(cut.length).toBeLessThan(100);
+    expect(cut).toContain("truncado");
+  });
 });
 
 describe("migraciones", () => {
