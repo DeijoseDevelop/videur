@@ -28,6 +28,16 @@ function responses(): Array<Record<string, unknown>> {
     .map((line) => JSON.parse(line) as Record<string, unknown>);
 }
 
+async function responseFor(id: number, timeoutMs = 5000): Promise<Record<string, unknown>> {
+  const started = Date.now();
+  while (Date.now() - started < timeoutMs) {
+    const found = responses().find((item) => item.id === id);
+    if (found) return found;
+    await wait(50);
+  }
+  throw new Error(`No llegó respuesta MCP para id=${id}`);
+}
+
 afterAll(async () => {
   mcp.close();
   await videur.close();
@@ -38,13 +48,11 @@ describe("MCP stdio", () => {
   it("responde initialize y tools/list", async () => {
     input.write(`${JSON.stringify({ jsonrpc: "2.0", id: 1, method: "initialize", params: {} })}\n`);
     input.write(`${JSON.stringify({ jsonrpc: "2.0", id: 2, method: "tools/list", params: {} })}\n`);
-    await wait(200);
-    const list = responses();
-    const init = list.find((item) => item.id === 1) as { result?: { protocolVersion?: string; serverInfo?: { name?: string } } };
+    const init = (await responseFor(1)) as { result?: { protocolVersion?: string; serverInfo?: { name?: string } } };
     expect(init.result?.protocolVersion).toBeString();
     expect(init.result?.serverInfo?.name).toBe("videur");
 
-    const tools = list.find((item) => item.id === 2) as { result?: { tools?: Array<{ name: string }> } };
+    const tools = (await responseFor(2)) as { result?: { tools?: Array<{ name: string }> } };
     expect(tools.result?.tools?.some((tool) => tool.name === "videur_doctor")).toBe(true);
     expect(tools.result?.tools?.some((tool) => tool.name === "videur_render")).toBe(true);
   });
@@ -58,8 +66,7 @@ describe("MCP stdio", () => {
         params: { name: "videur_doctor", arguments: {} },
       })}\n`,
     );
-    await wait(300);
-    const response = responses().find((item) => item.id === 3) as {
+    const response = (await responseFor(3)) as {
       result?: { content?: Array<{ text?: string }>; isError?: boolean };
     };
     expect(response.result?.isError).toBe(false);
