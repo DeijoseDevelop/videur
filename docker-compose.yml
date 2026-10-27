@@ -18,11 +18,12 @@ services:
       VIDEUR_WEB_DIST: /app/apps/web/dist
       VIDEUR_SANDBOX_MODE: docker
       VIDEUR_LOG_LEVEL: info
-      HOME: /tmp
-      REMOTION_BROWSER: /usr/bin/chromium
+      HOME: /app/data/.home
+      BUN_INSTALL_CACHE_DIR: /app/data/.bun-cache
+      REMOTION_BROWSER: /usr/local/bin/chromium-nosandbox
     user: "${UID:-1000}:${GID:-1000}"
-    security_opt:
-      - no-new-privileges:true
+    # Nota: `no-new-privileges` puede impedir el exec de Bun en algunas
+    # configuraciones de Docker/AppArmor. Se mantiene cap_drop: ALL.
     cap_drop:
       - ALL
     mem_limit: 4g

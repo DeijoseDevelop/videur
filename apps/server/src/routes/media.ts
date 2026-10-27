@@ -14,6 +14,7 @@ const ARTIFACTS: Record<string, { path: (renderId: string) => string | null; mim
     path: (id) => `renders/${id}/contact-sheet.png`,
     mime: "image/png",
   },
+  cover: { path: (id) => `renders/${id}/cover.png`, mime: "image/png" },
   metadata: { path: (id) => `renders/${id}/metadata.json`, mime: "application/json" },
   qa: { path: (id) => `renders/${id}/qa.json`, mime: "application/json" },
   log: { path: (id) => `renders/${id}/render.log`, mime: "text/plain; charset=utf-8" },

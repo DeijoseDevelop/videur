@@ -1,5 +1,6 @@
 import type { MediaMetadata, Project, QaCheck, QaReport, QaStatus } from "@videur/contracts";
 import type { BlackInterval } from "./blackdetect";
+import type { FreezeInterval } from "./freezedetect";
 
 export interface QaInput {
   metadata: MediaMetadata | null;
@@ -8,6 +9,8 @@ export interface QaInput {
   contactSheetExists: boolean;
   blackIntervals?: BlackInterval[];
   blackChecked?: boolean;
+  freezeIntervals?: FreezeInterval[];
+  freezeChecked?: boolean;
 }
 
 function check(id: string, status: QaStatus, message: string, details?: Record<string, unknown>): QaCheck {
@@ -117,6 +120,31 @@ export function createQaReport(input: QaInput): QaReport {
       );
     } else {
       checks.push(check("black_frames", "pass", "No se detectaron frames negros"));
+    }
+  }
+
+  if (input.freezeChecked && input.freezeIntervals) {
+    const totalFreeze = input.freezeIntervals.reduce((sum, interval) => sum + interval.duration, 0);
+    const ratio = metadata.duration > 0 ? totalFreeze / metadata.duration : 0;
+    if (ratio >= 0.5) {
+      checks.push(
+        check(
+          "motion",
+          "warn",
+          `El video está congelado el ${Math.round(ratio * 100)}% del tiempo; agrega movimiento continuo (oscilación/pulso/loop).`,
+          { freezeIntervals: input.freezeIntervals },
+        ),
+      );
+    } else if (input.freezeIntervals.length > 0) {
+      checks.push(
+        check(
+          "motion",
+          "info",
+          `${input.freezeIntervals.length} tramo(s) congelado(s), ${Math.round(ratio * 100)}% del video`,
+        ),
+      );
+    } else {
+      checks.push(check("motion", "pass", "Movimiento continuo detectado"));
     }
   }
 

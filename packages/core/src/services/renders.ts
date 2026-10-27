@@ -44,6 +44,7 @@ import { elapsedMs, nowIso } from "../utils/time";
 import { runCommand, type RunOptions, type RunResult } from "../process/runner";
 import { detectBlackFrames } from "../media/blackdetect";
 import { generateContactSheet } from "../media/contact-sheet";
+import { detectFreezes } from "../media/freezedetect";
 import { probeMedia } from "../media/ffprobe";
 import { createQaReport } from "../media/qa";
 import type { EngineRegistry } from "../engines/registry";
@@ -358,6 +359,20 @@ export class RenderService {
       }
 
       progress(1, "qa");
+      let freezeChecked = false;
+      let freezeIntervals: Awaited<ReturnType<typeof detectFreezes>>["intervals"] = [];
+      try {
+        const freeze = await detectFreezes(
+          result.outputPath,
+          metadata.duration,
+          this.deps.config.binaries.ffmpeg,
+        );
+        freezeChecked = freeze.checked;
+        freezeIntervals = freeze.intervals;
+      } catch (error) {
+        appendLog("stderr", `freezedetect falló: ${toErrorMessage(error)}`);
+      }
+
       const qa = createQaReport({
         metadata,
         project,
@@ -365,6 +380,8 @@ export class RenderService {
         contactSheetExists: contactSheetOk,
         blackIntervals,
         blackChecked,
+        freezeIntervals,
+        freezeChecked,
       });
 
       const metadataPath = join(renderDir, "metadata.json");

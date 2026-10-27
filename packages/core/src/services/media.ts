@@ -2,6 +2,7 @@ import type { MediaMetadata } from "@videur/contracts";
 import type { VideurConfig } from "../config";
 import { detectBlackFrames, type BlackDetection } from "../media/blackdetect";
 import { generateContactSheet } from "../media/contact-sheet";
+import { detectFreezes, type FreezeDetection } from "../media/freezedetect";
 import { probeMedia } from "../media/ffprobe";
 
 export class MediaService {
@@ -22,5 +23,9 @@ export class MediaService {
 
   blackdetect(filePath: string, duration: number): Promise<BlackDetection> {
     return detectBlackFrames(filePath, duration, this.config.binaries.ffmpeg);
+  }
+
+  freezedetect(filePath: string, duration: number): Promise<FreezeDetection> {
+    return detectFreezes(filePath, duration, this.config.binaries.ffmpeg);
   }
 }

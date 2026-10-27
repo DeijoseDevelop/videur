@@ -10,6 +10,7 @@ interface RemotionRenderConfig {
   entry?: string;
   composition?: string;
   timeoutMs?: number;
+  concurrency?: number;
 }
 
 export class RemotionEngine implements VideoEngine {
@@ -21,6 +22,7 @@ export class RemotionEngine implements VideoEngine {
   async detect(): Promise<EngineInfo> {
     const node = whichBinary(this.config.binaries.node);
     const version = node ? await commandVersion(node, ["--version"]) : null;
+    const browser = this.resolveBrowser();
     return {
       id: this.id,
       name: this.name,
@@ -28,10 +30,22 @@ export class RemotionEngine implements VideoEngine {
       version,
       path: node,
       capabilities: ["video", "react", "chromium"],
-      installHint: node
-        ? "El proyecto Remotion debe tener sus dependencias instaladas (bun install)."
-        : "Instala Node 22+ para usar Remotion.",
+      installHint: !node
+        ? "Instala Node 22+ para usar Remotion."
+        : !browser
+          ? "Instala Chrome/Chromium o define REMOTION_BROWSER."
+          : null,
     };
+  }
+
+  private resolveBrowser(): string | null {
+    const explicit = process.env.REMOTION_BROWSER?.trim();
+    if (explicit && existsSync(explicit)) return explicit;
+    for (const candidate of ["google-chrome", "chromium", "chromium-browser", "chrome"]) {
+      const path = whichBinary(candidate);
+      if (path) return path;
+    }
+    return null;
   }
 
   async validate(workspaceDir: string): Promise<EngineValidation> {
@@ -76,18 +90,38 @@ export class RemotionEngine implements VideoEngine {
 
     const entry = config.entry ?? "src/index.ts";
     const composition = config.composition ?? "VideurVideo";
+    const projectTitle =
+      context.project.name.split("·")[0]?.trim().slice(0, 32) || context.project.name.slice(0, 32);
     const props = {
       width: context.project.width,
       height: context.project.height,
       fps: context.project.fps,
       duration: context.project.durationTarget,
       projectId: context.project.id,
+      title: projectTitle,
+      subtitle: `${projectTitle.toUpperCase()} · ${Math.round(context.project.durationTarget)}S`,
+      accent: "#22d3ee",
     };
 
     const localBin = join(workspaceDir, "node_modules", ".bin", "remotion");
+    const concurrency = Math.max(1, Math.min(8, config.concurrency ?? 2));
+    const renderArgs = [
+      "render",
+      entry,
+      composition,
+      outputPath,
+      "--props",
+      JSON.stringify(props),
+      "--pixel-format",
+      "yuv420p",
+      "--color-space",
+      "bt709",
+      "--concurrency",
+      String(concurrency),
+    ];
     let command: string[];
     if (existsSync(localBin)) {
-      command = [localBin, "render", entry, composition, outputPath, "--props", JSON.stringify(props)];
+      command = [localBin, ...renderArgs];
     } else {
       const npx = whichBinary("npx");
       if (!npx) {
@@ -97,18 +131,11 @@ export class RemotionEngine implements VideoEngine {
           422,
         );
       }
-      command = [
-        npx,
-        "--no-install",
-        "remotion",
-        "render",
-        entry,
-        composition,
-        outputPath,
-        "--props",
-        JSON.stringify(props),
-      ];
+      command = [npx, "--no-install", "remotion", ...renderArgs];
     }
+
+    const browser = this.resolveBrowser();
+    if (browser) command.push("--browser-executable", browser);
 
     const result = await context.run(command, {
       cwd: workspaceDir,
