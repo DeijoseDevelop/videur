@@ -265,10 +265,11 @@ Query: `offset` (bytes), `limit` (default 200 KB). Devuelve `text/plain` con el 
 
 ### `GET /media/:renderId/:artifact`
 
-`artifact` ∈ `video | contact-sheet | metadata | qa | log`.
+`artifact` ∈ `video | contact-sheet | cover | metadata | qa | log`.
 
 - `video`: `video/mp4`, soporta `Range`.
 - `contact-sheet`: `image/png`.
+- `cover`: `image/png` (portada automática).
 - `metadata`/`qa`: `application/json`.
 - `log`: `text/plain`.
 - `404` si el artefacto no existe.

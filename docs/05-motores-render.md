@@ -50,8 +50,9 @@ El `RenderService` se encarga de:
 3. Verificar que el output exista.
 4. Ejecutar `ffprobe`.
 5. Generar hoja de contactos.
-6. Ejecutar QA.
-7. Indexar artefactos.
+6. Generar portada (`cover.png`) en el 8% de la duración (máximo 3 s).
+7. Ejecutar QA, incluido `ebur128` si hay audio.
+8. Indexar artefactos.
 
 ## 2. Variables de entorno del render
 
@@ -359,7 +360,10 @@ Si `drawtext` falla (fuente ausente), se reintenta sin timestamps.
 | `audio` | info | Presencia/ausencia |
 | `black_frames` | warning | > 80% de duración negra |
 | `motion` | warning | `freezedetect`: > 50% del video congelado |
+| `loudness` | warning | `ebur128`: objetivo -14 LUFS ±2 |
+| `true_peak` | warning | `ebur128`: ≤ -1 dBTP |
 | `contact_sheet` | warning | PNG generado |
+| `cover` | warning | Portada PNG generada |
 | `vision_review` | info | Veredicto del LLM (opcional) |
 
 Salida `qa.json`:

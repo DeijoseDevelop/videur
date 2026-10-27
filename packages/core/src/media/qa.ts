@@ -7,10 +7,14 @@ export interface QaInput {
   project: Pick<Project, "width" | "height" | "fps" | "durationTarget">;
   fileExists: boolean;
   contactSheetExists: boolean;
+  coverExists?: boolean;
   blackIntervals?: BlackInterval[];
   blackChecked?: boolean;
   freezeIntervals?: FreezeInterval[];
   freezeChecked?: boolean;
+  integratedLufs?: number | null;
+  truePeakDb?: number | null;
+  loudnessChecked?: boolean;
 }
 
 function check(id: string, status: QaStatus, message: string, details?: Record<string, unknown>): QaCheck {
@@ -148,10 +152,44 @@ export function createQaReport(input: QaInput): QaReport {
     }
   }
 
+  if (input.loudnessChecked) {
+    const lufs = input.integratedLufs ?? null;
+    if (lufs === null) {
+      checks.push(check("loudness", "info", "No se pudo medir la sonoridad integrada"));
+    } else if (lufs >= -16 && lufs <= -12) {
+      checks.push(check("loudness", "pass", `${lufs.toFixed(1)} LUFS · objetivo -14 LUFS`));
+    } else {
+      checks.push(
+        check(
+          "loudness",
+          "warn",
+          `${lufs.toFixed(1)} LUFS; objetivo -14 LUFS ±2 (ajusta la mezcla)`,
+        ),
+      );
+    }
+
+    const peak = input.truePeakDb ?? null;
+    if (peak === null) {
+      checks.push(check("true_peak", "info", "No se pudo medir el true peak"));
+    } else if (peak <= -1) {
+      checks.push(check("true_peak", "pass", `${peak.toFixed(1)} dBTP`));
+    } else {
+      checks.push(
+        check("true_peak", "warn", `${peak.toFixed(1)} dBTP; baja el master por debajo de -1 dBTP`),
+      );
+    }
+  }
+
   checks.push(
     input.contactSheetExists
       ? check("contact_sheet", "pass", "Hoja de contactos generada")
       : check("contact_sheet", "warn", "No se pudo generar la hoja de contactos"),
+  );
+
+  checks.push(
+    input.coverExists
+      ? check("cover", "pass", "Portada PNG generada")
+      : check("cover", "warn", "No se pudo generar la portada PNG"),
   );
 
   return finalize(checks, metadata);

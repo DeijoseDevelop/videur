@@ -259,6 +259,7 @@ data/
       render.log
       output.mp4
       contact-sheet.png
+      cover.png
       metadata.json
       qa.json
 ```

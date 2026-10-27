@@ -54,7 +54,7 @@ export type MessageRole = z.infer<typeof MessageRoleSchema>;
 export const AgentRunStatusSchema = z.enum(["running", "succeeded", "failed", "cancelled"]);
 export type AgentRunStatus = z.infer<typeof AgentRunStatusSchema>;
 
-export const ArtifactKindSchema = z.enum(["video", "contact_sheet", "metadata", "qa", "log"]);
+export const ArtifactKindSchema = z.enum(["video", "contact_sheet", "cover", "metadata", "qa", "log"]);
 export type ArtifactKind = z.infer<typeof ArtifactKindSchema>;
 
 export const QaStatusSchema = z.enum(["pass", "warn", "fail", "info"]);

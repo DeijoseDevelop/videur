@@ -37,6 +37,7 @@ export * from "./media/ffprobe";
 export * from "./media/contact-sheet";
 export * from "./media/blackdetect";
 export * from "./media/freezedetect";
+export * from "./media/loudness";
 export * from "./media/qa";
 export * from "./engines/types";
 export * from "./engines/registry";

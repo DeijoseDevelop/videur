@@ -45,6 +45,7 @@ import { runCommand, type RunOptions, type RunResult } from "../process/runner";
 import { detectBlackFrames } from "../media/blackdetect";
 import { generateContactSheet } from "../media/contact-sheet";
 import { detectFreezes } from "../media/freezedetect";
+import { detectLoudness } from "../media/loudness";
 import { probeMedia } from "../media/ffprobe";
 import { createQaReport } from "../media/qa";
 import type { EngineRegistry } from "../engines/registry";
@@ -343,6 +344,32 @@ export class RenderService {
         appendLog("stderr", `No se pudo generar la hoja de contactos: ${toErrorMessage(error)}`);
       }
 
+      const coverPath = join(renderDir, "cover.png");
+      let coverOk = false;
+      try {
+        const coverAt = Math.min(3, Math.max(0.5, metadata.duration * 0.08));
+        const cover = await runCommand(
+          [
+            this.deps.config.binaries.ffmpeg,
+            "-y",
+            "-v",
+            "error",
+            "-ss",
+            coverAt.toFixed(3),
+            "-i",
+            result.outputPath,
+            "-frames:v",
+            "1",
+            coverPath,
+          ],
+          { timeoutMs: 30_000, maxLogBytes: 200_000 },
+        );
+        coverOk = cover.exitCode === 0 && existsSync(coverPath);
+        appendLog("system", coverOk ? "Portada PNG generada" : "No se pudo generar la portada PNG");
+      } catch (error) {
+        appendLog("stderr", `Portada falló: ${toErrorMessage(error)}`);
+      }
+
       progress(0.995, "contact_sheet");
       let blackChecked = false;
       let blackIntervals: Awaited<ReturnType<typeof detectBlackFrames>>["intervals"] = [];
@@ -373,15 +400,36 @@ export class RenderService {
         appendLog("stderr", `freezedetect falló: ${toErrorMessage(error)}`);
       }
 
+      let loudnessChecked = false;
+      let integratedLufs: number | null = null;
+      let truePeakDb: number | null = null;
+      if (metadata.audio) {
+        try {
+          const loudness = await detectLoudness(
+            result.outputPath,
+            this.deps.config.binaries.ffmpeg,
+          );
+          loudnessChecked = loudness.checked;
+          integratedLufs = loudness.integratedLufs;
+          truePeakDb = loudness.truePeakDb;
+        } catch (error) {
+          appendLog("stderr", `ebur128 falló: ${toErrorMessage(error)}`);
+        }
+      }
+
       const qa = createQaReport({
         metadata,
         project,
         fileExists: true,
         contactSheetExists: contactSheetOk,
+        coverExists: coverOk,
         blackIntervals,
         blackChecked,
         freezeIntervals,
         freezeChecked,
+        integratedLufs,
+        truePeakDb,
+        loudnessChecked,
       });
 
       const metadataPath = join(renderDir, "metadata.json");
@@ -413,6 +461,7 @@ export class RenderService {
       this.indexArtifacts(renderId, {
         outputPath: result.outputPath,
         contactSheetPath: contactSheetOk ? contactSheetPath : null,
+        coverPath: coverOk ? coverPath : null,
         metadataPath,
         qaPath,
         logPath,
@@ -475,12 +524,17 @@ export class RenderService {
     paths: {
       outputPath: string;
       contactSheetPath: string | null;
+      coverPath: string | null;
       metadataPath: string;
       qaPath: string;
       logPath: string;
     },
   ): void {
-    const entries: Array<{ kind: "video" | "contact_sheet" | "metadata" | "qa" | "log"; path: string; mime: string }> = [
+    const entries: Array<{
+      kind: "video" | "contact_sheet" | "cover" | "metadata" | "qa" | "log";
+      path: string;
+      mime: string;
+    }> = [
       { kind: "video", path: paths.outputPath, mime: "video/mp4" },
       { kind: "metadata", path: paths.metadataPath, mime: "application/json" },
       { kind: "qa", path: paths.qaPath, mime: "application/json" },
@@ -488,6 +542,9 @@ export class RenderService {
     ];
     if (paths.contactSheetPath) {
       entries.push({ kind: "contact_sheet", path: paths.contactSheetPath, mime: "image/png" });
+    }
+    if (paths.coverPath) {
+      entries.push({ kind: "cover", path: paths.coverPath, mime: "image/png" });
     }
     for (const entry of entries) {
       if (!existsSync(entry.path)) continue;

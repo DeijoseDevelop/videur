@@ -19,6 +19,7 @@ import {
   parseBlackDetect,
   parseFreezeDetect,
   parseJson,
+  parseLoudness,
   parseProbe,
   resolveInside,
   runCommand,
@@ -51,6 +52,7 @@ describe("config", () => {
     expect(config.paths.db).toBe(join(dir, "videur.sqlite"));
     expect(config.maxConcurrentRenders).toBe(1);
     expect(config.agent.maxIterations).toBe(30);
+    expect(config.agent.maxTokensPerRun).toBe(400000);
   });
 
   it("respeta variables de entorno", () => {
@@ -485,6 +487,64 @@ describe("hardening", () => {
     });
     expect(report.ok).toBe(false);
     expect(report.checks.some((c) => c.id === "metadata" && c.status === "fail")).toBe(true);
+  });
+
+  it("parsea loudness integrada y true peak", () => {
+    const parsed = parseLoudness(`
+      Integrated loudness:
+        I:         -14.2 LUFS
+      True peak:
+        Peak:      -1.3 dBFS
+    `);
+    expect(parsed.integratedLufs).toBe(-14.2);
+    expect(parsed.truePeakDb).toBe(-1.3);
+
+    const silent = parseLoudness(`
+      Integrated loudness:
+        I:         -inf LUFS
+      True peak:
+        Peak:      -inf dBFS
+    `);
+    expect(silent.integratedLufs).toBeNull();
+    expect(silent.truePeakDb).toBeNull();
+  });
+
+  it("QA: valida loudness y true peak", () => {
+    const metadata = {
+      duration: 10,
+      size: 1000,
+      bitrate: 1000,
+      format: "mp4",
+      video: { codec: "h264", profile: "High", width: 720, height: 1280, fps: 30, pixFmt: "yuv420p", frames: 300 },
+      audio: { codec: "aac", sampleRate: 48000, channels: 2 },
+    };
+    const report = createQaReport({
+      metadata,
+      project: { width: 720, height: 1280, fps: 30, durationTarget: 10 },
+      fileExists: true,
+      contactSheetExists: true,
+      coverExists: true,
+      loudnessChecked: true,
+      integratedLufs: -14.2,
+      truePeakDb: -1.3,
+    });
+    expect(report.checks.find((c) => c.id === "loudness")?.status).toBe("pass");
+    expect(report.checks.find((c) => c.id === "true_peak")?.status).toBe("pass");
+    expect(report.checks.find((c) => c.id === "cover")?.status).toBe("pass");
+
+    const loud = createQaReport({
+      metadata,
+      project: { width: 720, height: 1280, fps: 30, durationTarget: 10 },
+      fileExists: true,
+      contactSheetExists: true,
+      coverExists: false,
+      loudnessChecked: true,
+      integratedLufs: -9,
+      truePeakDb: 0,
+    });
+    expect(loud.checks.find((c) => c.id === "loudness")?.status).toBe("warn");
+    expect(loud.checks.find((c) => c.id === "true_peak")?.status).toBe("warn");
+    expect(loud.checks.find((c) => c.id === "cover")?.status).toBe("warn");
   });
 
   it("parsea JSON de forma segura y trunca textos largos", () => {
