@@ -1,0 +1,57 @@
+# Dependencias
+node_modules/
+.pnp
+.pnp.js
+
+# Builds
+dist/
+build/
+apps/web/dist/
+*.tsbuildinfo
+
+# Datos locales de Videur (proyectos, renders, base de datos, secretos)
+data/*
+!data/.gitkeep
+.videur/
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+
+# Variables de entorno y secretos
+.env
+.env.*
+!.env.example
+
+# Logs y cobertura
+*.log
+coverage/
+test-results/
+playwright-report/
+blob-report/
+.vitest/
+
+# Artefactos generados
+*.mp4
+*.mov
+*.webm
+*.wav
+*.mp3
+*.png
+*.jpg
+*.jpeg
+*.gif
+!apps/web/public/**/*.png
+!apps/web/public/**/*.svg
+!docs/**/*.png
+!docs/**/*.svg
+
+# Remotion
+templates/*/node_modules/
+templates/*/out/
+
+# Editores y sistema
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp

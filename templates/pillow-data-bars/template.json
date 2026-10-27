@@ -1,0 +1,10 @@
+{
+  "id": "pillow-data-bars",
+  "name": "Barras Pillow",
+  "engine": "pillow",
+  "description": "Barras animadas con easing cúbico, tipografía y pipe RGB directo a FFmpeg. Sin PNG intermedios.",
+  "aspectRatio": "16:9",
+  "duration": 6,
+  "tags": ["datos", "python", "pillow", "pipe"],
+  "preview": "preview.png"
+}

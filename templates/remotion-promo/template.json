@@ -1,0 +1,10 @@
+{
+  "id": "remotion-promo",
+  "name": "Promo SaaS (Remotion)",
+  "engine": "remotion",
+  "description": "Composición React con spring physics, grid, barras y tipografía cinética. Requiere Node y dependencias.",
+  "aspectRatio": "16:9",
+  "duration": 8,
+  "tags": ["remotion", "react", "promo", "motion-graphics"],
+  "preview": "preview.png"
+}

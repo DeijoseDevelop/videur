@@ -1,0 +1,10 @@
+{
+  "id": "ffmpeg-kinetic-title",
+  "name": "Título cinético",
+  "engine": "ffmpeg",
+  "description": "Título que entra con slide y fade, grid sutil y acento violeta. Ideal para intros y promos.",
+  "aspectRatio": "16:9",
+  "duration": 5,
+  "tags": ["título", "intro", "ffmpeg", "promo"],
+  "preview": "preview.png"
+}

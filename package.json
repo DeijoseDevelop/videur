@@ -1,0 +1,52 @@
+{
+  "name": "videur",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Estudio local-first de generación de video programática con IA, FFmpeg, Manim y Remotion.",
+  "license": "MIT",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "bun run scripts/dev.ts",
+    "dev:server": "bun --hot apps/server/src/index.ts",
+    "dev:web": "bunx --bun vite --config apps/web/vite.config.ts",
+    "build": "bun run build:web",
+    "build:web": "bunx --bun vite build --config apps/web/vite.config.ts",
+    "start": "bun apps/server/src/index.ts",
+    "cli": "bun apps/cli/src/index.ts",
+    "mcp": "bun apps/mcp/src/index.ts",
+    "doctor": "bun apps/cli/src/index.ts doctor",
+    "test": "bun test",
+    "test:core": "bun test packages/core",
+    "test:server": "bun test apps/server",
+    "test:mcp": "bun test apps/mcp",
+    "typecheck": "bun run typecheck:contracts && bun run typecheck:core && bun run typecheck:server && bun run typecheck:cli && bun run typecheck:mcp && bun run typecheck:web && bun run typecheck:scripts",
+    "typecheck:contracts": "tsc -p packages/contracts/tsconfig.json --noEmit",
+    "typecheck:core": "tsc -p packages/core/tsconfig.json --noEmit",
+    "typecheck:server": "tsc -p apps/server/tsconfig.json --noEmit",
+    "typecheck:cli": "tsc -p apps/cli/tsconfig.json --noEmit",
+    "typecheck:mcp": "tsc -p apps/mcp/tsconfig.json --noEmit",
+    "typecheck:web": "tsc -p apps/web/tsconfig.json --noEmit",
+    "typecheck:scripts": "tsc -p tsconfig.json --noEmit",
+    "db:migrate": "bun apps/cli/src/index.ts db:migrate",
+    "smoke": "bun run scripts/smoke.ts"
+  },
+  "dependencies": {
+    "@elurjs/core": "^4.0.5",
+    "hono": "^4.13.14",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.4.4",
+    "@types/node": "^24.0.0",
+    "typescript": "~7.0.2",
+    "vite": "^8.3.5"
+  },
+  "engines": {
+    "bun": ">=1.3.0",
+    "node": ">=22.0.0"
+  }
+}

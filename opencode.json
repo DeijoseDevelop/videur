@@ -1,0 +1,11 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": ["AGENTS.md"],
+  "mcp": {
+    "videur": {
+      "type": "local",
+      "command": ["bun", "run", "apps/mcp/src/index.ts"],
+      "enabled": true
+    }
+  }
+}

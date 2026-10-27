@@ -1,0 +1,146 @@
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+import type { EngineInfo } from "@videur/contracts";
+import type { VideurConfig } from "../config";
+import { AppError } from "../errors";
+import { commandVersion, whichBinary } from "../process/binaries";
+import type { EngineContext, EngineRunResult, EngineValidation, VideoEngine } from "./types";
+
+interface RemotionRenderConfig {
+  entry?: string;
+  composition?: string;
+  timeoutMs?: number;
+}
+
+export class RemotionEngine implements VideoEngine {
+  readonly id = "remotion" as const;
+  readonly name = "Remotion";
+
+  constructor(private readonly config: VideurConfig) {}
+
+  async detect(): Promise<EngineInfo> {
+    const node = whichBinary(this.config.binaries.node);
+    const version = node ? await commandVersion(node, ["--version"]) : null;
+    return {
+      id: this.id,
+      name: this.name,
+      available: Boolean(node),
+      version,
+      path: node,
+      capabilities: ["video", "react", "chromium"],
+      installHint: node
+        ? "El proyecto Remotion debe tener sus dependencias instaladas (bun install)."
+        : "Instala Node 22+ para usar Remotion.",
+    };
+  }
+
+  async validate(workspaceDir: string): Promise<EngineValidation> {
+    const hasConfig = existsSync(join(workspaceDir, "render.json"));
+    const hasPackage = existsSync(join(workspaceDir, "package.json"));
+    if (!hasConfig && !hasPackage) {
+      return { ok: false, errors: ["No se encontró render.json ni package.json para Remotion"] };
+    }
+    return { ok: true, errors: [] };
+  }
+
+  async run(context: EngineContext): Promise<EngineRunResult> {
+    const { workspaceDir, renderDir, outputPath, signal } = context;
+    let config: RemotionRenderConfig = {};
+    const configPath = join(workspaceDir, "render.json");
+    if (existsSync(configPath)) {
+      try {
+        config = JSON.parse(readFileSync(configPath, "utf8")) as RemotionRenderConfig;
+      } catch {
+        throw new AppError("ENGINE_INPUT", "render.json inválido para Remotion", 422);
+      }
+    }
+
+    const nodeModules = join(workspaceDir, "node_modules");
+    if (!existsSync(nodeModules) && existsSync(join(workspaceDir, "package.json"))) {
+      context.log("system", "Instalando dependencias de Remotion…");
+      const install = await context.run(["bun", "install"], {
+        cwd: workspaceDir,
+        timeoutMs: 300_000,
+        signal,
+        onStdout: (line) => context.log("stdout", line),
+        onStderr: (line) => context.log("stderr", line),
+      });
+      if (install.exitCode !== 0) {
+        throw new AppError(
+          "ENGINE_INSTALL",
+          `No se pudieron instalar las dependencias de Remotion: ${install.stderr.slice(-2000)}`,
+          422,
+        );
+      }
+    }
+
+    const entry = config.entry ?? "src/index.ts";
+    const composition = config.composition ?? "VideurVideo";
+    const props = {
+      width: context.project.width,
+      height: context.project.height,
+      fps: context.project.fps,
+      duration: context.project.durationTarget,
+      projectId: context.project.id,
+    };
+
+    const localBin = join(workspaceDir, "node_modules", ".bin", "remotion");
+    let command: string[];
+    if (existsSync(localBin)) {
+      command = [localBin, "render", entry, composition, outputPath, "--props", JSON.stringify(props)];
+    } else {
+      const npx = whichBinary("npx");
+      if (!npx) {
+        throw new AppError(
+          "ENGINE_UNAVAILABLE",
+          "No se encontró el binario de Remotion. Ejecuta bun install en el workspace.",
+          422,
+        );
+      }
+      command = [
+        npx,
+        "--no-install",
+        "remotion",
+        "render",
+        entry,
+        composition,
+        outputPath,
+        "--props",
+        JSON.stringify(props),
+      ];
+    }
+
+    const result = await context.run(command, {
+      cwd: workspaceDir,
+      timeoutMs: config.timeoutMs ?? this.config.renderTimeoutMs,
+      signal,
+      onStdout: (line) => context.log("stdout", line),
+      onStderr: (line) => context.log("stderr", line),
+    });
+
+    if (result.exitCode !== 0) {
+      throw new AppError(
+        "RENDER_FAILED",
+        result.timedOut ? "Remotion excedió el timeout" : result.stderr.slice(-4000),
+        422,
+      );
+    }
+    if (!existsSync(outputPath)) {
+      throw new AppError("ENGINE_OUTPUT", "Remotion terminó sin producir el MP4 esperado", 422);
+    }
+    context.log("system", `Render Remotion en ${renderDir}`);
+    return { command, outputPath };
+  }
+}
+
+export function isRemotionProject(packageJsonPath: string): boolean {
+  try {
+    const pkg = JSON.parse(readFileSync(packageJsonPath, "utf8")) as {
+      dependencies?: Record<string, string>;
+      devDependencies?: Record<string, string>;
+    };
+    return Boolean(pkg.dependencies?.remotion || pkg.devDependencies?.remotion);
+  } catch {
+    return false;
+  }
+}

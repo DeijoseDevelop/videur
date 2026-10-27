@@ -1,0 +1,7 @@
+[install]
+# Las dependencias se instalan en el workspace raíz.
+linker = "hoisted"
+
+[test]
+# Los tests viven junto al código de cada paquete.
+coverage = false

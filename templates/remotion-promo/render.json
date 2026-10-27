@@ -1,0 +1,5 @@
+{
+  "entry": "src/index.ts",
+  "composition": "VideurVideo",
+  "timeoutMs": 900000
+}

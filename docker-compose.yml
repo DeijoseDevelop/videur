@@ -1,0 +1,37 @@
+services:
+  videur:
+    build:
+      context: .
+      args:
+        INSTALL_MANIM: "true"
+        INSTALL_REMOTION: "true"
+    container_name: videur
+    ports:
+      - "127.0.0.1:8787:8787"
+    volumes:
+      - ./data:/app/data
+    environment:
+      VIDEUR_HOST: 0.0.0.0
+      VIDEUR_PORT: "8787"
+      VIDEUR_DATA_DIR: /app/data
+      VIDEUR_TEMPLATES_DIR: /app/templates
+      VIDEUR_WEB_DIST: /app/apps/web/dist
+      VIDEUR_SANDBOX_MODE: docker
+      VIDEUR_LOG_LEVEL: info
+      HOME: /tmp
+      REMOTION_BROWSER: /usr/bin/chromium
+    user: "${UID:-1000}:${GID:-1000}"
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    mem_limit: 4g
+    cpus: "4"
+    pids_limit: 512
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8787/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s

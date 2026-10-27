@@ -1,0 +1,10 @@
+{
+  "id": "ffmpeg-data-bars",
+  "name": "Barras de datos",
+  "engine": "ffmpeg",
+  "description": "Gráfico de barras animado con grid, paleta oscura y audio sintético. Ideal para datos y explainers.",
+  "aspectRatio": "16:9",
+  "duration": 6,
+  "tags": ["datos", "barras", "ffmpeg", "explainer"],
+  "preview": "preview.png"
+}

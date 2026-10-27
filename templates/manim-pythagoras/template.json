@@ -1,0 +1,10 @@
+{
+  "id": "manim-pythagoras",
+  "name": "Pitágoras (Manim)",
+  "engine": "manim",
+  "description": "Explicación visual del teorema de Pitágoras con triángulo, etiquetas y fórmula. Estilo técnico.",
+  "aspectRatio": "16:9",
+  "duration": 8,
+  "tags": ["manim", "matemáticas", "educativo", "geometría"],
+  "preview": "preview.png"
+}
