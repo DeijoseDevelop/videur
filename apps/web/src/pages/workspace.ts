@@ -4,6 +4,7 @@ import { appStore } from "../lib/store";
 import { formatDurationMs, formatPercent, formatSeconds, statusLabel } from "../lib/format";
 import { icon } from "../lib/icons";
 import { AgentChat } from "../components/agent";
+import { AssetsPanel } from "../components/assets";
 import { CodeEditor, FileTree } from "../components/project";
 import {
   ContactSheet,
@@ -140,6 +141,7 @@ export const WorkspacePage = defineComponent((_props, ctx) => {
             <div class="workspace-tabs" role="tablist" aria-label="Vistas del proyecto">
               ${[
                 ["agent", "Agente", "bot"],
+                ["assets", "Assets", "image"],
                 ["code", "Código", "code"],
                 ["preview", "Preview", "film"],
                 ["qa", "QA", "shield"],
@@ -159,6 +161,9 @@ export const WorkspacePage = defineComponent((_props, ctx) => {
                       : null}
                     ${id === "preview" && appStore.renders.value.length > 0
                       ? html`<span class="workspace-tab__count">${() => appStore.renders.value.length}</span>`
+                      : null}
+                    ${id === "assets" && appStore.assets.value.length > 0
+                      ? html`<span class="workspace-tab__count">${() => appStore.assets.value.length}</span>`
                       : null}
                   </button>
                 `,
@@ -187,6 +192,10 @@ export const WorkspacePage = defineComponent((_props, ctx) => {
                   },
                   onOpenSettings: () => router.navigate("/settings"),
                 })}
+              </div>
+
+              <div class="workspace-tab-pane" show=${() => appStore.workspaceTab.value === "assets"}>
+                ${AssetsPanel(projectId)}
               </div>
 
               <div class="workspace-tab-pane workspace-tab-pane--editor" show=${() => appStore.workspaceTab.value === "code"}>

@@ -12,7 +12,7 @@
 | 5 | Plantillas, Docker, tests, hardening | 🚧 |
 | 5.5 | Calidad creativa y QA | 🚧 portada + audio QA |
 | 5.6 | Fiabilidad del agente | 🚧 presupuesto + planificación |
-| 6 | Assets, media generativa y timeline | 🔮 |
+| 6 | Assets, media generativa y timeline | 🚧 assets upload |
 | 7 | Producto y operación (opcional) | 🔮 |
 
 ## Estado de implementación v0.1
@@ -26,7 +26,7 @@
 - **MCP:** initialize, tools/list, tools/call, resources.
 - **UI:** dashboard, proyectos, wizard, workspace, detalle de render, plantillas, settings, 404.
 - **QA:** metadata, resolución, fps, `yuv420p`, audio, frames negros, movimiento, portada, LUFS y true peak.
-- **Tests:** 42 tests unitarios/integración; smoke FFmpeg reproducible. CI con typecheck, tests, build web y build Docker.
+- **Tests:** 44 tests unitarios/integración; smoke FFmpeg reproducible. CI con typecheck, tests, build web y build Docker.
 
 ## Fase 0 · Documentación (completada)
 
@@ -117,7 +117,7 @@ Criterio: un usuario puede crear, editar, renderizar, inspeccionar y configurar 
 Entregables:
 
 - Dockerfile + compose.
-- Tests de integración con FFmpeg, Pillow y Remotion. ✅ 42 tests.
+- Tests de integración con FFmpeg, Pillow y Remotion. ✅ 44 tests.
 - Recuperación de renders huérfanos: detectar, marcar y permitir reintentar/reanudar. ✅ detección + retry; reanudación pendiente.
 - Redacción de secretos en logs. ✅ `redactSecrets` + tests.
 - Límites de tamaño, tiempo y concurrencia. ✅
@@ -178,8 +178,8 @@ Criterio: `docker compose up --build` funciona, un render fallido no corrompe da
 
 ### v0.2 · Assets y media
 
-- Subida de imágenes, audio y fuentes con validación MIME/tamaño.
-- Biblioteca de assets por proyecto, thumbnails, metadatos y borrado seguro.
+- Subida de imágenes, audio y fuentes con validación MIME/tamaño. ✅ PNG/JPG/WebP/GIF/AVIF, MP3/WAV/OGG/M4A/FLAC, TTF/OTF/WOFF/WOFF2.
+- Biblioteca de assets por proyecto, thumbnails, metadatos y borrado seguro. ✅ pestaña Assets + API + tool `list_assets`.
 - Assets accesibles por API, CLI, MCP y tools del agente (`list_assets`, `use_asset`).
 - Helpers para FFmpeg/Remotion/Pillow y `public/` de Remotion.
 - Procedencia, licencia y moderación de assets.

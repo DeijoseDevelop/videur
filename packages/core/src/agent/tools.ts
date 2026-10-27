@@ -1,5 +1,5 @@
 import { existsSync, readFileSync, statSync } from "node:fs";
-import { extname, isAbsolute, join, resolve } from "node:path";
+import { basename, extname, isAbsolute, join, resolve } from "node:path";
 import { UpdateProjectSchema } from "@videur/contracts";
 import type {
   EngineId,
@@ -14,6 +14,7 @@ import { assertAllowedCommand } from "../process/allowlist";
 import { runCommand } from "../process/runner";
 import { resolveInside } from "../storage/paths";
 import type { WorkspaceService } from "../services/workspace";
+import { assetKind, assetMime, isAllowedAssetPath } from "../services/assets";
 import type { ProjectService } from "../services/projects";
 import type { RenderService } from "../services/renders";
 import type { MediaService } from "../services/media";
@@ -120,6 +121,16 @@ export const AGENT_TOOL_DEFINITIONS: ToolDefinition[] = [
       properties: {
         engine: { type: "string", enum: ["ffmpeg", "pillow", "manim", "remotion"] },
       },
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "list_assets",
+    description:
+      "Lista las imágenes, audios y fuentes subidos al proyecto. Devuelve path, nombre, mime, tipo y tamaño. Usa esos paths directamente en el código del motor.",
+    parameters: {
+      type: "object",
+      properties: {},
       additionalProperties: false,
     },
   },
@@ -266,6 +277,8 @@ export class AgentToolbox {
         return this.runCommand(args);
       case "run_render":
         return this.runRender(args);
+      case "list_assets":
+        return this.listAssets();
       case "list_renders":
         return this.listRenders(args);
       case "probe_video":
@@ -400,6 +413,23 @@ export class AgentToolbox {
       );
     }
     return JSON.stringify(this.renderSummary(final), null, 2);
+  }
+
+  private listAssets(): string {
+    const assets = this.deps.workspace
+      .list(this.deps.projectId)
+      .filter((file) => file.type === "file" && isAllowedAssetPath(file.path))
+      .map((file) => {
+        const mime = assetMime(file.path) ?? "application/octet-stream";
+        return {
+          path: file.path,
+          name: basename(file.path),
+          mime,
+          kind: assetKind(mime),
+          size: file.size,
+        };
+      });
+    return JSON.stringify({ assets, total: assets.length }, null, 2);
   }
 
   private listRenders(args: Record<string, unknown>): string {

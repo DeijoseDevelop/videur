@@ -58,13 +58,20 @@ Videur es **local-first**: SQLite, archivos en `./data`, claves cifradas con AES
     <td><sub><b>Apariencia.</b> Cuatro temas y cinco acentos, guardados en el navegador.</sub></td>
     <td><sub><b>Aurora + violeta.</b> El mismo sistema de tokens, otra piel.</sub></td>
   </tr>
+  <tr>
+    <td colspan="2"><img src="docs/assets/assets.png" alt="Assets del proyecto" /></td>
+  </tr>
+  <tr>
+    <td colspan="2"><sub><b>Assets.</b> Imágenes, audio y fuentes con preview, copia de ruta y borrado.</sub></td>
+  </tr>
 </table>
 
 ---
 
 ## Qué incluye
 
-- **Estudio web** con dashboard, proyectos, editor, chat de agente, cola de renders, preview y QA.
+- **Estudio web** con dashboard, proyectos, editor, chat de agente, assets, cola de renders, preview y QA.
+- **Assets**: subida por drag & drop de imágenes, audio y fuentes (25 MB), preview, copia de ruta y borrado.
 - **Agente multi-proveedor**: OpenAI, Anthropic, Gemini, OpenRouter, DeepSeek, Kimi, GLM, Ollama, LM Studio y cualquier endpoint OpenAI-compatible.
 - **Loop de autocorrección**: escribir → renderizar → `ffprobe` → hoja de contactos → inspección visual → corregir.
 - **CLI `videur` y servidor MCP** para OpenCode, Claude Code, Cursor y agentes compatibles.
@@ -244,7 +251,7 @@ Lee [docs/08-seguridad.md](docs/08-seguridad.md).
 
 ## Calidad
 
-- **42 tests** unitarios/de integración.
+- **44 tests** unitarios/de integración.
 - **CI** con typecheck, tests, build web, smoke real de FFmpeg y build de Docker.
 - QA de metadata, resolución, fps, `yuv420p`, audio, LUFS, true peak, frames negros, movimiento y portada automática.
 - Hoja de contactos 4×4 y portada PNG como artefactos del render.
@@ -262,7 +269,7 @@ bun run smoke
 - **Fase 5:** hardening, CI, tests, backups y recuperación de renders.
 - **Fase 5.5:** 3D ASCII real, motion blur, QA de layout/flash y export presets.
 - **Fase 5.6:** checkpoint/reanudación del agente, presupuesto de tokens y verificación con fuentes.
-- **v0.2:** assets (imágenes, audio, fuentes), TTS, música y subtítulos.
+- **v0.2:** TTS, música y subtítulos; la subida de assets ya está implementada.
 - **v0.3:** timeline multipista e incremental.
 
 Detalle completo en [docs/10-roadmap.md](docs/10-roadmap.md).

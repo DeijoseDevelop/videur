@@ -94,6 +94,7 @@ export interface ChatProvider {
 list_files({ path?: string })
 read_file({ path: string, maxBytes?: number })       // ≤ 256 KB
 write_file({ path: string, content: string, append?: boolean }) // ≤ 1 MB
+list_assets({})                                       // assets del proyecto
 delete_file({ path: string })
 update_project({ durationTarget?, width?, height?, fps?, aspectRatio?, engine?, name?, brief? })
 run_command({ command: string[], cwd?: string, timeoutMs?: number })
@@ -111,6 +112,8 @@ finalize({ summary: string, outputPath?: string })
 - `write_file` crea o reemplaza archivos. Para archivos grandes (> ~12 KB), el agente
   debe escribir por partes con `append: true`; si el proveedor trunca el JSON, la tool
   devuelve `TOOL_ARGS_TRUNCATED` con instrucciones para dividir la escritura.
+- `list_assets` lista las imágenes, audios y fuentes subidas; los paths `assets/...`
+  se usan directamente en el código. En Remotion el motor copia `assets/` a `public/assets/`.
 - `update_project` cambia duración/resolución/FPS/aspecto cuando el usuario pide algo distinto.
 - `run_render` crea un render real y espera; devuelve metadata, QA y rutas. Si falla,
   la tool devuelve `ok: false` con un error compacto y un hint de sintaxis FFmpeg.

@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { EngineInfo } from "@videur/contracts";
 import type { VideurConfig } from "../config";
@@ -86,6 +86,14 @@ export class RemotionEngine implements VideoEngine {
           422,
         );
       }
+    }
+
+    const assetsDir = join(workspaceDir, "assets");
+    if (existsSync(assetsDir)) {
+      const publicAssets = join(workspaceDir, "public", "assets");
+      mkdirSync(join(workspaceDir, "public"), { recursive: true });
+      cpSync(assetsDir, publicAssets, { recursive: true });
+      context.log("system", "Assets copiados a public/assets para Remotion");
     }
 
     const entry = config.entry ?? "src/index.ts";

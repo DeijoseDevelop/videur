@@ -201,6 +201,41 @@ Devuelve texto plano (`text/plain`) o JSON `{ "binary": true, "size": 123 }` par
 - Rechaza `..`, rutas absolutas y symlinks.
 - `200` con `{ "path": "render.json", "size": 123 }`.
 
+### `GET /projects/:id/assets`
+
+Lista los assets del proyecto (`assets/`):
+
+```json
+{
+  "items": [
+    {
+      "path": "assets/logo-1a2b3c4d.png",
+      "name": "logo-1a2b3c4d.png",
+      "mime": "image/png",
+      "kind": "image",
+      "size": 18342,
+      "modifiedAt": "2026-10-27T21:00:00.000Z",
+      "url": "/api/projects/prj_4a1b2c3d/asset?path=assets%2Flogo-1a2b3c4d.png"
+    }
+  ],
+  "total": 1
+}
+```
+
+### `POST /projects/:id/assets`
+
+`multipart/form-data` con un campo `file`. Límite 25 MB. Formatos: PNG, JPG, WebP, GIF, AVIF, MP3, WAV, OGG, M4A, FLAC, TTF, OTF, WOFF, WOFF2. Devuelve `201` con el asset.
+
+### `GET /projects/:id/asset?path=assets/logo.png`
+
+Sirve el binario con su MIME. Soporta `Range` para audio.
+
+### `DELETE /projects/:id/assets?path=assets/logo.png`
+
+```json
+{ "deleted": true, "path": "assets/logo-1a2b3c4d.png" }
+```
+
 ### `DELETE /projects/:id/file?path=render.json`
 
 ```json

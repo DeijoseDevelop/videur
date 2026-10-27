@@ -1,5 +1,6 @@
 export * from "./common";
 export * from "./projects";
+export * from "./assets";
 export * from "./media";
 export * from "./providers";
 export * from "./agent";

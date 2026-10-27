@@ -203,6 +203,70 @@ describe("API HTTP", () => {
     expect(body.size).toBeGreaterThan(0);
   });
 
+  it("sube, lista, sirve y elimina assets", async () => {
+    const { app } = createTestApp();
+    const create = await app.request("/api/projects", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ name: "Assets", engine: "remotion" }),
+    });
+    const project = await json<{ id: string }>(create);
+
+    const form = new FormData();
+    form.append(
+      "file",
+      new File([new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])], "pixel.png", {
+        type: "image/png",
+      }),
+    );
+    const upload = await app.request(`/api/projects/${project.id}/assets`, {
+      method: "POST",
+      body: form,
+    });
+    expect(upload.status).toBe(201);
+    const asset = await json<{ path: string; mime: string; kind: string; url: string }>(upload);
+    expect(asset.path).toMatch(/^assets\/pixel-[a-f0-9]+\.png$/);
+    expect(asset.mime).toBe("image/png");
+    expect(asset.kind).toBe("image");
+
+    const list = await app.request(`/api/projects/${project.id}/assets`);
+    const body = await json<{ items: Array<{ path: string }>; total: number }>(list);
+    expect(body.total).toBe(1);
+    expect(body.items[0]?.path).toBe(asset.path);
+
+    const served = await app.request(
+      `/api/projects/${project.id}/asset?path=${encodeURIComponent(asset.path)}`,
+    );
+    expect(served.status).toBe(200);
+    expect(served.headers.get("content-type")).toBe("image/png");
+    expect((await served.arrayBuffer()).byteLength).toBe(8);
+
+    const remove = await app.request(
+      `/api/projects/${project.id}/assets?path=${encodeURIComponent(asset.path)}`,
+      { method: "DELETE" },
+    );
+    expect(remove.status).toBe(200);
+    const after = await app.request(`/api/projects/${project.id}/assets`);
+    expect((await json<{ total: number }>(after)).total).toBe(0);
+  });
+
+  it("rechaza assets con extensión no permitida", async () => {
+    const { app } = createTestApp();
+    const create = await app.request("/api/projects", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ name: "Assets inválidos", engine: "remotion" }),
+    });
+    const project = await json<{ id: string }>(create);
+    const form = new FormData();
+    form.append("file", new File(["x"], "malware.exe", { type: "application/octet-stream" }));
+    const upload = await app.request(`/api/projects/${project.id}/assets`, {
+      method: "POST",
+      body: form,
+    });
+    expect(upload.status).toBe(400);
+  });
+
   it("elimina proyectos y devuelve 404 al consultarlos", async () => {
     const { app } = createTestApp();
     const create = await app.request("/api/projects", {

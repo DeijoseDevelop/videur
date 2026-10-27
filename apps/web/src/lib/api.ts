@@ -10,6 +10,7 @@ import type {
   FileNode,
   HealthReport,
   Message,
+  ProjectAsset,
   ProjectWithLastRender,
   Provider,
   ProviderInput,
@@ -149,6 +150,26 @@ export const api = {
     deleteFile: (id: string, path: string) =>
       request<{ deleted: boolean; path: string }>(
         `/api/projects/${id}/file?path=${encodeURIComponent(path)}`,
+        { method: "DELETE" },
+      ),
+    assets: (id: string) => request<{ items: ProjectAsset[]; total: number }>(`/api/projects/${id}/assets`),
+    uploadAsset: async (id: string, file: File): Promise<ProjectAsset> => {
+      const form = new FormData();
+      form.append("file", file);
+      const response = await fetch(`/api/projects/${id}/assets`, { method: "POST", body: form });
+      if (!response.ok) {
+        const body = (await response.json().catch(() => null)) as { error?: { code?: string; message?: string } } | null;
+        throw new ApiError(
+          response.status,
+          body?.error?.code ?? "ASSET_UPLOAD",
+          body?.error?.message ?? `Error ${response.status}`,
+        );
+      }
+      return (await response.json()) as ProjectAsset;
+    },
+    deleteAsset: (id: string, path: string) =>
+      request<{ deleted: boolean; path: string }>(
+        `/api/projects/${id}/assets?path=${encodeURIComponent(path)}`,
         { method: "DELETE" },
       ),
   },

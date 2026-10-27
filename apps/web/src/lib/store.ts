@@ -10,6 +10,7 @@ import type {
   FileNode,
   HealthReport,
   Message,
+  ProjectAsset,
   ProjectWithLastRender,
   Provider,
   ProviderInput,
@@ -88,7 +89,7 @@ export interface LogLine {
   at: number;
 }
 
-export type WorkspaceTab = "agent" | "code" | "preview" | "qa";
+export type WorkspaceTab = "agent" | "assets" | "code" | "preview" | "qa";
 
 export interface AppState {
   booted: boolean;
@@ -104,6 +105,7 @@ export interface AppState {
   health: HealthReport | null;
   currentProject: ProjectWithLastRender | null;
   files: FileNode[];
+  assets: ProjectAsset[];
   openFile: OpenFile | null;
   renders: Render[];
   selectedRenderId: string | null;
@@ -133,6 +135,7 @@ const initialState: AppState = {
   health: null,
   currentProject: null,
   files: [],
+  assets: [],
   openFile: null,
   renders: [],
   selectedRenderId: null,
@@ -382,16 +385,19 @@ export const appStore = createStore(
           s.logs.value = [];
           s.toolActivity.value = [];
           s.messages.value = [];
+          s.assets.value = [];
         }
         try {
-          const [project, files, renders, messages] = await Promise.all([
+          const [project, files, assets, renders, messages] = await Promise.all([
             api.projects.get(projectId),
             api.projects.files(projectId),
+            api.projects.assets(projectId),
             api.renders.list(projectId, { limit: 100 }),
             api.agent.messages(projectId),
           ]);
           s.currentProject.value = project;
           s.files.value = files.files;
+          s.assets.value = assets.items;
           s.renders.value = renders.items;
           s.messages.value = messages.items;
           const selectedRenderId =
@@ -575,11 +581,47 @@ export const appStore = createStore(
           if (s.currentProject.value?.id === projectId) {
             s.currentProject.value = null;
             s.files.value = [];
+            s.assets.value = [];
             s.openFile.value = null;
             s.renders.value = [];
             s.messages.value = [];
           }
           toast("Proyecto eliminado", "info");
+          return true;
+        } catch (error) {
+          toast(errorMessage(error), "error");
+          return false;
+        }
+      };
+
+      const refreshAssets = async (projectId: string): Promise<void> => {
+        try {
+          s.assets.value = (await api.projects.assets(projectId)).items;
+        } catch (error) {
+          toast(errorMessage(error), "error");
+        }
+      };
+
+      const uploadAssets = async (projectId: string, files: File[]): Promise<boolean> => {
+        if (files.length === 0) return false;
+        try {
+          for (const file of files) {
+            await api.projects.uploadAsset(projectId, file);
+          }
+          await refreshAssets(projectId);
+          toast(files.length === 1 ? "Asset subido" : `${files.length} assets subidos`, "success");
+          return true;
+        } catch (error) {
+          toast(errorMessage(error), "error");
+          return false;
+        }
+      };
+
+      const deleteAsset = async (projectId: string, path: string): Promise<boolean> => {
+        try {
+          await api.projects.deleteAsset(projectId, path);
+          s.assets.value = s.assets.value.filter((asset) => asset.path !== path);
+          toast("Asset eliminado", "info");
           return true;
         } catch (error) {
           toast(errorMessage(error), "error");
@@ -808,6 +850,9 @@ export const appStore = createStore(
         clearMessages,
         createProject,
         deleteProject,
+        refreshAssets,
+        uploadAssets,
+        deleteAsset,
         saveSettings,
         saveProvider,
         deleteProvider,

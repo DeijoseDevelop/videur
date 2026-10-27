@@ -9,7 +9,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { dirname, extname, join, relative } from "node:path";
-import type { FileContent, FileNode } from "@videur/contracts";
+import { MAX_ASSET_BYTES, type FileContent, type FileNode } from "@videur/contracts";
 import type { VideurConfig } from "../config";
 import { NotFoundError, PathError, ValidationError } from "../errors";
 import {
@@ -108,6 +108,23 @@ export function writeWorkspaceFile(
     writeFileSync(absolute, content, { mode: 0o600 });
   }
   return { path: relativePath, size: previous + incoming };
+}
+
+export function writeWorkspaceBinary(
+  config: VideurConfig,
+  projectId: string,
+  relativePath: string,
+  data: Uint8Array,
+): { path: string; size: number } {
+  const root = ensureWorkspace(config, projectId);
+  const absolute = resolveInside(root, relativePath);
+  if (data.byteLength === 0) throw new ValidationError("El archivo está vacío");
+  if (data.byteLength > MAX_ASSET_BYTES) {
+    throw new ValidationError(`El asset supera ${MAX_ASSET_BYTES / 1024 / 1024} MB`);
+  }
+  mkdirSync(dirname(absolute), { recursive: true, mode: 0o700 });
+  writeFileSync(absolute, data, { mode: 0o600 });
+  return { path: relativePath, size: data.byteLength };
 }
 
 export function deleteWorkspaceFile(

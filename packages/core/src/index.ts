@@ -20,6 +20,7 @@ export * from "./events/bus";
 export * from "./services/settings";
 export * from "./services/projects";
 export * from "./services/workspace";
+export * from "./services/assets";
 export * from "./services/renders";
 export * from "./services/queue";
 export * from "./services/media";

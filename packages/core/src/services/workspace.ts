@@ -9,9 +9,11 @@ import {
   listWorkspaceFiles,
   readWorkspaceFile,
   writeProjectSnapshot,
+  writeWorkspaceBinary,
   writeWorkspaceFile,
   workspaceDir,
 } from "../storage/workspace";
+import { resolveInside } from "../storage/paths";
 import { relativeFrom } from "../storage/workspace";
 
 export class WorkspaceService {
@@ -42,6 +44,23 @@ export class WorkspaceService {
     const project = updateProject(this.db, projectId, { status: "ready" });
     if (project) this.emitProject(projectId);
     return result;
+  }
+
+  writeBinary(
+    projectId: string,
+    path: string,
+    data: Uint8Array,
+  ): { path: string; size: number } {
+    this.requireProject(projectId);
+    const result = writeWorkspaceBinary(this.config, projectId, path, data);
+    const project = updateProject(this.db, projectId, { status: "ready" });
+    if (project) this.emitProject(projectId);
+    return result;
+  }
+
+  absolute(projectId: string, path: string): string {
+    this.requireProject(projectId);
+    return resolveInside(this.dir(projectId), path);
   }
 
   remove(projectId: string, path: string): boolean {
