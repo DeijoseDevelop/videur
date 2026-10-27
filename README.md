@@ -244,9 +244,9 @@ Lee [docs/08-seguridad.md](docs/08-seguridad.md).
 
 ## Calidad
 
-- **40 tests** unitarios/de integración.
+- **42 tests** unitarios/de integración.
 - **CI** con typecheck, tests, build web, smoke real de FFmpeg y build de Docker.
-- QA de metadata, resolución, fps, `yuv420p`, audio, frames negros y movimiento congelado.
+- QA de metadata, resolución, fps, `yuv420p`, audio, LUFS, true peak, frames negros, movimiento y portada automática.
 - Hoja de contactos 4×4 y portada PNG como artefactos del render.
 
 ```bash
@@ -260,7 +260,7 @@ bun run smoke
 ## Roadmap
 
 - **Fase 5:** hardening, CI, tests, backups y recuperación de renders.
-- **Fase 5.5:** 3D ASCII real, motion blur, portada automática, QA de layout/audio/flash.
+- **Fase 5.5:** 3D ASCII real, motion blur, QA de layout/flash y export presets.
 - **Fase 5.6:** checkpoint/reanudación del agente, presupuesto de tokens y verificación con fuentes.
 - **v0.2:** assets (imágenes, audio, fuentes), TTS, música y subtítulos.
 - **v0.3:** timeline multipista e incremental.

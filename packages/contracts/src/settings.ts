@@ -14,6 +14,7 @@ export interface DefaultSettings {
 export interface AgentSettings {
   maxIterations: number;
   maxTokens: number;
+  maxTokensPerRun: number;
   visionReview: boolean;
 }
 
@@ -41,6 +42,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   agent: {
     maxIterations: 30,
     maxTokens: 8192,
+    maxTokensPerRun: 400_000,
     visionReview: true,
   },
   render: {
@@ -62,6 +64,7 @@ const DefaultsPatch = z.object({
 const AgentPatch = z.object({
   maxIterations: z.number().int().min(1).max(30).optional(),
   maxTokens: z.number().int().min(256).max(200000).optional(),
+  maxTokensPerRun: z.number().int().min(1000).max(2_000_000).optional(),
   visionReview: z.boolean().optional(),
 });
 

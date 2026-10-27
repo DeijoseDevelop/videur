@@ -10,6 +10,7 @@ export interface AgentConfig {
   maxIterations: number;
   timeoutMs: number;
   maxTokens: number;
+  maxTokensPerRun: number;
 }
 
 export interface VideurPaths {
@@ -94,6 +95,9 @@ export function createConfig(overrides: ConfigOverrides = {}, env: NodeJS.Proces
       overrides.agent?.maxIterations ?? intEnv(env.VIDEUR_AGENT_MAX_ITERATIONS, 30),
     timeoutMs: overrides.agent?.timeoutMs ?? intEnv(env.VIDEUR_AGENT_TIMEOUT_MS, 900_000),
     maxTokens: overrides.agent?.maxTokens ?? intEnv(env.VIDEUR_AGENT_MAX_TOKENS, 8192),
+    maxTokensPerRun:
+      overrides.agent?.maxTokensPerRun ??
+      intEnv(env.VIDEUR_AGENT_MAX_RUN_TOKENS, 400_000),
   };
 
   const sandbox = (overrides.sandboxMode ?? env.VIDEUR_SANDBOX_MODE ?? "trusted").toLowerCase();

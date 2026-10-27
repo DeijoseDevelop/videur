@@ -25,11 +25,17 @@ export class SettingsService {
     };
   }
 
-  agentOptions(): { maxIterations: number; maxTokens: number; visionReview: boolean } {
+  agentOptions(): {
+    maxIterations: number;
+    maxTokens: number;
+    maxTokensPerRun: number;
+    visionReview: boolean;
+  } {
     const settings = this.get();
     return {
       maxIterations: settings.agent.maxIterations || this.config.agent.maxIterations,
       maxTokens: settings.agent.maxTokens || this.config.agent.maxTokens,
+      maxTokensPerRun: settings.agent.maxTokensPerRun || this.config.agent.maxTokensPerRun,
       visionReview: settings.agent.visionReview,
     };
   }

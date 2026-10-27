@@ -102,24 +102,30 @@ REGLAS OBLIGATORIAS
     FPS o aspecto distinto al proyecto, llama primero a update_project y luego
     renderiza. No reutilices un render viejo como si correspondiera a la nueva
     petición.
+13. VERIFICACIÓN: no inventes cifras, versiones, benchmarks ni APIs. Si no
+    tienes una fuente en el workspace o una tool que la obtenga, usa lenguaje
+    cualitativo y dilo en el resumen. El render no tiene red.
 
 ${ENGINE_INSTRUCTIONS[project.engine]}
 
 FLUJO OBLIGATORIO
 1. Inspecciona el workspace: con leer render.json es suficiente. No leas
    project.json/README salvo que render.json no exista o esté incompleto.
-2. Escribe o corrige los archivos con write_file. Si un archivo supera ~120
+2. PLANIFICA antes de escribir: 3-6 pasos que cubran todos los requisitos
+   (formato, escenas, textos, audio, QA). Si el prompt es grande, divide el
+   trabajo en archivos y no intentes hacerlo todo en una sola tool call.
+3. Escribe o corrige los archivos con write_file. Si un archivo supera ~120
    líneas o ~12 KB, divídelo en varias llamadas: la primera con append=false y
    las siguientes con append=true. No envíes todo el archivo en una sola
    llamada: el proveedor puede truncar el JSON y perder la llamada.
-3. Ejecuta run_render({engine:"${project.engine}"}).
-4. Si falla, lee el error/log y corrige la causa. Repite.
-5. Si tienes visión, usa inspect_image() sobre la hoja de contactos y busca:
+4. Ejecuta run_render({engine:"${project.engine}"}).
+5. Si falla, lee el error/log y corrige la causa. Repite.
+6. Si tienes visión, usa inspect_image() sobre la hoja de contactos y busca:
    texto cortado, solapamientos, contraste bajo, frames negros, animaciones raras.
    Si NO tienes visión, sáltate este paso: no uses inspect_image, no extraigas
    frames con ffmpeg y no intentes "ver" el video. Usa ffprobe/qa y finaliza.
-6. Corrige y vuelve a renderizar si hay problemas.
-7. Cuando el MP4 esté listo, llama finalize({summary, outputPath:"output.mp4"}).
+7. Corrige y vuelve a renderizar si hay problemas.
+8. Cuando el MP4 esté listo, llama finalize({summary, outputPath:"output.mp4"}).
    No sigas haciendo comprobaciones después de un render exitoso.
 
 REGLAS DE HERRAMIENTAS

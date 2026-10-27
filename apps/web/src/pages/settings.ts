@@ -33,6 +33,7 @@ export const SettingsPage = defineComponent((_props, ctx) => {
   const duration = signal(6);
   const maxConcurrent = signal(1);
   const timeoutMs = signal(600000);
+  const maxTokensPerRun = signal(400000);
   const visionReview = signal(true);
   const savingGeneral = signal(false);
 
@@ -67,6 +68,7 @@ export const SettingsPage = defineComponent((_props, ctx) => {
         duration.value = settings.defaults.duration;
         maxConcurrent.value = settings.render.maxConcurrent;
         timeoutMs.value = settings.render.timeoutMs;
+        maxTokensPerRun.value = settings.agent.maxTokensPerRun;
         visionReview.value = settings.agent.visionReview;
       }
       if (appStore.presets.value.length === 0) {
@@ -187,7 +189,10 @@ export const SettingsPage = defineComponent((_props, ctx) => {
         width: undefined as never,
         height: undefined as never,
       },
-      agent: { visionReview: visionReview.value },
+      agent: {
+        visionReview: visionReview.value,
+        maxTokensPerRun: maxTokensPerRun.value,
+      },
       render: { maxConcurrent: maxConcurrent.value, timeoutMs: timeoutMs.value },
     });
     savingGeneral.value = false;
@@ -351,6 +356,21 @@ export const SettingsPage = defineComponent((_props, ctx) => {
               }}
             />`,
             "Recomendado: 1 en equipos modestos.",
+          )}
+          ${field(
+            "Tokens por run",
+            html`<input
+              class="input"
+              type="number"
+              min="1000"
+              max="2000000"
+              step="10000"
+              value=${() => String(maxTokensPerRun.value)}
+              @input=${(event: Event) => {
+                maxTokensPerRun.value = Number((event.target as HTMLInputElement).value);
+              }}
+            />`,
+            "Presupuesto de entrada + salida del agente. 400k por defecto.",
           )}
           ${field(
             "Timeout por render",

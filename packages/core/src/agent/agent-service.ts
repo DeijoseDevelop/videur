@@ -94,6 +94,7 @@ export class AgentService {
       projectId,
       prompt: data.prompt,
       maxIterations,
+      maxTokensPerRun: settings.maxTokensPerRun,
       visionReview: data.visionReview ?? settings.visionReview,
       selection,
       controller,
@@ -136,11 +137,12 @@ export class AgentService {
     projectId: string;
     prompt: string;
     maxIterations: number;
+    maxTokensPerRun: number;
     visionReview: boolean;
     selection: ReturnType<ProviderService["resolveSelection"]>;
     controller: AbortController;
   }): Promise<void> {
-    const { runId, projectId, prompt, maxIterations, selection, controller } = options;
+    const { runId, projectId, prompt, maxIterations, maxTokensPerRun, selection, controller } = options;
     const signal = controller.signal;
     let inputTokens = 0;
     let outputTokens = 0;
@@ -244,6 +246,16 @@ export class AgentService {
           inputTokens,
           outputTokens,
         });
+
+        if (inputTokens + outputTokens > maxTokensPerRun) {
+          throw new AppError(
+            "AGENT_TOKEN_BUDGET",
+            `El run superó el presupuesto de ${maxTokensPerRun.toLocaleString("es")} tokens (${(
+              inputTokens + outputTokens
+            ).toLocaleString("es")}). Ajusta el presupuesto o divide la tarea.`,
+            422,
+          );
+        }
 
         const assistant = persist("assistant", response.content, response.toolCalls);
         messages.push({ role: "assistant", content: response.content, toolCalls: response.toolCalls });

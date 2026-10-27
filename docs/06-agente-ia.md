@@ -184,9 +184,12 @@ start
 
 Límites:
 
-- `VIDEUR_AGENT_MAX_ITERATIONS` (16).
+- `VIDEUR_AGENT_MAX_ITERATIONS` (30).
 - `VIDEUR_AGENT_TIMEOUT_MS` (15 min).
 - `VIDEUR_AGENT_MAX_TOKENS` (8192 por respuesta).
+- `VIDEUR_AGENT_MAX_RUN_TOKENS` (400 000 entrada + salida por run).
+- Si se supera el presupuesto, el run falla con `AGENT_TOKEN_BUDGET`.
+- El prompt exige un plan de 3-6 pasos antes de escribir y prohíbe inventar cifras.
 - Cancelación por `AbortController`.
 - Si el proveedor falla 3 veces seguidas, se aborta con error.
 
