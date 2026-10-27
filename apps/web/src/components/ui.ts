@@ -104,7 +104,7 @@ export function statCard(
 
 export function pageHeader(
   title: string,
-  subtitle: string,
+  subtitle: string | (() => string),
   actions?: ElurTemplate,
   eyebrow?: string,
 ): ElurTemplate {
@@ -113,7 +113,7 @@ export function pageHeader(
       <div class="page-header__text">
         ${eyebrow ? html`<div class="eyebrow">${eyebrow}</div>` : null}
         <h1 class="page-title">${title}</h1>
-        <p class="page-subtitle">${subtitle}</p>
+        <p class="page-subtitle">${() => (typeof subtitle === "function" ? subtitle() : subtitle)}</p>
       </div>
       ${actions ? html`<div class="page-header__actions">${actions}</div>` : null}
     </header>

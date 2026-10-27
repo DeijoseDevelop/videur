@@ -31,7 +31,7 @@ export const ProjectsPage = defineComponent((_props, ctx) => {
     <div class="page">
       ${pageHeader(
         "Proyectos",
-        `${() => appStore.projects.value.length} proyectos · tu historial local`,
+        () => `${appStore.projects.value.length} proyectos · tu historial local`,
         button("Nuevo proyecto", {
           variant: "primary",
           icon: "plus",
