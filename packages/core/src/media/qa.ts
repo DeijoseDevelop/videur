@@ -1,5 +1,6 @@
 import type { MediaMetadata, Project, QaCheck, QaReport, QaStatus } from "@videur/contracts";
 import type { BlackInterval } from "./blackdetect";
+import type { ProductBoundsResult } from "./framing";
 import type { FreezeInterval } from "./freezedetect";
 
 export interface QaInput {
@@ -17,6 +18,8 @@ export interface QaInput {
   loudnessChecked?: boolean;
   /** Luma media del centro del frame en varios instantes (canvas/escena vacía). */
   centerLuma?: number[];
+  /** Caja del contenido en la zona útil del producto (encuadre 3D). */
+  productBounds?: ProductBoundsResult;
 }
 
 function check(id: string, status: QaStatus, message: string, details?: Record<string, unknown>): QaCheck {
@@ -169,6 +172,52 @@ export function createQaReport(input: QaInput): QaReport {
       checks.push(
         check("center_luma", "pass", `Contenido visible en el centro (YAVG ${max.toFixed(1)}/255)`),
       );
+    }
+  }
+
+  if (input.productBounds && input.productBounds.samples.length > 0) {
+    const { regionW, regionH, samples } = input.productBounds;
+    const valid = samples.filter((s) => s.x2 - s.x1 > 4 && s.y2 - s.y1 > 4);
+    // Sin señal destacada (producto oscuro sobre fondo oscuro) no hay base
+    // para juzgar y se omite el check.
+    if (valid.length >= 2) {
+      const majority = Math.ceil(valid.length / 2);
+      const clipped = (
+        [
+          ["edgeLeft", "izquierdo"],
+          ["edgeRight", "derecho"],
+        ] as const
+      ).filter(([side]) => valid.filter((s) => s[side] > 0.25).length >= majority);
+      const maxW = Math.max(...valid.map((s) => s.x2 - s.x1));
+      const maxH = Math.max(...valid.map((s) => s.y2 - s.y1));
+      if (clipped.length > 0) {
+        const names = clipped.map(([, label]) => label).join("/");
+        checks.push(
+          check(
+            "product_framing",
+            "warn",
+            `El producto llena el borde ${names} de la zona útil en la mayoría de muestras: reduce la escala o recentra el modelo.`,
+            { samples },
+          ),
+        );
+      } else if (maxW < regionW * 0.15 && maxH < regionH * 0.15) {
+        checks.push(
+          check(
+            "product_framing",
+            "warn",
+            `El producto ocupa muy poco de la zona útil (~${Math.round((maxW / regionW) * 100)}% x ${Math.round((maxH / regionH) * 100)}%): sube la escala o acerca la cámara.`,
+            { samples },
+          ),
+        );
+      } else {
+        checks.push(
+          check(
+            "product_framing",
+            "pass",
+            `Producto dentro de encuadre (~${Math.round((maxW / regionW) * 100)}% x ${Math.round((maxH / regionH) * 100)}% de la zona útil)`,
+          ),
+        );
+      }
     }
   }
 

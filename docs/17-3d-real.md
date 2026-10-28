@@ -140,6 +140,9 @@ ffprobe + contact-sheet + QA
       y fallback a Lightformers si falta o falla.
 - [x] Presets de entorno sin HDRI: `envPreset` = `studio` (default), `golden`,
       `cyber`, `mono` (Lightformer arrangements, 100% offline).
+- [x] QA 3D: `center_luma` (canvas vacío por luminancia central, signalstats)
+      y `product_framing` (producto llenando borde lateral de la zona útil o
+      demasiado pequeño, por análisis de frames en gris).
 
 ### Docker y WebGL
 

@@ -34,3 +34,49 @@ describe("QA luminancia central (canvas vacío)", () => {
     expect(qa.checks.find((x) => x.id === "center_luma")).toBeUndefined();
   });
 });
+
+describe("QA encuadre de producto", () => {
+  const region = { regionW: 756, regionH: 960 };
+  const inside = { x1: 120, x2: 634, y1: 88, y2: 451, edgeLeft: 0.02, edgeRight: 0.03 };
+
+  it("pasa si el producto queda dentro de la zona útil", () => {
+    const qa = createQaReport({
+      ...base,
+      productBounds: { checked: true, ...region, samples: [inside, inside, inside] },
+    });
+    const c = qa.checks.find((x) => x.id === "product_framing");
+    expect(c?.status).toBe("pass");
+  });
+
+  it("avisa si el producto llena un borde en la mayoría de muestras", () => {
+    const clipped = { ...inside, edgeLeft: 0.6 };
+    const qa = createQaReport({
+      ...base,
+      productBounds: { checked: true, ...region, samples: [clipped, clipped, inside] },
+    });
+    const c = qa.checks.find((x) => x.id === "product_framing");
+    expect(c?.status).toBe("warn");
+    expect(c?.message).toContain("izquierdo");
+  });
+
+  it("no avisa por un borde lleno en una sola muestra", () => {
+    const qa = createQaReport({
+      ...base,
+      productBounds: {
+        checked: true,
+        ...region,
+        samples: [{ ...inside, edgeRight: 0.9 }, inside, inside],
+      },
+    });
+    const c = qa.checks.find((x) => x.id === "product_framing");
+    expect(c?.status).toBe("pass");
+  });
+
+  it("omite el check si la zona está vacía (lo cubre center_luma)", () => {
+    const qa = createQaReport({
+      ...base,
+      productBounds: { checked: true, ...region, samples: [] },
+    });
+    expect(qa.checks.find((x) => x.id === "product_framing")).toBeUndefined();
+  });
+});
