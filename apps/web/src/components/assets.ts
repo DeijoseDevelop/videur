@@ -29,6 +29,8 @@ const ACCEPT = [
   ".glb",
   ".gltf",
   ".bin",
+  ".hdr",
+  ".exr",
 ].join(",");
 
 function modelSummary(model: ModelInspection) {
@@ -76,7 +78,23 @@ function assetCard(projectId: string, asset: ProjectAsset) {
                 ? html`<div class="asset-card__font">
                     <span>${raw(icon("layers", 28))}</span>
                     <small>3D</small>
+                    ${asset.thumbnailUrl
+                      ? html`<img
+                          class="asset-card__thumb"
+                          src=${asset.thumbnailUrl}
+                          alt=${asset.name}
+                          loading="lazy"
+                          @error=${(event: Event) => {
+                            (event.target as HTMLImageElement).style.display = "none";
+                          }}
+                        />`
+                      : ""}
                   </div>`
+                : asset.kind === "hdri"
+                  ? html`<div class="asset-card__font">
+                      <span>${raw(icon("sun", 28))}</span>
+                      <small>HDRI</small>
+                    </div>`
                 : html`<div class="asset-card__font">
                     <span>Aa</span>
                     <small>${asset.kind}</small>

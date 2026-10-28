@@ -139,6 +139,19 @@ projectRoutes.get("/projects/:id/asset", (c) => {
   return c.newResponse(buffer, 200, Object.fromEntries(headers.entries()));
 });
 
+projectRoutes.get("/projects/:id/asset-thumbnail", async (c) => {
+  const videur = videurOf(c);
+  const path = new URL(c.req.url).searchParams.get("path");
+  if (!path) return c.json({ error: { code: "VALIDATION_ERROR", message: "Falta el parámetro path" } }, 400);
+  const thumb = await videur.assets.modelThumbnail(c.req.param("id"), path);
+  const buffer = new Uint8Array(readFileSync(thumb));
+  return c.newResponse(buffer, 200, {
+    "content-type": "image/png",
+    "cache-control": "private, max-age=86400",
+    "x-content-type-options": "nosniff",
+  });
+});
+
 projectRoutes.delete("/projects/:id/file", (c) => {
   const videur = videurOf(c);
   const path = new URL(c.req.url).searchParams.get("path");

@@ -1,4 +1,4 @@
-export type AssetKind = "image" | "audio" | "font" | "video" | "model" | "other";
+export type AssetKind = "image" | "audio" | "font" | "video" | "model" | "hdri" | "other";
 
 export interface ModelDimensions {
   x: number;
@@ -39,6 +39,8 @@ export interface ProjectAsset {
   modifiedAt: string;
   url: string;
   model?: ModelInspection;
+  /** URL de miniatura renderizada bajo demanda (solo modelos 3D). */
+  thumbnailUrl?: string;
 }
 
 export const MAX_ASSET_BYTES = 100 * 1024 * 1024;

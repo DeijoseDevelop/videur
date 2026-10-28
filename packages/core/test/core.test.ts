@@ -19,7 +19,12 @@ import {
   createProject,
   createQaReport,
   createVideur,
+  assetKind,
+  assetMime,
+  glAttempts,
+  hdriSignatureError,
   installReason,
+  isWebGlFailure,
   isTextExtension,
   openDatabase,
   parseBlackDetect,
@@ -724,5 +729,71 @@ describe("timeout efectivo de render", () => {
     expect(app.renders.effectiveTimeoutMs(project.id)).toBe(Math.max(7_200_000, fallback));
     app.workspace.write(project.id, "render.json", "{ roto");
     expect(app.renders.effectiveTimeoutMs(project.id)).toBe(fallback);
+  });
+});
+
+describe("Remotion: fallback de WebGL", () => {
+  it("define la cadena de renderers y detecta fallos de WebGL", () => {
+    expect(glAttempts("angle")).toEqual(["angle", "swangle", "swiftshader"]);
+    expect(glAttempts("swiftshader")).toEqual(["swiftshader"]);
+    expect(glAttempts(undefined)).toEqual([undefined]);
+    expect(isWebGlFailure("Error  THREE.WebGLRenderer: Error creating WebGL context.")).toBe(true);
+    expect(isWebGlFailure("TypeError: Cannot read properties of undefined (reading 'map')")).toBe(false);
+  });
+
+  it("reintenta con swangle si angle no crea el contexto WebGL", async () => {
+    const dir = tempDir();
+    const workspace = join(dir, "workspace");
+    const outputPath = join(workspace, "output.mp4");
+    mkdirSync(join(workspace, "node_modules", ".bin"), { recursive: true });
+    mkdirSync(join(workspace, "node_modules", "remotion"), { recursive: true });
+    writeFileSync(join(workspace, "node_modules", "remotion", "package.json"), JSON.stringify({ version: "4.0.539" }));
+    writeFileSync(join(workspace, "package.json"), JSON.stringify({ dependencies: { remotion: "4.0.539" } }));
+    writeFileSync(join(workspace, "render.json"), JSON.stringify({ gl: "angle" }));
+    writeFileSync(join(workspace, "node_modules", ".bin", "remotion"), "#!/bin/sh\n", { mode: 0o755 });
+    const config = createConfig({ dataDir: dir, templatesDir: join(dir, "templates") }, {});
+    const gls: string[] = [];
+    const logs: string[] = [];
+    await new RemotionEngine(config).run({
+      project: { id: "prj_t", name: "T", width: 640, height: 360, fps: 30, durationTarget: 1 } as unknown as Project,
+      render: {} as unknown as Render,
+      workspaceDir: workspace,
+      renderDir: workspace,
+      outputPath,
+      config,
+      signal: new AbortController().signal,
+      log: (_stream, line) => logs.push(line),
+      progress: () => undefined,
+      run: async (command: string[]) => {
+        const gl = command[command.indexOf("--gl") + 1] ?? "";
+        gls.push(gl);
+        const failed = gl === "angle";
+        if (!failed) writeFileSync(outputPath, "fake");
+        return {
+          command,
+          exitCode: failed ? 1 : 0,
+          signal: null,
+          stdout: "",
+          stderr: failed ? "Error  THREE.WebGLRenderer: Error creating WebGL context." : "",
+          timedOut: false,
+          aborted: false,
+          durationMs: 0,
+          truncated: false,
+        };
+      },
+    });
+    expect(gls).toEqual(["angle", "swangle"]);
+    expect(logs.some((line) => line.includes("reintentando con gl=swangle"))).toBe(true);
+  });
+});
+
+describe("assets HDRI", () => {
+  it("clasifica .hdr/.exr como hdri y valida su firma", () => {
+    expect(assetKind(assetMime("assets/estudio.hdr") ?? "")).toBe("hdri");
+    expect(assetKind(assetMime("assets/estudio.exr") ?? "")).toBe("hdri");
+    expect(hdriSignatureError("hdr", new TextEncoder().encode("#?RADIANCE\nFORMAT=32-bit_rle_rgbe\n"))).toBeNull();
+    expect(hdriSignatureError("hdr", new TextEncoder().encode("<html>no</html>"))).not.toBeNull();
+    expect(hdriSignatureError("exr", new Uint8Array([0x76, 0x2f, 0x31, 0x01, 2, 0, 0, 0]))).toBeNull();
+    expect(hdriSignatureError("exr", new Uint8Array([0x89, 0x50, 0x4e, 0x47]))).not.toBeNull();
   });
 });

@@ -224,7 +224,7 @@ Lista los assets del proyecto (`assets/`):
 
 ### `POST /projects/:id/assets`
 
-`multipart/form-data` con un campo `file`. Límite 100 MB. Formatos: PNG, JPG, WebP, GIF, AVIF, MP4, WebM, MOV, MP3, WAV, OGG, M4A, FLAC, TTF, OTF, WOFF, WOFF2, GLB, GLTF, BIN. Los modelos 3D se devuelven con `kind: "model"`. Devuelve `201` con el asset.
+`multipart/form-data` con un campo `file`. Límite 100 MB. Formatos: PNG, JPG, WebP, GIF, AVIF, MP4, WebM, MOV, MP3, WAV, OGG, M4A, FLAC, TTF, OTF, WOFF, WOFF2, GLB, GLTF, BIN, HDR, EXR. Los modelos 3D se devuelven con `kind: "model"`; los .hdr/.exr con `kind: "hdri"` (su firma se valida: Radiance `#?RADIANCE`/`#?RGBE` u OpenEXR `0x762f3101`). Devuelve `201` con el asset.
 
 Los GLB/GLTF se validan antes de guardarse (`422` si la cabecera está rota, el archivo truncado, faltan mallas/buffers o requiere una extensión no soportada como `KHR_texture_basisu`). Un `.gltf` debe ser autocontenido (buffers `data:`); se recomienda GLB. En el listado y la subida incluyen `model`:
 
@@ -240,6 +240,15 @@ Los GLB/GLTF se validan antes de guardarse (`422` si la cabecera está rota, el 
 ### `GET /projects/:id/asset?path=assets/logo.png`
 
 Sirve el binario con su MIME. Soporta `Range` para audio.
+
+### `GET /projects/:id/asset-thumbnail?path=assets/modelo.glb`
+
+Renderiza (o sirve desde caché) una miniatura PNG 640×640 de un GLB/GLTF usando
+la plantilla Remotion del propio workspace (prop `bare: true`, producto centrado
+y sin overlay). Se cachea en `.videur/thumbs/` y se invalida por fecha del
+modelo. Requiere un workspace Remotion con dependencias instaladas; si no,
+devuelve `422` (`THUMB_UNAVAILABLE`). Los assets `kind: "model"` ya incluyen
+`thumbnailUrl` con `?v=<modifiedAt>` para cache busting.
 
 ### `DELETE /projects/:id/assets?path=assets/logo.png`
 

@@ -138,7 +138,7 @@ async function waitForRender(videur: Videur, render: Render, json: boolean): Pro
     process.stderr.write(`\r${C.dim}render ${C.reset}${String(bucket * 10).padStart(3)}% ${C.dim}${event.stage}${C.reset}   `);
   });
   try {
-    return await videur.renders.waitFor(render.id, videur.settings.renderOptions().timeoutMs + 30_000);
+    return await videur.renders.waitFor(render.id);
   } finally {
     unsubscribe();
     process.stderr.write("\n");

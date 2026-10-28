@@ -71,17 +71,24 @@ copia `assets/` a `public/assets/` y renderiza con `--gl=angle`.
 | `modelRotationX` | `0` | Grados sobre X |
 | `modelScale` | `1` | Multiplicador de escala |
 | `modelSpin` | `36` | Grados de turntable en el clip |
+| `environment` | — | `.hdr`/`.exr` en `assets/` como entorno IBL |
+| `environmentIntensity` | `1` | Intensidad del entorno (0–10) |
+| `environmentRotation` | `0` | Rotación del entorno (grados) |
+| `environmentBackground` | `false` | Usa el HDRI como fondo con suelo continuo |
+| `bare` | `false` | Solo producto, sin overlay (miniaturas) |
 
 ## Reglas 3D
 
 - Toda animación usa `useCurrentFrame()`. **Prohibido `useFrame()`**.
 - `<ThreeCanvas>` siempre con `width` y `height`.
 - `<Sequence>` dentro del canvas con `layout="none"`.
-- Sin red durante el render: el entorno se genera con Lightformers.
+- Sin red durante el render: el entorno se genera con Lightformers, o un HDRI
+  local (`assets/*.hdr|*.exr`) cargado con `HDRLoader`/`EXRLoader`.
 - Draco: `remotion.config.ts` copia el decoder de `three` a
   `public/decoders/draco`. Meshopt va embebido. KTX2/Basis no está soportado.
-- El modelo se carga con `useModel()` antes de montar el canvas; no uses
-  `useGLTF`/`useLoader` (en render el canvas no se redibuja al resolver).
+- El modelo y el HDRI se cargan con `useModel()`/`useEnvironment()` antes de
+  montar el canvas; no uses `useGLTF`/`useLoader` (en render el canvas no se
+  redibuja al resolver). Si el HDRI falta o falla, se usan Lightformers.
 - Para 4K/60fps baja `concurrency` y sube el timeout.
 
 ## Rendimiento
@@ -90,7 +97,8 @@ copia `assets/` a `public/assets/` y renderiza con `--gl=angle`.
 - `concurrency: 2` por defecto.
 - En Docker sin GPU, Chromium usa SwiftShader/ANGLE. Es más lento, pero
   determinista.
-- Si `angle` falla, prueba `gl: "swangle"` o `gl: "swiftshader"`.
+- Si `angle` falla por WebGL, el motor reintenta con `swangle` y
+  `swiftshader` automáticamente.
 
 ## Limitaciones
 

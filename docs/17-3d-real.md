@@ -130,9 +130,14 @@ ffprobe + contact-sheet + QA
       buffers/texturas externas y path traversal.
 - [x] Inspección en biblioteca y en `list_assets`: triángulos, texturas,
       dimensiones, eje vertical y props sugeridas (`modelRotationX`).
-- [ ] Miniatura/render del modelo.
+- [x] Miniatura del modelo: `GET /projects/:id/asset-thumbnail` renderiza un
+      still 640×640 con la propia plantilla (prop `bare`), cacheado en
+      `.videur/thumbs/` y mostrado en la biblioteca.
 - [ ] Pivote/orientación editable desde la UI.
-- [ ] HDRI/EXR local como asset.
+- [x] HDRI/EXR local como asset (`kind: "hdri"`, firma validada al subir).
+      Props `environment`, `environmentIntensity`, `environmentRotation` y
+      `environmentBackground` en la plantilla; `HDRLoader`/`EXRLoader` locales
+      y fallback a Lightformers si falta o falla.
 
 ### Docker y WebGL
 
@@ -144,7 +149,8 @@ ffprobe + contact-sheet + QA
 - [x] Render de 5 s con `gl=angle` + SwiftShader: `rnd_9319da16e69246ac`.
 - [x] Render de 5 s con GLB (Avocado) en Docker: `rnd_56d2d05012ee4d27`.
 - [x] Stills en Docker: Box.glb, GLB corrupto y GLB inexistente (fallback).
-- [ ] Fallback automático a `swangle`/`swiftshader` si `angle` falla.
+- [x] Fallback automático: si el render muere por error de WebGL se reintenta
+      con `swangle` y luego `swiftshader` (solo en fallos de contexto GL).
 - [ ] Medir tiempos de render 720p/1080p/4K.
 - [ ] Probar GPU real y comparar con SwiftShader.
 
@@ -188,6 +194,9 @@ ffprobe + contact-sheet + QA
 | GLB visible desde el frame 0 | ✅ sin frames negros ni producto ausente |
 | Box.glb en Docker (still) | ✅ |
 | GLB truncado / inexistente | ✅ fallback al frasco procedural |
+| HDRI local (`assets/sunset.hdr`) | ✅ ilumina el GLB; fondo continuo con `environmentBackground` |
+| HDRI inexistente | ✅ fallback a Lightformers |
+| Miniatura GLB on-demand | ✅ still 640×640 en `.videur/thumbs/` |
 
 El render lento es esperable: SwiftShader rasteriza WebGL por CPU. En una GPU
 real o con `concurrency` ajustada baja bastante. Para producción conviene
@@ -306,10 +315,8 @@ Recomendaciones:
 ## Limitaciones actuales
 
 - El producto procedural no es fotorrealista.
-- No hay HDRI local todavía; el estudio usa Lightformers.
 - No hay profundidad de campo física ni motion blur de shutter.
 - El modelo GLB se normaliza por altura; no detecta orientación automáticamente.
-- No hay thumbnail del GLB en la UI (sí validación e inspección).
 - Las animaciones del GLB no se reproducen todavía.
 - El render 3D en Docker sin GPU es lento.
 - La etiqueta procedural es una textura 2D sobre el frasco; para un producto
@@ -318,8 +325,8 @@ Recomendaciones:
 ## Siguientes pasos
 
 1. **Fase A (completada):** plantilla 3D, GLB y render Docker verificado.
-2. **Fase B (en curso):** validación e inspección hechas; faltan thumbnail y
-   HDRI local.
+2. **Fase B (completada):** validación, inspección, miniatura on-demand, HDRI
+   local y fallback automático de renderer WebGL.
 3. **Fase C:** presets de materiales/entornos y QA visual.
 4. **Fase D:** Blender headless/Spline opcional para modelos a medida.
 5. **Fase E:** 4K/60fps, DOF, bloom y motion blur de calidad.

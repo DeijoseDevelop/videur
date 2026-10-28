@@ -41,6 +41,7 @@ export * from "./media/freezedetect";
 export * from "./media/loudness";
 export * from "./media/qa";
 export * from "./media/gltf";
+export * from "./media/model-thumb";
 export * from "./engines/types";
 export * from "./engines/registry";
 export * from "./engines/ffmpeg";

@@ -19,7 +19,7 @@
 
 - **Core:** migraciones, repositorios, cola, storage, secretos, QA, eventos.
 - **Motores:** FFmpeg, Pillow y Remotion probados end-to-end. Remotion funciona en Docker con Node/Chromium, audio nativo, 60 fps y **3D WebGL real** con Three.js/R3F. Manim está implementado pero requiere instalar su runtime.
-- **3D real:** `ThreeCanvas` + `@react-three/fiber` + `three`, `gl=angle`, materiales PBR, estudio offline con Lightformers, cyclorama, suelo reflectante, cámara determinista y soporte GLB verificado (carga con `delayRender`, fallback procedural, Draco/Meshopt, validación e inspección de modelos). Plantilla `remotion-three-product`; render de 5 s verificado en Docker con SwiftShader (QA completo). Ver [17 · 3D real](17-3d-real.md).
+- **3D real:** `ThreeCanvas` + `@react-three/fiber` + `three`, `gl=angle` con fallback automático a `swangle`/`swiftshader` en fallos de WebGL, materiales PBR, estudio con Lightformers o HDRI local (`.hdr`/`.exr`), cyclorama, suelo reflectante, cámara determinista y soporte GLB verificado (carga con `delayRender`, fallback procedural, Draco/Meshopt, validación, inspección y miniaturas on-demand). Plantilla `remotion-three-product`; render de 5 s verificado en Docker con SwiftShader (QA completo). Ver [17 · 3D real](17-3d-real.md).
 - **Audio:** un proyecto Remotion puede incluir `public/*.wav` con `<Audio>`; el MP4 sale con AAC sin post-proceso.
 - **Agente:** loop con tools, OpenAI/Anthropic/Gemini, presets DeepSeek/Kimi/GLM/OpenRouter/Ollama, visión vía proveedor, escritura por partes con `append`, guardia contra renders viejos y errores de proveedor fuera del historial.
 - **API:** proyectos, archivos de texto, renders, SSE, agentes, providers, settings, templates, media y portada (`cover`).
@@ -136,7 +136,7 @@ Criterio: `docker compose up --build` funciona, un render fallido no corrompe da
 
 ### 3D y movimiento
 
-- **3D real WebGL:** Three.js + React Three Fiber + `@remotion/three`, materiales PBR, estudio offline, GLB, cámara y overlay. ✅ plantilla `remotion-three-product`; render de 5 s validado en Docker.
+- **3D real WebGL:** Three.js + React Three Fiber + `@remotion/three`, materiales PBR, estudio offline u HDRI local, GLB con miniaturas, fallback de renderer WebGL, cámara y overlay. ✅ plantilla `remotion-three-product`; renders y stills validados.
 - **3D ASCII:** cubo/objetos con 6 caras, rotación, depth buffer, normales, iluminación por celda, rampa `.,:;=+*#%@`, bordes y sombra en suelo de puntos. ✅ plantilla `remotion-ascii-3d` con raycast por celda. Es un estilo, no sustituye al 3D real.
 - **Raycast por celda** o integración Three.js + post-proceso ASCII.
 - **Motion blur** de cámara/shutter en el master; presets 30/60 fps. ✅ `postProcess.motionBlur` con `tmix` (trail determinista); shutter físico pendiente.
@@ -180,8 +180,8 @@ Criterio: `docker compose up --build` funciona, un render fallido no corrompe da
 
 ### v0.2 · Assets y media
 
-- Subida de imágenes, audio y fuentes con validación MIME/tamaño. ✅ PNG/JPG/WebP/GIF/AVIF, MP3/WAV/OGG/M4A/FLAC, TTF/OTF/WOFF/WOFF2, GLB/GLTF/BIN.
-- Biblioteca de assets por proyecto, thumbnails, metadatos y borrado seguro. ✅ pestaña Assets + API + tool `list_assets`.
+- Subida de imágenes, audio y fuentes con validación MIME/tamaño. ✅ PNG/JPG/WebP/GIF/AVIF, MP3/WAV/OGG/M4A/FLAC, TTF/OTF/WOFF/WOFF2, GLB/GLTF/BIN, HDR/EXR.
+- Biblioteca de assets por proyecto, thumbnails, metadatos y borrado seguro. ✅ pestaña Assets + API + tool `list_assets`; miniaturas GLB renderizadas on-demand con Remotion.
 - Assets accesibles por API, CLI, MCP y tools del agente (`list_assets`, `use_asset`).
 - Helpers para FFmpeg/Remotion/Pillow y `public/` de Remotion.
 - Procedencia, licencia y moderación de assets.

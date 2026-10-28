@@ -105,9 +105,23 @@ function makeFloorGlow(): THREE.CanvasTexture {
 /**
  * Estudio fotográfico procedural y offline:
  * softboxes con Lightformer, suelo reflectante, sombra de contacto y niebla.
+ * Con `environment` usa un HDRI local para iluminación y reflejos; con
+ * `environmentBackground` también lo muestra como fondo en lugar del ciclorama.
  * No descarga HDRIs ni texturas de red.
  */
-export const Studio: React.FC<{ focusX?: number }> = ({ focusX = 0.95 }) => {
+export const Studio: React.FC<{
+  focusX?: number;
+  environment?: THREE.Texture | null;
+  environmentIntensity?: number;
+  environmentRotation?: number;
+  environmentBackground?: boolean;
+}> = ({
+  focusX = 0.95,
+  environment = null,
+  environmentIntensity = 1,
+  environmentRotation = 0,
+  environmentBackground = false,
+}) => {
   const backdrop = useMemo(makeBackdropTexture, []);
   const halo = useMemo(makeHalo, []);
   const contact = useMemo(makeContactShadow, []);
@@ -131,52 +145,66 @@ export const Studio: React.FC<{ focusX?: number }> = ({ focusX = 0.95 }) => {
     <pointLight position={[0, 3.2, 2.8]} intensity={18} color="#ffe0b8" distance={10} decay={2} />
     <pointLight position={[0, 2.2, -1.5]} intensity={10} color="#ffcf9a" distance={8} decay={2} />
 
-    <Environment resolution={256} frames={1}>
-      <group rotation={[0, Math.PI / 5, 0]}>
-        <Lightformer
-          form="rect"
-          intensity={4}
-          position={[0, 5.5, 2.5]}
-          scale={[9, 4, 1]}
-          color="#fff3e0"
-        />
-        <Lightformer
-          form="rect"
-          intensity={2.4}
-          position={[-4.5, 2.2, 2.2]}
-          scale={[2.4, 6, 1]}
-          rotation={[0, Math.PI / 2, 0]}
-          color="#ffd3a3"
-        />
-        <Lightformer
-          form="rect"
-          intensity={2}
-          position={[4.6, 1.8, -1.5]}
-          scale={[2.4, 6, 1]}
-          rotation={[0, -Math.PI / 2, 0]}
-          color="#9db7ff"
-        />
-        <Lightformer
-          form="rect"
-          intensity={2.6}
-          position={[0, 2.4, 6]}
-          scale={[7, 3, 1]}
-          rotation={[0, Math.PI, 0]}
-          color="#fff6e8"
-        />
-        <Lightformer
-          form="ring"
-          intensity={2}
-          position={[0, 2.4, -5]}
-          scale={2.8}
-          color="#ffffff"
-        />
-      </group>
-    </Environment>
+    {environment ? (
+      <Environment
+        map={environment}
+        background={environmentBackground}
+        environmentIntensity={environmentIntensity}
+        environmentRotation={[0, THREE.MathUtils.degToRad(environmentRotation), 0]}
+        backgroundRotation={[0, THREE.MathUtils.degToRad(environmentRotation), 0]}
+        backgroundIntensity={environmentIntensity * 0.6}
+        backgroundBlurriness={0.04}
+      />
+    ) : (
+      <Environment resolution={256} frames={1}>
+        <group rotation={[0, Math.PI / 5, 0]}>
+          <Lightformer
+            form="rect"
+            intensity={4}
+            position={[0, 5.5, 2.5]}
+            scale={[9, 4, 1]}
+            color="#fff3e0"
+          />
+          <Lightformer
+            form="rect"
+            intensity={2.4}
+            position={[-4.5, 2.2, 2.2]}
+            scale={[2.4, 6, 1]}
+            rotation={[0, Math.PI / 2, 0]}
+            color="#ffd3a3"
+          />
+          <Lightformer
+            form="rect"
+            intensity={2}
+            position={[4.6, 1.8, -1.5]}
+            scale={[2.4, 6, 1]}
+            rotation={[0, -Math.PI / 2, 0]}
+            color="#9db7ff"
+          />
+          <Lightformer
+            form="rect"
+            intensity={2.6}
+            position={[0, 2.4, 6]}
+            scale={[7, 3, 1]}
+            rotation={[0, Math.PI, 0]}
+            color="#fff6e8"
+          />
+          <Lightformer
+            form="ring"
+            intensity={2}
+            position={[0, 2.4, -5]}
+            scale={2.8}
+            color="#ffffff"
+          />
+        </group>
+      </Environment>
+    )}
 
-    <Cyclorama map={backdrop} />
+    {environmentBackground && environment ? null : (
+      <>
+        <Cyclorama map={backdrop} />
 
-    <mesh position={[focusX, 2.1, -3.8]}>
+        <mesh position={[focusX, 2.1, -3.8]}>
       <planeGeometry args={[9, 6]} />
       <meshBasicMaterial
         map={halo}
@@ -188,23 +216,32 @@ export const Studio: React.FC<{ focusX?: number }> = ({ focusX = 0.95 }) => {
         fog={false}
       />
     </mesh>
+      </>
+    )}
 
-    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.76, 0]} receiveShadow>
-      <planeGeometry args={[400, 400]} />
-      <MeshReflectorMaterial
-        resolution={512}
-        blur={[220, 80]}
-        mixBlur={0.85}
-        mixStrength={2.2}
-        roughness={0.66}
-        depthScale={1.1}
-        minDepthThreshold={0.4}
-        maxDepthThreshold={1.4}
-        color="#0a080c"
-        metalness={0.5}
-        mirror={0.42}
-      />
-    </mesh>
+    {environmentBackground && environment ? (
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.758, 0]} receiveShadow>
+        <planeGeometry args={[60, 60]} />
+        <shadowMaterial transparent opacity={0.55} />
+      </mesh>
+    ) : (
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.76, 0]} receiveShadow>
+        <planeGeometry args={[400, 400]} />
+        <MeshReflectorMaterial
+          resolution={512}
+          blur={[220, 80]}
+          mixBlur={0.85}
+          mixStrength={2.2}
+          roughness={0.66}
+          depthScale={1.1}
+          minDepthThreshold={0.4}
+          maxDepthThreshold={1.4}
+          color="#0a080c"
+          metalness={0.5}
+          mirror={0.42}
+        />
+      </mesh>
+    )}
 
     <mesh rotation={[-Math.PI / 2, 0, 0]} position={[focusX, -0.752, 0]} renderOrder={1}>
       <planeGeometry args={[5.2, 4.2]} />

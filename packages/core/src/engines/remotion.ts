@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { cpSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import type { EngineInfo } from "@videur/contracts";
 import type { VideurConfig } from "../config";
@@ -53,6 +53,26 @@ export function installReason(
     }
   }
   return null;
+}
+
+/** Cadena de renderers: un 3D en Docker sin GPU puede fallar con ANGLE y funcionar por software. */
+const GL_FALLBACKS: Partial<Record<RemotionGl, RemotionGl[]>> = {
+  angle: ["swangle", "swiftshader"],
+  "angle-egl": ["swangle", "swiftshader"],
+  egl: ["swangle", "swiftshader"],
+  vulkan: ["swangle", "swiftshader"],
+  swangle: ["swiftshader"],
+};
+
+export function glAttempts(gl: RemotionGl | undefined): Array<RemotionGl | undefined> {
+  return gl ? [gl, ...(GL_FALLBACKS[gl] ?? [])] : [undefined];
+}
+
+const WEBGL_FAILURE =
+  /error creating webgl context|webgl(?:2)?\s*(?:context)?\s*(?:lost|not supported|unavailable|is not available)|failed to create (?:webgl|gl) context|could not create (?:a )?webgl|THREE\.WebGLRenderer: (?:A WebGL context could not be created|Error creating WebGL context)|GPU process (?:isn't usable|crashed)|Passthrough is not supported, GL is/i;
+
+export function isWebGlFailure(output: string): boolean {
+  return WEBGL_FAILURE.test(output);
 }
 
 interface RemotionRenderConfig {
@@ -185,7 +205,7 @@ export class RemotionEngine implements VideoEngine {
 
     const localBin = join(workspaceDir, "node_modules", ".bin", "remotion");
     const concurrency = Math.max(1, Math.min(8, config.concurrency ?? 2));
-    const renderArgs = [
+    const baseArgs = [
       "render",
       entry,
       composition,
@@ -199,13 +219,9 @@ export class RemotionEngine implements VideoEngine {
       "--concurrency",
       String(concurrency),
     ];
-    if (config.gl) {
-      renderArgs.push("--gl", config.gl);
-      context.log("system", `OpenGL de Chromium: ${config.gl}`);
-    }
-    let command: string[];
+    let prefix: string[];
     if (existsSync(localBin)) {
-      command = [localBin, ...renderArgs];
+      prefix = [localBin];
     } else {
       const npx = whichBinary("npx");
       if (!npx) {
@@ -215,21 +231,35 @@ export class RemotionEngine implements VideoEngine {
           422,
         );
       }
-      command = [npx, "--no-install", "remotion", ...renderArgs];
+      prefix = [npx, "--no-install", "remotion"];
     }
-
     const browser = this.resolveBrowser();
-    if (browser) command.push("--browser-executable", browser);
+    const buildCommand = (gl: RemotionGl | undefined): string[] => [
+      ...prefix,
+      ...baseArgs,
+      ...(gl ? ["--gl", gl] : []),
+      ...(browser ? ["--browser-executable", browser] : []),
+    ];
 
-    const result = await context.run(command, {
-      cwd: workspaceDir,
-      timeoutMs: config.timeoutMs ?? this.config.renderTimeoutMs,
-      signal,
-      onStdout: (line) => context.log("stdout", line),
-      onStderr: (line) => context.log("stderr", line),
-    });
-
-    if (result.exitCode !== 0) {
+    const attempts = glAttempts(config.gl);
+    let command: string[] = [];
+    for (const [index, gl] of attempts.entries()) {
+      if (gl) context.log("system", `OpenGL de Chromium: ${gl}`);
+      command = buildCommand(gl);
+      const result = await context.run(command, {
+        cwd: workspaceDir,
+        timeoutMs: config.timeoutMs ?? this.config.renderTimeoutMs,
+        signal,
+        onStdout: (line) => context.log("stdout", line),
+        onStderr: (line) => context.log("stderr", line),
+      });
+      if (result.exitCode === 0) break;
+      const next = attempts[index + 1];
+      if (next && !result.timedOut && !signal.aborted && isWebGlFailure(result.stderr + result.stdout)) {
+        context.log("system", `WebGL falló con gl=${gl}; reintentando con gl=${next}`);
+        rmSync(outputPath, { force: true });
+        continue;
+      }
       throw new AppError(
         "RENDER_FAILED",
         result.timedOut ? "Remotion excedió el timeout" : result.stderr.slice(-4000),

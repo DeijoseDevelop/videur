@@ -39,6 +39,7 @@ export type IconName =
   | "database"
   | "layers"
   | "zap"
+  | "sun"
   | "circle";
 
 const PATHS: Record<IconName, string> = {
@@ -82,6 +83,7 @@ const PATHS: Record<IconName, string> = {
   database: '<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/>',
   layers: '<path d="m12 3 9 5-9 5-9-5z"/><path d="m3 13 9 5 9-5"/><path d="m3 18 9 5 9-5"/>',
   zap: '<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
   circle: '<circle cx="12" cy="12" r="8"/>',
 };
 

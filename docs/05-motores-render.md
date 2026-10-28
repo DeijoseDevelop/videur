@@ -307,7 +307,9 @@ src/Video.tsx
 ```
 
 - `gl`: backend OpenGL de Chromium. Valores: `angle`, `angle-egl`, `egl`,
-  `swangle`, `swiftshader`, `vulkan`. Para Three.js usar `angle`.
+  `swangle`, `swiftshader`, `vulkan`. Para Three.js usar `angle`. Si el render
+  muere por un error de contexto WebGL, el motor reintenta solo con
+  `swangle` y luego `swiftshader`; otros fallos no reintentan.
 - `props`: objeto libre que se fusiona con las props del proyecto. Sirve para
   `model`, textos, `accent`, etc. `width`, `height`, `fps` y `duration` siempre
   los impone el proyecto.
@@ -340,14 +342,18 @@ remotion render src/index.ts VideurVideo <output> \
 - En Docker, preinstalar Chromium o `npx remotion browser ensure`.
 - En Docker sin GPU, `angle` usa SwiftShader; el wrapper añade
   `--enable-unsafe-swiftshader` y no usa `--disable-gpu`.
-- Si `angle` falla, probar `gl: "swangle"` y luego `gl: "swiftshader"`.
+- Fallback de WebGL automático: `angle` → `swangle` → `swiftshader`, solo si
+  el error es de contexto GL (p. ej. `Error creating WebGL context`).
 
 ### 7.4 3D real con Three.js
 
 La plantilla `remotion-three-product` usa `@remotion/three` + React Three Fiber:
 
 - `<ThreeCanvas width height shadows>`; `dpr={1}` en render.
-- `Environment` + `Lightformer` para estudio offline (sin HDRI de CDN).
+- `Environment` + `Lightformer` para estudio offline (sin HDRI de CDN), o un
+  HDRI local subido a `assets/` (`.hdr`/`.exr`, `kind: "hdri"`) con las props
+  `environment`, `environmentIntensity`, `environmentRotation` y
+  `environmentBackground`. Si el HDRI falta o falla, vuelve a Lightformers.
 - `MeshReflectorMaterial`, cyclorama, sombra de contacto y charco de luz.
 - Producto procedural o GLB/GLTF desde `assets/`.
 - Cámara con `useCurrentFrame()`; **`useFrame()` está prohibido**.
@@ -361,6 +367,8 @@ Reglas:
 2. `<Sequence>` dentro del canvas con `layout="none"`.
 3. Sin red: Lightformers o HDRI local; nunca `preset` de Drei en producción.
 4. GLB sin Draco/KTX2 externo, o con decoders en `public/`.
+5. Miniaturas de GLB: `GET /projects/:id/asset-thumbnail` (prop `bare`, caché en
+   `.videur/thumbs/`).
 5. Revisar hoja de contactos: canvas negro, producto cortado, texto ilegible.
 
 Ver [17 · 3D real](17-3d-real.md) para la guía completa.

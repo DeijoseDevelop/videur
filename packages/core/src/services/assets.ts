@@ -8,6 +8,7 @@ import {
 } from "@videur/contracts";
 import { NotFoundError, ValidationError } from "../errors";
 import { inspectModelBytes, inspectModelFile } from "../media/gltf";
+import { ensureModelThumbnail } from "../media/model-thumb";
 import { slugify } from "../utils/slug";
 import type { WorkspaceService } from "./workspace";
 
@@ -34,7 +35,21 @@ const MIME_BY_EXT: Record<string, string> = {
   glb: "model/gltf-binary",
   gltf: "model/gltf+json",
   bin: "application/octet-stream",
+  hdr: "image/vnd.radiance",
+  exr: "image/x-exr",
 };
+
+const HDRI_MIMES = new Set(["image/vnd.radiance", "image/x-exr"]);
+
+/** Valida la firma de un HDRI: Radiance (#?RADIANCE / #?RGBE) u OpenEXR (0x762f3101). */
+export function hdriSignatureError(ext: string, data: Uint8Array): string | null {
+  if (ext === "exr") {
+    const ok = data.byteLength >= 4 && data[0] === 0x76 && data[1] === 0x2f && data[2] === 0x31 && data[3] === 0x01;
+    return ok ? null : "No es un OpenEXR válido";
+  }
+  const head = new TextDecoder().decode(data.subarray(0, 16));
+  return head.startsWith("#?RADIANCE") || head.startsWith("#?RGBE") ? null : "No es un HDR Radiance válido";
+}
 
 export function assetMime(path: string): string | null {
   const ext = extname(path).toLowerCase().slice(1);
@@ -42,6 +57,7 @@ export function assetMime(path: string): string | null {
 }
 
 export function assetKind(mime: string): AssetKind {
+  if (HDRI_MIMES.has(mime)) return "hdri";
   if (mime.startsWith("image/")) return "image";
   if (mime.startsWith("audio/")) return "audio";
   if (mime.startsWith("font/")) return "font";
@@ -101,8 +117,13 @@ export class AssetService {
     const mime = MIME_BY_EXT[ext];
     if (!mime) {
       throw new ValidationError(
-        "Formato no permitido. Usa PNG, JPG, WebP, GIF, AVIF, MP4, WebM, MOV, MP3, WAV, OGG, M4A, FLAC, TTF, OTF, WOFF, WOFF2, GLB, GLTF o BIN.",
+        "Formato no permitido. Usa PNG, JPG, WebP, GIF, AVIF, MP4, WebM, MOV, MP3, WAV, OGG, M4A, FLAC, TTF, OTF, WOFF, WOFF2, GLB, GLTF, BIN, HDR o EXR.",
       );
+    }
+
+    if (HDRI_MIMES.has(mime)) {
+      const problem = hdriSignatureError(ext, data);
+      if (problem) throw new ValidationError(`HDRI inválido: ${problem}`);
     }
 
     const format = modelFormat(clean);
@@ -135,6 +156,18 @@ export class AssetService {
     return this.workspace.absolute(projectId, path);
   }
 
+  /**
+   * Miniatura PNG 640×640 del modelo, renderizada con Remotion bajo demanda y
+   * cacheada en `.videur/thumbs/`. Lanza AppError si el workspace no es Remotion.
+   */
+  async modelThumbnail(projectId: string, path: string): Promise<string> {
+    if (!modelFormat(path)) {
+      throw new ValidationError("Solo los modelos GLB/GLTF tienen miniatura");
+    }
+    this.absolute(projectId, path);
+    return ensureModelThumbnail({ workspaceDir: this.workspace.dir(projectId), assetPath: path });
+  }
+
   private toAsset(
     projectId: string,
     path: string,
@@ -152,6 +185,11 @@ export class AssetService {
       size,
       modifiedAt,
       url: `/api/projects/${projectId}/asset?path=${encodeURIComponent(path)}`,
+      ...(modelFormat(path)
+        ? {
+            thumbnailUrl: `/api/projects/${projectId}/asset-thumbnail?path=${encodeURIComponent(path)}&v=${encodeURIComponent(modifiedAt)}`,
+          }
+        : {}),
       ...(model ? { model } : {}),
     };
   }
