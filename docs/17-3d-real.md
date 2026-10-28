@@ -352,14 +352,14 @@ Recomendaciones:
 
 ## Referencias
 
-- Remotion + Three.js: https://www.remotion.dev/docs/three
-- `<ThreeCanvas>`: https://www.remotion.dev/docs/three-canvas
+- Remotion + Three.js: <https://www.remotion.dev/docs/three>
+- `<ThreeCanvas>`: <https://www.remotion.dev/docs/three-canvas>
 - Skill 3D oficial para Claude Code:
-  https://github.com/remotion-dev/claude-code-plugin/blob/main/skills/remotion-best-practices/remotion-markup/3d.md
-- Plantilla oficial Remotion + R3F: https://github.com/remotion-dev/template-three
+  <https://github.com/remotion-dev/claude-code-plugin/blob/main/skills/remotion-best-practices/remotion-markup/3d.md>
+- Plantilla oficial Remotion + R3F: <https://github.com/remotion-dev/template-three>
 - Drei `Environment` (presets CDN vs Lightformers):
-  https://drei.docs.pmnd.rs/staging/environment
+  <https://drei.docs.pmnd.rs/staging/environment>
 - Claude escribe código, no video:
-  https://sergeichyrkov.com/blog/claude-opus-motion-remotion-threejs
+  <https://sergeichyrkov.com/blog/claude-opus-motion-remotion-threejs>
 - Blender MCP (modelado, no render de video):
   https://github.com/ahujasid/mcp-for-blender

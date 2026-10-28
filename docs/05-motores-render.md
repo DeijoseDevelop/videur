@@ -59,7 +59,7 @@ El `RenderService` se encarga de:
 Todos los motores reciben:
 
 | Variable | Ejemplo | Uso |
-|---|---|---|
+| --- | --- | --- |
 | `VIDEUR_OUTPUT` | `/data/renders/rnd_.../output.mp4` | Ruta exacta del MP4 |
 | `VIDEUR_WIDTH` | `1280` | Ancho objetivo |
 | `VIDEUR_HEIGHT` | `720` | Alto objetivo |
@@ -122,7 +122,7 @@ para texto pequeño conviene 2–3. Si falla, conserva el master original.
 Placeholders disponibles:
 
 | Placeholder | Valor |
-|---|---|
+| --- | --- |
 | `{{width}}` | Ancho |
 | `{{height}}` | Alto |
 | `{{fps}}` | FPS |
@@ -420,7 +420,7 @@ Si `drawtext` falla (fuente ausente), se reintenta sin timestamps.
 ### 8.3 Checks
 
 | Check | Severidad | Regla |
-|---|---|---|
+| --- | --- | --- |
 | `file_exists` | error | El MP4 existe y pesa > 0 |
 | `has_video` | error | Stream de video presente |
 | `duration` | error | > 0.1 s |
@@ -455,7 +455,7 @@ Salida `qa.json`:
 ## 9. Plantillas incluidas
 
 | ID | Motor | Descripción | Estado |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `ffmpeg-data-bars` | ffmpeg | Barras animadas + audio sintético | v0.1 |
 | `ffmpeg-kinetic-title` | ffmpeg | Título cinético con fade y grid | v0.1 |
 | `pillow-data-bars` | pillow | Barras con easing y pipe RGB | v0.1 |
