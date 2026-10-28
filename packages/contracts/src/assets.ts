@@ -30,6 +30,13 @@ export interface ModelInspection {
   suggestedProps: { modelRotationX?: number };
 }
 
+/** Orientación persistente de un modelo 3D, en grados. */
+export interface AssetTransform {
+  rotX?: number;
+  rotY?: number;
+  rotZ?: number;
+}
+
 export interface ProjectAsset {
   path: string;
   name: string;
@@ -41,6 +48,8 @@ export interface ProjectAsset {
   model?: ModelInspection;
   /** URL de miniatura renderizada bajo demanda (solo modelos 3D). */
   thumbnailUrl?: string;
+  /** Orientación del modelo; se auto-rellena si la inspección detecta Z-up. */
+  transform?: AssetTransform;
 }
 
 export const MAX_ASSET_BYTES = 100 * 1024 * 1024;

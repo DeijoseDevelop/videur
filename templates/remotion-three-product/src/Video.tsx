@@ -54,6 +54,7 @@ export const ProductVideo: React.FC<ProductVideoProps> = (props) => {
               x={productX}
               rotation={props.modelRotation ?? 0}
               rotationX={props.modelRotationX ?? 0}
+              rotationZ={props.modelRotationZ ?? 0}
               scale={props.modelScale ?? 1}
               spin={props.modelSpin ?? 36}
             />

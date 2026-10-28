@@ -3,6 +3,7 @@ import type { StoreSignals } from "@elurjs/core";
 import type {
   AgentRun,
   AppSettings,
+  AssetTransform,
   CreateProjectInput,
   DoctorReport,
   EngineId,
@@ -629,6 +630,24 @@ export const appStore = createStore(
         }
       };
 
+      const saveAssetTransform = async (
+        projectId: string,
+        path: string,
+        transform: AssetTransform,
+      ): Promise<boolean> => {
+        try {
+          const updated = await api.projects.setAssetTransform(projectId, path, transform);
+          s.assets.value = s.assets.value.map((asset) =>
+            asset.path === path ? { ...asset, transform: updated.transform } : asset,
+          );
+          toast("Orientación guardada", "success");
+          return true;
+        } catch (error) {
+          toast(errorMessage(error), "error");
+          return false;
+        }
+      };
+
       const saveSettings = async (patch: UpdateSettingsInput): Promise<boolean> => {
         try {
           s.settings.value = await api.settings.update(patch);
@@ -853,6 +872,7 @@ export const appStore = createStore(
         refreshAssets,
         uploadAssets,
         deleteAsset,
+        saveAssetTransform,
         saveSettings,
         saveProvider,
         deleteProvider,

@@ -16,16 +16,21 @@ export const GLTFProduct: React.FC<{
   x: number;
   rotation?: number;
   rotationX?: number;
+  rotationZ?: number;
   scale?: number;
   spin?: number;
-}> = ({ scene, x, rotation = 0, rotationX = 0, scale = 1, spin = 36 }) => {
+}> = ({ scene, x, rotation = 0, rotationX = 0, rotationZ = 0, scale = 1, spin = 36 }) => {
   const frame = useCurrentFrame();
   const { fps, durationInFrames } = useVideoConfig();
 
   const normalized = useMemo(() => {
     const pivot = new THREE.Group();
     pivot.add(scene.clone(true));
-    pivot.rotation.set(THREE.MathUtils.degToRad(rotationX), THREE.MathUtils.degToRad(rotation), 0);
+    pivot.rotation.set(
+      THREE.MathUtils.degToRad(rotationX),
+      THREE.MathUtils.degToRad(rotation),
+      THREE.MathUtils.degToRad(rotationZ),
+    );
     pivot.traverse((child) => {
       if ((child as THREE.Mesh).isMesh) {
         child.castShadow = true;
@@ -41,7 +46,7 @@ export const GLTFProduct: React.FC<{
       MAX_FOOTPRINT / Math.max(size.x, size.z, 1e-4),
     );
     return { pivot, center, minY: box.min.y, fit };
-  }, [scene, rotation, rotationX]);
+  }, [scene, rotation, rotationX, rotationZ]);
 
   const entrance = spring({ frame, fps, config: { damping: 200, mass: 2.4 } });
   const progress = frame / Math.max(1, durationInFrames - 1);

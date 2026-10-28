@@ -1,8 +1,10 @@
 import { randomUUID } from "node:crypto";
-import { basename, extname } from "node:path";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { basename, extname, join } from "node:path";
 import {
   MAX_ASSET_BYTES,
   type AssetKind,
+  type AssetTransform,
   type ModelInspection,
   type ProjectAsset,
 } from "@videur/contracts";
@@ -156,6 +158,42 @@ export class AssetService {
     return this.workspace.absolute(projectId, path);
   }
 
+  /** Sidecar `.videur/asset-transforms.json`: rotaciones por path de asset. */
+  private transformsFile(projectId: string): string {
+    return join(this.workspace.dir(projectId), ".videur", "asset-transforms.json");
+  }
+
+  readTransforms(projectId: string): Record<string, AssetTransform> {
+    try {
+      const parsed = JSON.parse(readFileSync(this.transformsFile(projectId), "utf8")) as unknown;
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+        return parsed as Record<string, AssetTransform>;
+      }
+    } catch {
+      /* sin sidecar todavía */
+    }
+    return {};
+  }
+
+  setTransform(projectId: string, path: string, transform: AssetTransform): ProjectAsset {
+    this.absolute(projectId, path);
+    for (const key of ["rotX", "rotY", "rotZ"] as const) {
+      const value = transform[key];
+      if (value !== undefined && (!Number.isFinite(value) || Math.abs(value) > 3600)) {
+        throw new ValidationError(`${key} debe ser un número entre -3600 y 3600`);
+      }
+    }
+    const file = this.transformsFile(projectId);
+    mkdirSync(join(file, ".."), { recursive: true });
+    const all = this.readTransforms(projectId);
+    all[path] = transform;
+    writeFileSync(file, JSON.stringify(all, null, 2));
+    const entry = this.workspace
+      .list(projectId)
+      .find((item) => item.type === "file" && item.path === path);
+    return this.toAsset(projectId, path, entry?.size ?? 0, entry?.modifiedAt ?? "");
+  }
+
   /**
    * Miniatura PNG 640×640 del modelo, renderizada con Remotion bajo demanda y
    * cacheada en `.videur/thumbs/`. Lanza AppError si el workspace no es Remotion.
@@ -177,6 +215,16 @@ export class AssetService {
     const mime = assetMime(path);
     if (!mime) throw new NotFoundError(`Asset no encontrado: ${path}`);
     const model = this.inspectModel(projectId, path, size, modifiedAt);
+    const transforms = this.readTransforms(projectId);
+    // Auto-rellena la rotación sugerida (p. ej. Z-up → rotX -90) si el usuario
+    // no ha fijado una orientación para este modelo.
+    if (model?.suggestedProps.modelRotationX !== undefined && !(path in transforms)) {
+      const file = this.transformsFile(projectId);
+      mkdirSync(join(file, ".."), { recursive: true });
+      transforms[path] = { rotX: model.suggestedProps.modelRotationX };
+      writeFileSync(file, JSON.stringify(transforms, null, 2));
+    }
+    const transform = transforms[path];
     return {
       path,
       name: basename(path),
@@ -191,6 +239,7 @@ export class AssetService {
           }
         : {}),
       ...(model ? { model } : {}),
+      ...(transform ? { transform } : {}),
     };
   }
 }

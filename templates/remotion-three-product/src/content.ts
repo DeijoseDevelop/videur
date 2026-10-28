@@ -16,6 +16,7 @@ export const productVideoSchema = z.object({
   model: z.string().optional(),
   modelRotation: z.number().optional(),
   modelRotationX: z.number().optional(),
+  modelRotationZ: z.number().optional(),
   modelScale: z.number().positive().optional(),
   modelSpin: z.number().min(0).max(360).optional(),
   environment: z.string().optional(),

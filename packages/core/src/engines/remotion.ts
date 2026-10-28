@@ -198,6 +198,33 @@ export class RemotionEngine implements VideoEngine {
     const projectTitle =
       context.project.name.split("·")[0]?.trim().slice(0, 32) || context.project.name.slice(0, 32);
     const customProps = config.props ?? {};
+    // Orientación persistida del asset (`.videur/asset-transforms.json`): rellena
+    // solo las rotaciones que el código no fijó explícitamente.
+    const modelProp = typeof customProps.model === "string" ? customProps.model : null;
+    if (modelProp) {
+      try {
+        const transforms = JSON.parse(
+          readFileSync(join(workspaceDir, ".videur", "asset-transforms.json"), "utf8"),
+        ) as Record<string, { rotX?: number; rotY?: number; rotZ?: number }>;
+        const key = Object.keys(transforms).find(
+          (k) => k === modelProp || k.endsWith(`/${modelProp}`) || modelProp.endsWith(`/${k}`),
+        );
+        const t = key ? transforms[key] : undefined;
+        if (t) {
+          if (t.rotX !== undefined && customProps.modelRotationX === undefined) {
+            customProps.modelRotationX = t.rotX;
+          }
+          if (t.rotY !== undefined && customProps.modelRotation === undefined) {
+            customProps.modelRotation = t.rotY;
+          }
+          if (t.rotZ !== undefined && customProps.modelRotationZ === undefined) {
+            customProps.modelRotationZ = t.rotZ;
+          }
+        }
+      } catch {
+        /* sin transforms guardados */
+      }
+    }
     const props = {
       ...customProps,
       // El formato siempre lo manda el proyecto, no un asset ni el agente.

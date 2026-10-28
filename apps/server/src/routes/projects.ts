@@ -90,6 +90,22 @@ projectRoutes.post("/projects/:id/assets", async (c) => {
   return c.json(asset, 201);
 });
 
+projectRoutes.patch("/projects/:id/asset-transform", async (c) => {
+  const videur = videurOf(c);
+  const body = (await c.req.json().catch(() => null)) as {
+    path?: string;
+    transform?: { rotX?: number; rotY?: number; rotZ?: number };
+  } | null;
+  if (!body?.path || !body.transform || typeof body.transform !== "object") {
+    return c.json(
+      { error: { code: "VALIDATION_ERROR", message: "Se espera { path, transform: { rotX?, rotY?, rotZ? } }" } },
+      400,
+    );
+  }
+  const asset = videur.assets.setTransform(c.req.param("id"), body.path, body.transform);
+  return c.json(asset);
+});
+
 projectRoutes.delete("/projects/:id/assets", (c) => {
   const videur = videurOf(c);
   const path = new URL(c.req.url).searchParams.get("path");

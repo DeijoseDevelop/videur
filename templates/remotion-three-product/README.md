@@ -69,6 +69,7 @@ copia `assets/` a `public/assets/` y renderiza con `--gl=angle`.
 | `model` | — | GLB/GLTF en `assets/` |
 | `modelRotation` | `0` | Grados sobre Y |
 | `modelRotationX` | `0` | Grados sobre X |
+| `modelRotationZ` | `0` | Grados sobre Z |
 | `modelScale` | `1` | Multiplicador de escala |
 | `modelSpin` | `36` | Grados de turntable en el clip |
 | `environment` | — | `.hdr`/`.exr` en `assets/` como entorno IBL |

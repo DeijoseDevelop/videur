@@ -250,6 +250,19 @@ modelo. Requiere un workspace Remotion con dependencias instaladas; si no,
 devuelve `422` (`THUMB_UNAVAILABLE`). Los assets `kind: "model"` ya incluyen
 `thumbnailUrl` con `?v=<modifiedAt>` para cache busting.
 
+### `PATCH /projects/:id/asset-transform`
+
+Guarda la orientación de un modelo 3D (grados). Se persiste en
+`.videur/asset-transforms.json` del workspace y el motor Remotion la aplica a
+`modelRotationX`/`modelRotation`/`modelRotationZ` salvo que el código los fije.
+Los modelos Z-up se auto-rellenan a `rotX: -90` al inspeccionarlos.
+
+```json
+// Request
+{ "path": "assets/modelo-1a2b3c4d.glb", "transform": { "rotX": -90, "rotY": 15, "rotZ": 0 } }
+// 200 → el asset actualizado (incluye `transform`)
+```
+
 ### `DELETE /projects/:id/assets?path=assets/logo.png`
 
 ```json

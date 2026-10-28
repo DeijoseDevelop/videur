@@ -1,5 +1,6 @@
 import type {
   AgentRun,
+  AssetTransform,
   AgentStartResult,
   AppSettings,
   CreateProjectInput,
@@ -172,6 +173,11 @@ export const api = {
         `/api/projects/${id}/assets?path=${encodeURIComponent(path)}`,
         { method: "DELETE" },
       ),
+    setAssetTransform: (id: string, path: string, transform: AssetTransform) =>
+      request<ProjectAsset>(`/api/projects/${id}/asset-transform`, {
+        method: "PATCH",
+        body: JSON.stringify({ path, transform }),
+      }),
   },
   renders: {
     list: (projectId: string, params: { status?: string; limit?: number; offset?: number } = {}) =>

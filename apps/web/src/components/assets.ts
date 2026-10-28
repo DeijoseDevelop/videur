@@ -51,6 +51,39 @@ function modelSummary(model: ModelInspection) {
   `;
 }
 
+function transformEditor(projectId: string, asset: ProjectAsset) {
+  const save = (event: Event): void => {
+    event.preventDefault();
+    const data = new FormData(event.target as HTMLFormElement);
+    const num = (key: string): number | undefined => {
+      const rawValue = data.get(key);
+      if (rawValue === null || String(rawValue).trim() === "") return undefined;
+      const parsed = Number(rawValue);
+      return Number.isFinite(parsed) ? parsed : undefined;
+    };
+    void appStore.saveAssetTransform(projectId, asset.path, {
+      rotX: num("rotX"),
+      rotY: num("rotY"),
+      rotZ: num("rotZ"),
+    });
+  };
+  const field = (name: string, label: string, value: number | undefined) => html`
+    <label class="asset-transform__field">
+      <span>${label}</span>
+      <input name=${name} type="number" step="1" value=${value ?? 0} />
+    </label>
+  `;
+  return html`
+    <form class="asset-transform" @submit=${save}>
+      <span class="asset-transform__label">Rotación°</span>
+      ${field("rotX", "X", asset.transform?.rotX)}
+      ${field("rotY", "Y", asset.transform?.rotY)}
+      ${field("rotZ", "Z", asset.transform?.rotZ)}
+      <button class="link-btn" type="submit">Guardar</button>
+    </form>
+  `;
+}
+
 function assetCard(projectId: string, asset: ProjectAsset) {
   const copy = (): void => {
     void navigator.clipboard
@@ -107,6 +140,7 @@ function assetCard(projectId: string, asset: ProjectAsset) {
         </div>
         <div class="asset-card__meta">${formatBytes(asset.size)} · ${asset.mime}</div>
         ${asset.model ? modelSummary(asset.model) : ""}
+        ${asset.kind === "model" ? transformEditor(projectId, asset) : ""}
         <button class="asset-card__path" type="button" title="Copiar ruta" @click=${copy}>
           ${raw(icon("code", 12))} ${asset.path}
         </button>

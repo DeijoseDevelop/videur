@@ -143,6 +143,11 @@ ffprobe + contact-sheet + QA
 - [x] QA 3D: `center_luma` (canvas vacío por luminancia central, signalstats)
       y `product_framing` (producto llenando borde lateral de la zona útil o
       demasiado pequeño, por análisis de frames en gris).
+- [x] Orientación de modelos persistida por asset
+      (`.videur/asset-transforms.json`, editable desde la biblioteca y vía
+      `PATCH /projects/:id/asset-transform`). Z-up se auto-rellena a `rotX:-90`;
+      el motor Remotion aplica `modelRotationX/modelRotation/modelRotationZ`
+      solo donde el código no los fije.
 
 ### Docker y WebGL
 
