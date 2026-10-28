@@ -7,8 +7,8 @@ description: >-
   explicador, motion graphics, datos animados o subtítulos; o cuando necesite
   automatizar video desde OpenCode, Claude Code, Cursor, Codex o cualquier agente
   con CLI/MCP. Triggers: videur, render video, FFmpeg, filter_complex, Manim,
-  Remotion, hoja de contactos, contact sheet, video programático, MP4, explicador
-  animado, motion graphics, storyboard.
+  Remotion, Three.js, 3D, GLB, WebGL, hoja de contactos, contact sheet, video
+  programático, MP4, explicador animado, motion graphics, storyboard.
 ---
 
 # Videur
@@ -96,7 +96,7 @@ Prefiere MCP si está disponible; si no, CLI.
 | Clip rápido, formas, texto, audio sintético | FFmpeg |
 | Datos, gráficas, simulación, arte generativo | Python/Pillow |
 | Matemáticas, ecuaciones, diagramas técnicos | Manim |
-| UI, tipografía cinética, spring physics, 3D web | Remotion |
+| UI, tipografía cinética, spring physics, 3D real WebGL | Remotion + Three.js |
 
 Si dudas, FFmpeg es el default.
 
@@ -132,6 +132,26 @@ Si dudas, FFmpeg es el default.
 - `render.json`: `{"entry":"src/index.ts","composition":"VideurVideo"}`.
 - Requiere Node + Chromium; si no está, avisa.
 
+## 3D real con Three.js
+
+Para un producto, entorno o anuncio con volumen real, no uses ASCII ni CSS 3D.
+Usa la plantilla `remotion-three-product`:
+
+- `<ThreeCanvas width height shadows>` de `@remotion/three`.
+- **Prohibido `useFrame()`**; anima con `useCurrentFrame()`.
+- `<Sequence>` dentro del canvas con `layout="none"`.
+- `render.json`: `{"gl":"angle"}`.
+- Estudio offline con `Environment` + `Lightformer`; no descargues HDRIs.
+- Materiales PBR (`meshPhysicalMaterial`: roughness, metalness, clearcoat,
+  transmission, IOR) y luces con temperatura de color.
+- Para producto real, sube un `.glb` a `assets/` y pásalo en
+  `props.model`; no inventes geometría fotorrealista.
+- Texto importante en overlay HTML, no en 3D.
+- Revisa la hoja de contactos: canvas negro, producto cortado, texto ilegible,
+  reflejos/sombras ausentes.
+
+Plantilla: `remotion-three-product`. Guía: `docs/17-3d-real.md`.
+
 ## QA
 
 Después de cada render:
@@ -165,6 +185,9 @@ Si tienes visión, abre la hoja de contactos y busca problemas. Si no, usa el QA
 | Audio desincronizado | Duraciones distintas | Igualar `-t` o `duration` |
 | Manim falla | LaTeX ausente | `Text` en vez de `MathTex` |
 | Remotion falla | Chromium ausente | `npx remotion browser ensure` |
+| Canvas 3D negro | WebGL sin `--gl` | Añade `"gl":"angle"` a `render.json` |
+| GLB no carga | Draco/KTX2 o ruta | GLB sin comprimir en `assets/` |
+| 3D muy lento | SwiftShader | Baja concurrencia, sombras y reflector |
 
 ## Salida esperada
 

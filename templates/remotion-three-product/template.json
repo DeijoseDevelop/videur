@@ -1,0 +1,11 @@
+{
+  "id": "remotion-three-product",
+  "name": "Producto 3D · Estudio Real",
+  "engine": "remotion",
+  "description": "Three.js + React Three Fiber: producto 3D, materiales PBR, estudio con Lightformers, suelo reflectante, sombras y cámara publicitaria determinista.",
+  "aspectRatio": "16:9",
+  "duration": 10,
+  "fps": 30,
+  "tags": ["remotion", "three", "3d", "webgl", "producto", "publicidad"],
+  "preview": "preview.png"
+}

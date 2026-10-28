@@ -10,7 +10,7 @@
 | 3 | API Hono + SSE + CLI + MCP | ✅ |
 | 4 | UI Elur + design system | ✅ |
 | 5 | Plantillas, Docker, tests, hardening | ✅ CI/tests/backup/GC; build full pendiente |
-| 5.5 | Calidad creativa y QA | 🚧 3D + motion trail + assets + referencia + portada + audio QA |
+| 5.5 | Calidad creativa y QA | 🚧 3D real + motion trail + assets + referencia + portada + audio QA; faltan brand kit/safe zones/export presets/QA de layout |
 | 5.6 | Fiabilidad del agente | 🚧 presupuesto + planificación |
 | 6 | Assets, media generativa y timeline | 🚧 assets + referencia; media/timeline pendientes |
 | 7 | Producto y operación (opcional) | 🔮 |
@@ -18,7 +18,8 @@
 ## Estado de implementación v0.1
 
 - **Core:** migraciones, repositorios, cola, storage, secretos, QA, eventos.
-- **Motores:** FFmpeg, Pillow y Remotion probados end-to-end. Remotion funciona en Docker con Node/Chromium, audio nativo y renders a 60 fps. Manim está implementado pero requiere instalar su runtime.
+- **Motores:** FFmpeg, Pillow y Remotion probados end-to-end. Remotion funciona en Docker con Node/Chromium, audio nativo, 60 fps y **3D WebGL real** con Three.js/R3F. Manim está implementado pero requiere instalar su runtime.
+- **3D real:** `ThreeCanvas` + `@react-three/fiber` + `three`, `gl=angle`, materiales PBR, estudio offline con Lightformers, cyclorama, suelo reflectante, cámara determinista y soporte GLB. Plantilla `remotion-three-product`; render de 5 s verificado en Docker con SwiftShader (QA completo). Ver [17 · 3D real](17-3d-real.md).
 - **Audio:** un proyecto Remotion puede incluir `public/*.wav` con `<Audio>`; el MP4 sale con AAC sin post-proceso.
 - **Agente:** loop con tools, OpenAI/Anthropic/Gemini, presets DeepSeek/Kimi/GLM/OpenRouter/Ollama, visión vía proveedor, escritura por partes con `append`, guardia contra renders viejos y errores de proveedor fuera del historial.
 - **API:** proyectos, archivos de texto, renders, SSE, agentes, providers, settings, templates, media y portada (`cover`).
@@ -26,7 +27,7 @@
 - **MCP:** initialize, tools/list, tools/call, resources.
 - **UI:** dashboard, proyectos, wizard, workspace, detalle de render, plantillas, settings, 404.
 - **QA:** metadata, resolución, fps, `yuv420p`, audio, frames negros, movimiento, portada, LUFS y true peak.
-- **Tests:** 45 tests unitarios/integración; smoke FFmpeg reproducible. CI con typecheck, tests, build web y build Docker.
+- **Tests:** 46 tests unitarios/integración; smoke FFmpeg reproducible. CI con typecheck, tests, build web y build Docker.
 
 ## Fase 0 · Documentación (completada)
 
@@ -117,7 +118,7 @@ Criterio: un usuario puede crear, editar, renderizar, inspeccionar y configurar 
 Entregables:
 
 - Dockerfile + compose.
-- Tests de integración con FFmpeg, Pillow y Remotion. ✅ 45 tests.
+- Tests de integración con FFmpeg, Pillow y Remotion. ✅ 46 tests.
 - Recuperación de renders huérfanos: detectar, marcar y permitir reintentar/reanudar. ✅ detección + retry; reanudación pendiente.
 - Redacción de secretos en logs. ✅ `redactSecrets` + tests.
 - Límites de tamaño, tiempo y concurrencia. ✅
@@ -135,7 +136,8 @@ Criterio: `docker compose up --build` funciona, un render fallido no corrompe da
 
 ### 3D y movimiento
 
-- **3D ASCII real:** cubo/objetos con 6 caras, rotación, depth buffer, normales, iluminación por celda, rampa `.,:;=+*#%@`, bordes y sombra en suelo de puntos. ✅ plantilla `remotion-ascii-3d` con raycast por celda.
+- **3D real WebGL:** Three.js + React Three Fiber + `@remotion/three`, materiales PBR, estudio offline, GLB, cámara y overlay. ✅ plantilla `remotion-three-product`; render de 5 s validado en Docker.
+- **3D ASCII:** cubo/objetos con 6 caras, rotación, depth buffer, normales, iluminación por celda, rampa `.,:;=+*#%@`, bordes y sombra en suelo de puntos. ✅ plantilla `remotion-ascii-3d` con raycast por celda. Es un estilo, no sustituye al 3D real.
 - **Raycast por celda** o integración Three.js + post-proceso ASCII.
 - **Motion blur** de cámara/shutter en el master; presets 30/60 fps. ✅ `postProcess.motionBlur` con `tmix` (trail determinista); shutter físico pendiente.
 - **Cámara y composición:** casi isométrica, zoom, parallax y transiciones deterministas.
@@ -178,7 +180,7 @@ Criterio: `docker compose up --build` funciona, un render fallido no corrompe da
 
 ### v0.2 · Assets y media
 
-- Subida de imágenes, audio y fuentes con validación MIME/tamaño. ✅ PNG/JPG/WebP/GIF/AVIF, MP3/WAV/OGG/M4A/FLAC, TTF/OTF/WOFF/WOFF2.
+- Subida de imágenes, audio y fuentes con validación MIME/tamaño. ✅ PNG/JPG/WebP/GIF/AVIF, MP3/WAV/OGG/M4A/FLAC, TTF/OTF/WOFF/WOFF2, GLB/GLTF/BIN.
 - Biblioteca de assets por proyecto, thumbnails, metadatos y borrado seguro. ✅ pestaña Assets + API + tool `list_assets`.
 - Assets accesibles por API, CLI, MCP y tools del agente (`list_assets`, `use_asset`).
 - Helpers para FFmpeg/Remotion/Pillow y `public/` de Remotion.

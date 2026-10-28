@@ -6,11 +6,24 @@ import { AppError } from "../errors";
 import { commandVersion, whichBinary } from "../process/binaries";
 import type { EngineContext, EngineRunResult, EngineValidation, VideoEngine } from "./types";
 
+type RemotionGl = "angle" | "angle-egl" | "egl" | "swangle" | "swiftshader" | "vulkan";
+
+const REMOTION_GL: ReadonlySet<string> = new Set<RemotionGl>([
+  "angle",
+  "angle-egl",
+  "egl",
+  "swangle",
+  "swiftshader",
+  "vulkan",
+]);
+
 interface RemotionRenderConfig {
   entry?: string;
   composition?: string;
   timeoutMs?: number;
   concurrency?: number;
+  gl?: RemotionGl;
+  props?: Record<string, unknown>;
 }
 
 export class RemotionEngine implements VideoEngine {
@@ -69,6 +82,17 @@ export class RemotionEngine implements VideoEngine {
       }
     }
 
+    if (config.gl !== undefined && !REMOTION_GL.has(config.gl)) {
+      throw new AppError(
+        "ENGINE_INPUT",
+        `gl inválido en render.json. Usa ${[...REMOTION_GL].join(", ")}.`,
+        422,
+      );
+    }
+    if (config.props !== undefined && (typeof config.props !== "object" || Array.isArray(config.props))) {
+      throw new AppError("ENGINE_INPUT", "props debe ser un objeto en render.json", 422);
+    }
+
     const nodeModules = join(workspaceDir, "node_modules");
     if (!existsSync(nodeModules) && existsSync(join(workspaceDir, "package.json"))) {
       context.log("system", "Instalando dependencias de Remotion…");
@@ -100,7 +124,10 @@ export class RemotionEngine implements VideoEngine {
     const composition = config.composition ?? "VideurVideo";
     const projectTitle =
       context.project.name.split("·")[0]?.trim().slice(0, 32) || context.project.name.slice(0, 32);
+    const customProps = config.props ?? {};
     const props = {
+      ...customProps,
+      // El formato siempre lo manda el proyecto, no un asset ni el agente.
       width: context.project.width,
       height: context.project.height,
       fps: context.project.fps,
@@ -108,7 +135,7 @@ export class RemotionEngine implements VideoEngine {
       projectId: context.project.id,
       title: projectTitle,
       subtitle: `${projectTitle.toUpperCase()} · ${Math.round(context.project.durationTarget)}S`,
-      accent: "#22d3ee",
+      accent: typeof customProps.accent === "string" ? customProps.accent : "#22d3ee",
     };
 
     const localBin = join(workspaceDir, "node_modules", ".bin", "remotion");
@@ -127,6 +154,10 @@ export class RemotionEngine implements VideoEngine {
       "--concurrency",
       String(concurrency),
     ];
+    if (config.gl) {
+      renderArgs.push("--gl", config.gl);
+      context.log("system", `OpenGL de Chromium: ${config.gl}`);
+    }
     let command: string[];
     if (existsSync(localBin)) {
       command = [localBin, ...renderArgs];

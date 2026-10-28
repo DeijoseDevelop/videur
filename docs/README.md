@@ -23,6 +23,7 @@ Esta carpeta es la fuente de verdad técnica de Videur. Los documentos se escrib
 | 14 | [Referencias](14-referencias.md) | Fuentes, versiones y proyectos similares |
 | 15 | [Media generativa futura](15-media-generativa-futuro.md) | TTS, imágenes, música y video IA |
 | 16 | [Sistema de diseño](16-design-system.md) | Tokens, temas, acentos, componentes y accesibilidad |
+| 17 | [3D real con Three.js](17-3d-real.md) | Escena WebGL, plantilla de producto, GLB, `gl=angle` y checklist |
 | — | [ADRs](adr/) | Decisiones arquitectónicas registradas |
 
 ## Estado

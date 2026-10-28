@@ -224,7 +224,7 @@ Lista los assets del proyecto (`assets/`):
 
 ### `POST /projects/:id/assets`
 
-`multipart/form-data` con un campo `file`. Límite 100 MB. Formatos: PNG, JPG, WebP, GIF, AVIF, MP4, WebM, MOV, MP3, WAV, OGG, M4A, FLAC, TTF, OTF, WOFF, WOFF2. Devuelve `201` con el asset.
+`multipart/form-data` con un campo `file`. Límite 100 MB. Formatos: PNG, JPG, WebP, GIF, AVIF, MP4, WebM, MOV, MP3, WAV, OGG, M4A, FLAC, TTF, OTF, WOFF, WOFF2, GLB, GLTF, BIN. Los modelos 3D se devuelven con `kind: "model"`. Devuelve `201` con el asset.
 
 ### `GET /projects/:id/asset?path=assets/logo.png`
 

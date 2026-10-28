@@ -244,7 +244,9 @@ Recomendado: **WSL2 + Docker**. FFmpeg, Manim y Chromium funcionan mejor en Linu
 - **Mínimo:** 2 CPU, 4 GB RAM, 2 GB disco libre.
 - **Recomendado:** 4 CPU, 8 GB RAM, SSD, 10 GB libre.
 - **4K/Manim:** 8 CPU, 16 GB RAM.
-- No se requiere GPU para FFmpeg/Pillow/Manim/Remotion (salvo efectos 3D avanzados).
+- No se requiere GPU para FFmpeg/Pillow/Manim/Remotion. El 3D WebGL funciona
+  con SwiftShader en Docker, pero es lento; una GPU acelera bastante los renders
+  3D y 4K. Para 1080p/4K con Three.js, recomendado 8 CPU y GPU opcional.
 
 ## 11. CI/CD (sugerido)
 

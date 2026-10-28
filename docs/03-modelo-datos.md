@@ -210,7 +210,7 @@ Claves iniciales:
 
 ### 3.10 Tablas futuras (no v0.1)
 
-- `assets` (imágenes, audio, fuentes, clips).
+- `assets` (imágenes, audio, fuentes, clips, modelos GLB/GLTF y HDRI).
 - `tts_jobs`, `image_jobs`, `music_jobs`.
 - `timelines`, `tracks`, `clips`.
 - `users`, `sessions`, `teams`.
@@ -253,6 +253,7 @@ data/
       render.py                # Pillow (si aplica)
       scene.py                 # Manim (si aplica)
       src/Video.tsx            # Remotion (si aplica)
+      assets/                  # imágenes, audio, fuentes, video, GLB/GLTF
       .videur/                 # metadata interna (no editable)
   renders/
     rnd_xyz789/

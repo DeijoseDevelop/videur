@@ -53,6 +53,20 @@ Referencias internas de la skill:
 | pycairo | 1.26+ | https://pycairo.readthedocs.io/ |
 | MoviePy (futuro) | 2.x | https://zulko.github.io/moviepy/ |
 
+### 4.1 3D real
+
+| Recurso | Versión | Enlace |
+|---|---|---|
+| Three.js | 0.186.1 | https://threejs.org/ |
+| React Three Fiber | 9.8.2 | https://docs.pmnd.rs/react-three-fiber |
+| Drei | 10.7.9 | https://drei.docs.pmnd.rs/ |
+| `@remotion/three` | 4.0.539 | https://www.remotion.dev/docs/three |
+| `<ThreeCanvas>` | 4.0.539 | https://www.remotion.dev/docs/three-canvas |
+| Plantilla oficial Remotion + R3F | — | https://github.com/remotion-dev/template-three |
+| Skill 3D para Claude Code | 4.0.539 | https://github.com/remotion-dev/claude-code-plugin/blob/main/skills/remotion-best-practices/remotion-markup/3d.md |
+| Blender MCP | — | https://github.com/ahujasid/mcp-for-blender |
+| Claude escribe código, no video | 2026 | https://sergeichyrkov.com/blog/claude-opus-motion-remotion-threejs |
+
 ## 5. Runtime y librerías
 
 | Recurso | Versión | Enlace |

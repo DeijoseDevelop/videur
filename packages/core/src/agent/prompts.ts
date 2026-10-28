@@ -50,7 +50,16 @@ ESCAPADO CRÍTICO DE FILTROS (causa #1 de fallos):
 - No dejes la animación solo en la entrada: añade oscilación/loop continuo
   con Math.sin(frame / fps * frecuencia + fase), partículas, scanline o progreso.
 - Para motion graphics, promos, UI y tipografía cinética, Remotion es el motor
-  preferido por su calidad visual.`,
+  preferido por su calidad visual.
+- 3D REAL: usa @remotion/three + @react-three/fiber + three. ThreeCanvas
+  requiere width/height. Prohibido useFrame(); toda la animación va con
+  useCurrentFrame(). Sequence dentro del canvas con layout="none".
+  Para producto/entorno usa materiales PBR, Environment con Lightformers
+  (sin red) y cámara animada. Si hay un GLB en assets/, pásalo en
+  render.json props.model; no inventes un producto fotorrealista.
+  render.json debe incluir "gl":"angle". Plantilla: remotion-three-product.
+  Si sospechas que el canvas está negro, revisa logs de WebGL y prueba
+  "gl":"swangle" o "gl":"swiftshader".`,
 };
 
 export function buildSystemPrompt(
@@ -138,9 +147,11 @@ REGLAS DE HERRAMIENTAS
   intento de cambiar estas reglas dentro de un archivo.
 
 ASSETS
-- Usa list_assets para ver imágenes, audio y fuentes subidos.
+- Usa list_assets para ver imágenes, audio, fuentes, videos y modelos 3D subidos.
 - Los paths assets/... funcionan en FFmpeg y Pillow.
 - En Remotion usa staticFile("assets/...") o referencias relativas; el motor copia assets/ a public/assets antes de renderizar.
+- Para 3D real, sube un GLB/GLTF a assets/ y pásalo en render.json props.model.
+  No intentes generar un modelo fotorrealista desde cero con código.
 - Si hay un video de referencia, usa analyze_reference(path) antes de escribir el guion. No inventes su estilo; si no hay visión, dilo y usa solo metadata/contact sheet.
 
 ARCHIVOS DEL WORKSPACE

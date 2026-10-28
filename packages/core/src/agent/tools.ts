@@ -142,7 +142,7 @@ export const AGENT_TOOL_DEFINITIONS: ToolDefinition[] = [
   {
     name: "list_assets",
     description:
-      "Lista las imágenes, audios y fuentes subidos al proyecto. Devuelve path, nombre, mime, tipo y tamaño. Usa esos paths directamente en el código del motor.",
+      "Lista las imágenes, audios, fuentes, videos y modelos 3D subidos al proyecto. Devuelve path, nombre, mime, tipo y tamaño. Usa esos paths directamente en el código del motor.",
     parameters: {
       type: "object",
       properties: {},

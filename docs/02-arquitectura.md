@@ -38,11 +38,11 @@
 │  └────────────┘ └────────────┘       │        └────────────┘       │         │
 │                                     │                             │         │
 │  ┌──────────────────────────────────▼─────────────────────────────▼──────┐  │
-│  │ Engines: FFmpeg · Pillow · Manim · Remotion                           │  │
+│  │ Engines: FFmpeg · Pillow · Manim · Remotion (Three.js/WebGL)           │  │
 │  └──────────────────────────────────┬────────────────────────────────────┘  │
 │                                     │ Bun.spawn / stdin / stdout / stderr    │
 │  ┌──────────────────────────────────▼────────────────────────────────────┐  │
-│  │ Procesos locales: ffmpeg · ffprobe · python3 · manim · node/npx       │  │
+│  │ Procesos locales: ffmpeg · ffprobe · python3 · manim · node/npx · Chromium │  │
 │  └───────────────────────────────────────────────────────────────────────┘  │
 └──────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -306,6 +306,7 @@ Nada de esto cambia el contrato de motores ni el formato de artefactos.
 | Código generado por IA es inseguro | Alto | Docker por defecto para código no confiable; allowlist; límites |
 | FFmpeg tiene sintaxis frágil | Medio | `stderr` completo; plantillas probadas; QA |
 | Manim/Remotion pesan mucho | Medio | Detección opcional; Docker multi-stage; mensajes claros |
+| 3D WebGL sin GPU es lento | Medio | `gl=angle` + SwiftShader; bajar concurrencia; GPU opcional |
 | Modelos sin visión | Medio | Fallback a metadata + ruta de la hoja |
 | Proveedores cambian APIs | Medio | Adaptadores aislados; tests con fixtures |
 | Videos largos agotan disco | Medio | Límites de duración/tamaño; limpieza de renders |

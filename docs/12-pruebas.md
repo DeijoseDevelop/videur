@@ -82,6 +82,9 @@ bun run smoke            # render FFmpeg real (requiere ffmpeg)
 - [ ] Pillow valida `render.py`.
 - [ ] Manim detecta ausencia.
 - [ ] Remotion detecta ausencia de Node.
+- [x] Remotion añade `--gl` y respeta dimensiones/duración del proyecto.
+- [ ] Remotion 3D renderiza WebGL en Docker (`angle`/`swangle`).
+- [ ] GLB/GLTF se acepta como asset y se normaliza en la escena.
 - [ ] Registry devuelve `EngineInfo` correcto.
 
 ### 3.8 Proveedores

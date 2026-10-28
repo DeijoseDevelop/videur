@@ -35,6 +35,7 @@
 | RF-022 | Ejecutar Python/Pillow | Must | Produce MP4 con pipe `rgb24` |
 | RF-023 | Ejecutar Manim | Should | Detecta binario y produce MP4 |
 | RF-024 | Ejecutar Remotion | Could | Detecta Node/Remotion y produce MP4 |
+| RF-024b | 3D real WebGL | Should | ThreeCanvas + GLB, `gl=angle`, QA y hoja de contactos |
 | RF-025 | Progreso en vivo | Must | SSE emite `render.progress` con porcentaje |
 | RF-026 | Logs en vivo | Must | SSE emite líneas de stdout/stderr |
 | RF-027 | Cancelar render | Should | Mata el proceso y marca `cancelled` |

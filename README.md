@@ -110,9 +110,24 @@ flowchart LR
 | **FFmpeg** | Datos, terminal, barras, audio sintético, filtros | ✅ verificado end-to-end |
 | **Pillow** | Gráficas, arte generativo, composición de imágenes | ✅ verificado end-to-end |
 | **Manim** | Matemáticas, geometría, explicadores técnicos | ✅ implementado · requiere runtime |
-| **Remotion** | Motion graphics, UI, tipografía, 3D y React | ✅ verificado en Docker · audio nativo · 60 fps |
+| **Remotion** | Motion graphics, UI, tipografía, 3D WebGL y React | ✅ verificado en Docker · Three.js · audio nativo · 60 fps |
 
 Reglas del motor: tiempo determinista (`t = frame / fps`), sin red durante el render, `yuv420p` y QA de movimiento.
+
+### 3D real, no ASCII
+
+![Producto 3D con Three.js](docs/assets/three-product.png)
+
+La plantilla `remotion-three-product` usa **Three.js + React Three Fiber +
+@remotion/three** dentro de Remotion: materiales PBR, estudio con Lightformers,
+cyclorama, suelo reflectante, sombras, cámara determinista y overlay HTML.
+Acepta un **GLB/GLTF** real desde `assets/` o genera un frasco procedural para
+probar la escena. El motor renderiza con `--gl=angle` y funciona en Docker sin
+GPU usando SwiftShader.
+
+- Guía completa: [docs/17-3d-real.md](docs/17-3d-real.md)
+- Plantilla: [templates/remotion-three-product](templates/remotion-three-product)
+- Reglas: `useCurrentFrame()` sí, `useFrame()` no; sin HDRIs de CDN.
 
 ---
 
@@ -252,7 +267,7 @@ Lee [docs/08-seguridad.md](docs/08-seguridad.md).
 
 ## Calidad
 
-- **45 tests** unitarios/de integración.
+- **46 tests** unitarios/de integración.
 - **CI** con typecheck, tests, build web, smoke real de FFmpeg y build de Docker.
 - QA de metadata, resolución, fps, `yuv420p`, audio, LUFS, true peak, frames negros, movimiento y portada automática.
 - Hoja de contactos 4×4 y portada PNG como artefactos del render.
@@ -268,7 +283,7 @@ bun run smoke
 ## Roadmap
 
 - **Fase 5:** hardening, CI, tests, backups y recuperación de renders.
-- **Fase 5.5:** QA de layout/flash, brand kit, safe zones y export presets; 3D y motion trail ya existen.
+- **Fase 5.5:** 3D real con Three.js/GLB, motion trail, assets y QA de audio; faltan brand kit, safe zones, export presets y QA de layout/flash.
 - **Fase 5.6:** checkpoint/reanudación del agente, presupuesto de tokens y verificación con fuentes.
 - **v0.2:** TTS, música y subtítulos; la subida de assets ya está implementada.
 - **v0.3:** timeline multipista e incremental.
@@ -304,6 +319,7 @@ scripts/        dev, setup, smoke
 - [Motores de render](docs/05-motores-render.md)
 - [Agente de IA](docs/06-agente-ia.md)
 - [Sistema de diseño](docs/16-design-system.md)
+- [3D real con Three.js](docs/17-3d-real.md)
 - [Seguridad](docs/08-seguridad.md)
 - [Despliegue](docs/09-despliegue.md)
 - [Roadmap](docs/10-roadmap.md)

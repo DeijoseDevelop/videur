@@ -85,6 +85,12 @@ data/              Datos locales (no commitear)
 - Python: pipe `rgb24` a FFmpeg; no PNG sueltos.
 - Output siempre en `VIDEUR_OUTPUT`.
 - Sin red durante el render.
+- **3D real:** Three.js + React Three Fiber + `@remotion/three`. `<ThreeCanvas>`
+  con `width`/`height`; **prohibido `useFrame()`**, animar con
+  `useCurrentFrame()`. `Sequence` dentro del canvas con `layout="none"`.
+  `render.json` debe llevar `"gl":"angle"`. Sin HDRIs de CDN: `Lightformer`
+  o HDRI local. Para producto real usar GLB/GLTF en `assets/`.
+- El ASCII 3D es un estilo aparte; no sustituye al 3D WebGL.
 - Después de renderizar, revisar `contact-sheet.png`.
 
 ## Convenciones de código
@@ -152,4 +158,4 @@ Antes de cambiar arquitectura, actualiza:
 
 ## Estado
 
-v0.1.0 funcional: core, API, CLI, MCP, UI, FFmpeg y Pillow. Manim/Remotion están implementados pero requieren instalar sus runtimes. Prioridad actual: hardening, tests de regresión y documentación de instalación.
+v0.1.0 funcional: core, API, CLI, MCP, UI, FFmpeg, Pillow y Remotion (incluido 3D WebGL con Three.js). Manim/Remotion requieren instalar sus runtimes. Prioridad actual: hardening, assets 3D/HDRI, tests de regresión y documentación de instalación.

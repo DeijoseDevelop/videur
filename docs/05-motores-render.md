@@ -297,9 +297,20 @@ src/Video.tsx
 {
   "entry": "src/index.ts",
   "composition": "VideurVideo",
-  "timeoutMs": 900000
+  "timeoutMs": 900000,
+  "gl": "angle",
+  "props": {
+    "model": "assets/producto.glb",
+    "tagline": "La luz\nhecha fragancia."
+  }
 }
 ```
+
+- `gl`: backend OpenGL de Chromium. Valores: `angle`, `angle-egl`, `egl`,
+  `swangle`, `swiftshader`, `vulkan`. Para Three.js usar `angle`.
+- `props`: objeto libre que se fusiona con las props del proyecto. Sirve para
+  `model`, textos, `accent`, etc. `width`, `height`, `fps` y `duration` siempre
+  los impone el proyecto.
 
 ### 7.2 Ejecución
 
@@ -311,7 +322,8 @@ src/Video.tsx
 
 ```bash
 remotion render src/index.ts VideurVideo <output> \
-  --props='{"width":1280,"height":720,"fps":30,"duration":8}'
+  --props='{"width":1280,"height":720,"fps":30,"duration":8}' \
+  --gl=angle
 ```
 
 4. Verificar output.
@@ -322,6 +334,32 @@ remotion render src/index.ts VideurVideo <output> \
 - Dimensiones/FPS/duration desde `calculateMetadata()` o props.
 - Chromium headless; primera ejecución descarga el navegador.
 - En Docker, preinstalar Chromium o `npx remotion browser ensure`.
+- En Docker sin GPU, `angle` usa SwiftShader; el wrapper añade
+  `--enable-unsafe-swiftshader` y no usa `--disable-gpu`.
+- Si `angle` falla, probar `gl: "swangle"` y luego `gl: "swiftshader"`.
+
+### 7.4 3D real con Three.js
+
+La plantilla `remotion-three-product` usa `@remotion/three` + React Three Fiber:
+
+- `<ThreeCanvas width height shadows>`; `dpr={1}` en render.
+- `Environment` + `Lightformer` para estudio offline (sin HDRI de CDN).
+- `MeshReflectorMaterial`, cyclorama, sombra de contacto y charco de luz.
+- Producto procedural o GLB/GLTF desde `assets/`.
+- Cámara con `useCurrentFrame()`; **`useFrame()` está prohibido**.
+- Overlay HTML para tipografía y safe zones.
+- ACES Filmic + sRGB.
+- `gl: "angle"` en `render.json`.
+
+Reglas:
+
+1. Todo el 3D dentro de `<ThreeCanvas>`.
+2. `<Sequence>` dentro del canvas con `layout="none"`.
+3. Sin red: Lightformers o HDRI local; nunca `preset` de Drei en producción.
+4. GLB sin Draco/KTX2 externo, o con decoders en `public/`.
+5. Revisar hoja de contactos: canvas negro, producto cortado, texto ilegible.
+
+Ver [17 · 3D real](17-3d-real.md) para la guía completa.
 
 ## 8. QA y hoja de contactos
 
@@ -406,6 +444,7 @@ Salida `qa.json`:
 | `manim-pythagoras` | manim | Explicación visual del teorema | v0.1 |
 | `remotion-promo` | remotion | Promo SaaS con spring physics | v0.1 (requiere instalación) |
 | `remotion-ascii-3d` | remotion | Cubo 3D real por raycast ASCII + motion trail | v0.1 |
+| `remotion-three-product` | remotion | Producto 3D WebGL: PBR, estudio, GLB, cámara y overlay | v0.1 |
 
 Cada plantilla incluye `README.md` con instrucciones y un `render.json` o entrypoint.
 

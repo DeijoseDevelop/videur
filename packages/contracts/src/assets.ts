@@ -1,4 +1,4 @@
-export type AssetKind = "image" | "audio" | "font" | "video" | "other";
+export type AssetKind = "image" | "audio" | "font" | "video" | "model" | "other";
 
 export interface ProjectAsset {
   path: string;

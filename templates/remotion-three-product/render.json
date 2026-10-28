@@ -1,0 +1,14 @@
+{
+  "entry": "src/index.ts",
+  "composition": "VideurVideo",
+  "timeoutMs": 900000,
+  "concurrency": 2,
+  "gl": "angle",
+  "props": {
+    "accent": "#c9a46a",
+    "productName": "AURORA",
+    "tagline": "La luz\nhecha fragancia.",
+    "kicker": "EAU DE PARFUM · 50 ML",
+    "cta": "DESCUBRIR AURORA"
+  }
+}

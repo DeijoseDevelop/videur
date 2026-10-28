@@ -42,7 +42,7 @@ RUN if [ "$INSTALL_REMOTION" = "true" ]; then \
       curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
       apt-get install -y --no-install-recommends nodejs chromium && \
       rm -rf /var/lib/apt/lists/* && \
-      printf '#!/bin/sh\nexec /usr/bin/chromium --no-sandbox --disable-dev-shm-usage --disable-gpu "$@"\n' > /usr/local/bin/chromium-nosandbox && \
+      printf '#!/bin/sh\nexec /usr/bin/chromium --no-sandbox --disable-dev-shm-usage --enable-unsafe-swiftshader "$@"\n' > /usr/local/bin/chromium-nosandbox && \
       chmod +x /usr/local/bin/chromium-nosandbox; \
     fi
 ENV REMOTION_BROWSER=/usr/local/bin/chromium-nosandbox

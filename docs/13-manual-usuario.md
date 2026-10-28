@@ -150,6 +150,9 @@ Plantillas:
 - **Barras Pillow** (Python): easing y pipe RGB.
 - **Pitágoras** (Manim): explicación visual.
 - **Promo SaaS** (Remotion): motion graphics.
+- **Producto 3D · Estudio Real** (Remotion + Three.js): producto WebGL con
+  materiales PBR, estudio, cámara y soporte GLB. Ver
+  [17-3d-real.md](17-3d-real.md).
 
 ## 10. Solución de problemas
 
@@ -162,6 +165,9 @@ Plantillas:
 | Pantalla negra | Revisa `drawbox`/`drawtext` y duración |
 | No hay audio | Añade `-f lavfi -i aevalsrc=...` y `-map 1:a` |
 | Video no reproduce en Safari | Asegura `-pix_fmt yuv420p` |
+| El 3D sale negro | Añade `"gl":"angle"` a `render.json`; prueba `swangle` |
+| GLB no carga | Usa GLB sin Draco/KTX2 o añade los decoders locales |
+| Render 3D muy lento | Es SwiftShader sin GPU; baja concurrencia y resolución |
 | La IA no responde | Prueba el proveedor en Ajustes; revisa la key |
 | La IA no ve imágenes | Usa un modelo con visión (OpenAI/Anthropic/Gemini) |
 | SSE congelado | Reverse proxy: `proxy_buffering off` |

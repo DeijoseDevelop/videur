@@ -1,8 +1,13 @@
 import { afterEach, describe, expect, it } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { CreateProjectSchema, aspectForDimensions } from "@videur/contracts";
+import {
+  CreateProjectSchema,
+  aspectForDimensions,
+  type Project,
+  type Render,
+} from "@videur/contracts";
 import {
   AgentToolbox,
   Logger,
@@ -17,6 +22,7 @@ import {
   isTextExtension,
   openDatabase,
   parseBlackDetect,
+  RemotionEngine,
   parseFreezeDetect,
   parseJson,
   parseLoudness,
@@ -572,5 +578,84 @@ describe("migraciones", () => {
     });
     expect(project.id).toBe("prj_test");
     db.close();
+  });
+});
+
+describe("Remotion 3D", () => {
+  it("añade --gl y respeta las dimensiones del proyecto", async () => {
+    const dir = tempDir();
+    const workspace = join(dir, "workspace");
+    const outputPath = join(workspace, "output.mp4");
+    mkdirSync(join(workspace, "node_modules", ".bin"), { recursive: true });
+    writeFileSync(join(workspace, "package.json"), JSON.stringify({ dependencies: { remotion: "4.0.539" } }));
+    writeFileSync(
+      join(workspace, "render.json"),
+      JSON.stringify({
+        gl: "angle",
+        concurrency: 1,
+        props: {
+          width: 640,
+          height: 360,
+          model: "assets/producto.glb",
+          productName: "AURORA",
+        },
+      }),
+    );
+    writeFileSync(join(workspace, "node_modules", ".bin", "remotion"), "#!/bin/sh\n", {
+      mode: 0o755,
+    });
+
+    const config = createConfig(
+      { dataDir: dir, templatesDir: join(dir, "templates") },
+      {},
+    );
+    const engine = new RemotionEngine(config);
+    let captured: string[] = [];
+    let props: Record<string, unknown> = {};
+
+    const result = await engine.run({
+      project: {
+        id: "prj_test",
+        name: "Test 3D",
+        width: 1280,
+        height: 720,
+        fps: 30,
+        durationTarget: 5,
+      } as unknown as Project,
+      render: {} as unknown as Render,
+      workspaceDir: workspace,
+      renderDir: workspace,
+      outputPath,
+      config,
+      signal: new AbortController().signal,
+      log: () => undefined,
+      progress: () => undefined,
+      run: async (command: string[]) => {
+        captured = command;
+        const propsIndex = command.indexOf("--props");
+        props = JSON.parse(command[propsIndex + 1] ?? "{}") as Record<string, unknown>;
+        writeFileSync(outputPath, "fake");
+        return {
+          command,
+          exitCode: 0,
+          signal: null,
+          stdout: "",
+          stderr: "",
+          timedOut: false,
+          aborted: false,
+          durationMs: 0,
+          truncated: false,
+        };
+      },
+    });
+
+    expect(captured).toContain("--gl");
+    expect(captured[captured.indexOf("--gl") + 1]).toBe("angle");
+    expect(props.model).toBe("assets/producto.glb");
+    expect(props.productName).toBe("AURORA");
+    expect(props.width).toBe(1280);
+    expect(props.height).toBe(720);
+    expect(props.duration).toBe(5);
+    expect(result.outputPath).toBe(outputPath);
   });
 });

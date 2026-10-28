@@ -33,7 +33,7 @@ Videur une las piezas: **proyecto + código + render + QA visual + agente + UI**
 | Persona | Necesidad | Cómo la cubre Videur |
 |---|---|---|
 | Creador técnico | Explicar un concepto con animación matemática | Manim + agente + previsualización |
-| Fundador / marketer | Promo de 15–30 s para un producto | Remotion o FFmpeg + plantillas |
+| Fundador / marketer | Promo de 15–30 s para un producto | Remotion (3D WebGL) o FFmpeg + plantillas |
 | Analista / científico | Visualizar datos o una simulación | Python/Pillow + pipe a FFmpeg |
 | Docente | Videos educativos reproducibles | Manim + biblioteca de escenas |
 | Desarrollador de agentes | Automatizar video desde un agente | CLI, MCP, skill y API |
@@ -46,7 +46,8 @@ Videur une las piezas: **proyecto + código + render + QA visual + agente + UI**
 3. **Código → render:** editar el código generado y renderizar sin agente.
 4. **Agente → QA → corrección:** el agente detecta texto fuera de margen y lo corrige.
 5. **Automatización:** un agente externo crea el proyecto, renderiza y descarga el MP4 vía MCP.
-6. **Batch futuro:** generar variantes A/B de un mismo video con datos distintos.
+6. **Producto 3D:** escena WebGL con Three.js/R3F, GLB real y cámara publicitaria.
+7. **Batch futuro:** generar variantes A/B de un mismo video con datos distintos.
 
 ## Alcance de la versión 0.1
 

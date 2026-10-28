@@ -24,6 +24,11 @@ const ACCEPT = [
   ".otf",
   ".woff",
   ".woff2",
+  "model/gltf-binary",
+  "model/gltf+json",
+  ".glb",
+  ".gltf",
+  ".bin",
 ].join(",");
 
 function assetCard(projectId: string, asset: ProjectAsset) {
@@ -49,10 +54,15 @@ function assetCard(projectId: string, asset: ProjectAsset) {
               </div>`
             : asset.kind === "video"
               ? html`<video class="asset-card__video" controls preload="metadata" src=${asset.url}></video>`
-              : html`<div class="asset-card__font">
-                <span>Aa</span>
-                <small>${asset.kind}</small>
-              </div>`}
+              : asset.kind === "model"
+                ? html`<div class="asset-card__font">
+                    <span>${raw(icon("layers", 28))}</span>
+                    <small>3D</small>
+                  </div>`
+                : html`<div class="asset-card__font">
+                    <span>Aa</span>
+                    <small>${asset.kind}</small>
+                  </div>`}
       </div>
       <div class="asset-card__body">
         <div class="asset-card__title">
@@ -91,7 +101,7 @@ export function AssetsPanel(projectId: string) {
       <div class="assets-panel__head">
         <div>
           <h2>Assets</h2>
-          <p>Imágenes, audio y fuentes del proyecto. Se guardan en <code>assets/</code>.</p>
+          <p>Imágenes, audio, fuentes, video y modelos 3D. Se guardan en <code>assets/</code>.</p>
         </div>
         <div class="assets-panel__actions">
           <label class="btn btn--primary btn--md" for=${inputId}>
@@ -137,7 +147,7 @@ export function AssetsPanel(projectId: string) {
       </div>
 
       <div class="assets-panel__hint muted">
-        También puedes arrastrar archivos aquí. Máximo 100 MB por asset. Formatos: PNG, JPG, WebP, GIF, AVIF, MP4, WebM, MOV, MP3, WAV, OGG, M4A, FLAC, TTF, OTF, WOFF, WOFF2.
+        También puedes arrastrar archivos aquí. Máximo 100 MB por asset. Formatos: PNG, JPG, WebP, GIF, AVIF, MP4, WebM, MOV, MP3, WAV, OGG, M4A, FLAC, TTF, OTF, WOFF, WOFF2, GLB, GLTF, BIN.
       </div>
     </div>
   `;

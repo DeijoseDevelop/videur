@@ -29,6 +29,9 @@ const MIME_BY_EXT: Record<string, string> = {
   otf: "font/otf",
   woff: "font/woff",
   woff2: "font/woff2",
+  glb: "model/gltf-binary",
+  gltf: "model/gltf+json",
+  bin: "application/octet-stream",
 };
 
 export function assetMime(path: string): string | null {
@@ -41,6 +44,7 @@ export function assetKind(mime: string): AssetKind {
   if (mime.startsWith("audio/")) return "audio";
   if (mime.startsWith("font/")) return "font";
   if (mime.startsWith("video/")) return "video";
+  if (mime.startsWith("model/")) return "model";
   return "other";
 }
 
@@ -76,7 +80,7 @@ export class AssetService {
     const mime = MIME_BY_EXT[ext];
     if (!mime) {
       throw new ValidationError(
-        "Formato no permitido. Usa PNG, JPG, WebP, GIF, AVIF, MP3, WAV, OGG, M4A, FLAC, TTF, OTF, WOFF o WOFF2.",
+        "Formato no permitido. Usa PNG, JPG, WebP, GIF, AVIF, MP4, WebM, MOV, MP3, WAV, OGG, M4A, FLAC, TTF, OTF, WOFF, WOFF2, GLB, GLTF o BIN.",
       );
     }
 

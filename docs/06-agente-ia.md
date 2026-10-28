@@ -113,8 +113,12 @@ finalize({ summary: string, outputPath?: string })
 - `write_file` crea o reemplaza archivos. Para archivos grandes (> ~12 KB), el agente
   debe escribir por partes con `append: true`; si el proveedor trunca el JSON, la tool
   devuelve `TOOL_ARGS_TRUNCATED` con instrucciones para dividir la escritura.
-- `list_assets` lista las imágenes, audios, videos y fuentes subidas; los paths `assets/...`
-  se usan directamente en el código. En Remotion el motor copia `assets/` a `public/assets/`.
+- `list_assets` lista las imágenes, audios, videos, fuentes y modelos 3D subidos
+  (`.glb`, `.gltf`, `.bin`); los paths `assets/...` se usan directamente en el código.
+  En Remotion el motor copia `assets/` a `public/assets/`.
+- Para 3D real, el agente debe usar la plantilla `remotion-three-product` y pasar
+  `render.json.props.model = "assets/producto.glb"`. No debe inventar geometría
+  fotorrealista: si no hay GLB, usa el producto procedural y dilo.
 - `analyze_reference` genera metadata + contact sheet de un video de referencia y, si el
   proveedor tiene visión, devuelve una guía de estilo JSON.
 - `update_project` cambia duración/resolución/FPS/aspecto cuando el usuario pide algo distinto.
@@ -138,7 +142,7 @@ No se permite `bash`, `sh`, `npx`, `npm`, `curl`, `wget`, `git` en la tool gené
 
 El prompt se compone de:
 
-1. **Rol:** ingeniero experto en video programático, FFmpeg, Python, Manim y Remotion.
+1. **Rol:** ingeniero experto en video programático, FFmpeg, Python, Manim, Remotion y 3D WebGL con Three.js.
 2. **Reglas deterministas** (ver [05-motores-render.md](05-motores-render.md)).
 3. **Contexto del proyecto:** nombre, brief, motor, resolución, FPS, duración, estilo.
 4. **Inventario del workspace:** archivos y entrypoint.
