@@ -39,7 +39,7 @@ para React. El 3D real se hace con Three.js/R3F. Si una web de Framer muestra
 El código solo no hace fotorrealismo. La calidad viene de:
 
 | Capa | Qué usar |
-|---|---|
+| --- | --- |
 | Geometría | GLB/GLTF real o primitivas bien modeladas |
 | Materiales | `meshStandardMaterial`, `meshPhysicalMaterial`, transmisión, clearcoat, IOR |
 | Texturas | Albedo, normal, roughness, metalness, AO |
@@ -200,7 +200,7 @@ ffprobe + contact-sheet + QA
 ## Verificación
 
 | Prueba | Resultado |
-|---|---|
+| --- | --- |
 | Still local 1280×720, frame 180 | ✅ WebGL + Three.js |
 | Video 5 s en Docker, 1280×720, 30 fps | ✅ `rnd_9319da16e69246ac` |
 | `gl` en logs | ✅ `OpenGL de Chromium: angle` |
@@ -246,7 +246,7 @@ metal y etiqueta. Es una demo de escena, no un producto real.
 ### Producto real con GLB
 
 1. Sube `producto.glb` a `assets/` (máx. 100 MB).
-2. Edita `render.json`:
+1. Edita `render.json`:
 
 ```json
 {
@@ -264,13 +264,13 @@ metal y etiqueta. Es una demo de escena, no un producto real.
 }
 ```
 
-3. Renderiza. El componente `GLTFProduct` normaliza la altura a 1.9, apoya el
+1. Renderiza. El componente `GLTFProduct` normaliza la altura a 1.9, apoya el
    modelo en el suelo y activa sombras.
 
 ### Props
 
 | Prop | Tipo | Default | Uso |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `productName` | string | `AURORA` | Marca y etiqueta |
 | `tagline` | string | `La luz\nhecha fragancia.` | Titular |
 | `kicker` | string | `EAU DE PARFUM · 50 ML` | Línea fina |
