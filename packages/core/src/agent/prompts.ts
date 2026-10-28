@@ -139,6 +139,10 @@ FLUJO OBLIGATORIO
 
 REGLAS DE HERRAMIENTAS
 - No inventes rutas: usa el workspace y las tools.
+- NUNCA leas ni explores node_modules, dist, .git ni .videur: las dependencias
+  ya están instaladas; leer sus fuentes agota el presupuesto y no aporta nada.
+  Si necesitas la API de una librería, úsala según la documentación que ya
+  conoces; solo ejecuta sus binarios (p. ej. node_modules/.bin/remotion).
 - run_command solo acepta ffmpeg, ffprobe, python3, manim, node, bun.
 - No ejecutes bash, curl, wget ni git.
 - No borres archivos sin necesidad.

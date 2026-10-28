@@ -28,6 +28,19 @@ import { truncate } from "../utils/json";
 
 const MAX_TOOL_RESULT = 64 * 1024;
 
+/** Rutas que el agente no debe explorar: queman presupuesto y nunca se editan. */
+const IGNORED_DIRS = /(?:^|\/)(?:node_modules|\.git|dist|build|\.videur)(?:\/|$)/;
+
+function assertExplorablePath(path: string): void {
+  if (IGNORED_DIRS.test(path)) {
+    throw new AppError(
+      "TOOL_PATH_IGNORED",
+      `No inspecciones ${path}: node_modules/dist/.git contienen miles de archivos que agotan el presupuesto. Las dependencias ya están instaladas: importa y programa, no leas sus fuentes.`,
+      422,
+    );
+  }
+}
+
 export const AGENT_TOOL_DEFINITIONS: ToolDefinition[] = [
   {
     name: "list_files",
@@ -314,6 +327,7 @@ export class AgentToolbox {
 
   private listFiles(args: Record<string, unknown>): string {
     const path = typeof args.path === "string" ? args.path : "";
+    assertExplorablePath(path);
     const files = this.deps.workspace
       .list(this.deps.projectId)
       .filter((file) => !path || file.path === path || file.path.startsWith(`${path.replace(/\/+$/, "")}/`))
@@ -328,6 +342,7 @@ export class AgentToolbox {
 
   private readFile(args: Record<string, unknown>): string {
     const path = requireString(args, "path");
+    assertExplorablePath(path);
     const file = this.deps.workspace.read(this.deps.projectId, path);
     if (file.binary) return JSON.stringify({ path, binary: true, size: file.size }, null, 2);
     return file.content;
@@ -377,6 +392,15 @@ export class AgentToolbox {
       throw new AppError("TOOL_ARGS", "command debe ser un array de strings", 400);
     }
     assertAllowedCommand(command as string[]);
+    for (const part of command as string[]) {
+      if (IGNORED_DIRS.test(part) && !part.includes("/.bin/")) {
+        throw new AppError(
+          "TOOL_COMMAND_IGNORED",
+          `No ejecutes comandos sobre ${part}: inspeccionar node_modules/dist/.git agota el presupuesto. Ejecuta solo binarios (.bin/remotion) o archivos de tu código.`,
+          422,
+        );
+      }
+    }
     const cwd = typeof args.cwd === "string"
       ? resolveInside(this.deps.workspace.dir(this.deps.projectId), args.cwd)
       : this.deps.workspace.dir(this.deps.projectId);
