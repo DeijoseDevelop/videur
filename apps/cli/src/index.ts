@@ -98,6 +98,7 @@ ${C.bold}Opciones${C.reset}
   --template <id>
   --provider <id>
   --model <modelo>
+  --budget <tokens>              Presupuesto de tokens del agente (1.000–2.000.000)
   --port <puerto>
   --format png|jpg               contact-sheet
 
@@ -312,7 +313,14 @@ async function commandAgent(videur: Videur, parsed: Parsed): Promise<void> {
   if (!projectId || !prompt) throw new Error("Uso: videur agent <project-id> \"<prompt>\"");
   const providerId = typeof parsed.flags.provider === "string" ? parsed.flags.provider : undefined;
   const model = typeof parsed.flags.model === "string" ? parsed.flags.model : undefined;
-  const start = videur.agent.start(projectId, { prompt, ...(providerId ? { providerId } : {}), ...(model ? { model } : {}) });
+  const budget = typeof parsed.flags.budget === "string" ? Number(parsed.flags.budget) : undefined;
+  if (budget !== undefined && !Number.isInteger(budget)) throw new Error("--budget debe ser un entero de tokens");
+  const start = videur.agent.start(projectId, {
+    prompt,
+    ...(providerId ? { providerId } : {}),
+    ...(model ? { model } : {}),
+    ...(budget ? { maxTokensPerRun: budget } : {}),
+  });
   const json = jsonFlag(parsed.flags);
   if (!json) {
     console.log(`${C.magenta}◆${C.reset} Agente ${start.runId} · ${start.provider} · ${start.model}`);

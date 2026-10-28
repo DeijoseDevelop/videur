@@ -17,7 +17,7 @@ videur render <project-id> [--engine ffmpeg] [--json]
 videur renders <project-id> [--json]
 videur probe <archivo> [--json]
 videur contact-sheet <archivo> [--output out.png]
-videur agent <project-id> "<prompt>" [--provider <id>] [--model <modelo>]
+videur agent <project-id> "<prompt>" [--provider <id>] [--model <modelo>] [--budget <tokens>]
 videur serve [--port 8787]
 videur mcp
 videur templates [--json]

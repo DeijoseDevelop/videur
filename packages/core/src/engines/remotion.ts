@@ -1,4 +1,5 @@
-import { cpSync, existsSync, mkdirSync, readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { cpSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import type { EngineInfo } from "@videur/contracts";
 import type { VideurConfig } from "../config";
@@ -16,6 +17,43 @@ const REMOTION_GL: ReadonlySet<string> = new Set<RemotionGl>([
   "swiftshader",
   "vulkan",
 ]);
+
+const INSTALL_MARKER = ".videur-package-hash";
+const EXACT_VERSION = /^\d+\.\d+\.\d+(?:-[\w.]+)?$/;
+
+/**
+ * Motivo para (re)instalar dependencias, o null si node_modules está al día.
+ * Con marcador compara el hash de package.json; sin él (workspaces previos)
+ * comprueba que cada dependencia exista y que las versiones exactas coincidan.
+ */
+export function installReason(
+  workspaceDir: string,
+  packageJson: Buffer | string,
+  packageHash: string,
+  markerPath: string,
+): string | null {
+  const nodeModules = join(workspaceDir, "node_modules");
+  if (!existsSync(nodeModules)) return "Sin node_modules";
+  if (existsSync(markerPath)) {
+    return readFileSync(markerPath, "utf8").trim() === packageHash ? null : "package.json cambió";
+  }
+  let parsed: { dependencies?: Record<string, string>; devDependencies?: Record<string, string> };
+  try {
+    parsed = JSON.parse(packageJson.toString()) as typeof parsed;
+  } catch {
+    throw new AppError("ENGINE_INPUT", "package.json inválido", 422);
+  }
+  const deps = { ...parsed.devDependencies, ...parsed.dependencies };
+  for (const [name, spec] of Object.entries(deps)) {
+    const manifest = join(nodeModules, name, "package.json");
+    if (!existsSync(manifest)) return `Falta ${name}`;
+    if (typeof spec === "string" && EXACT_VERSION.test(spec)) {
+      const installed = (JSON.parse(readFileSync(manifest, "utf8")) as { version?: string }).version;
+      if (installed !== spec) return `${name} ${installed ?? "?"} ≠ ${spec}`;
+    }
+  }
+  return null;
+}
 
 interface RemotionRenderConfig {
   entry?: string;
@@ -93,23 +131,30 @@ export class RemotionEngine implements VideoEngine {
       throw new AppError("ENGINE_INPUT", "props debe ser un objeto en render.json", 422);
     }
 
-    const nodeModules = join(workspaceDir, "node_modules");
-    if (!existsSync(nodeModules) && existsSync(join(workspaceDir, "package.json"))) {
-      context.log("system", "Instalando dependencias de Remotion…");
-      const install = await context.run(["bun", "install"], {
-        cwd: workspaceDir,
-        timeoutMs: 300_000,
-        signal,
-        onStdout: (line) => context.log("stdout", line),
-        onStderr: (line) => context.log("stderr", line),
-      });
-      if (install.exitCode !== 0) {
-        throw new AppError(
-          "ENGINE_INSTALL",
-          `No se pudieron instalar las dependencias de Remotion: ${install.stderr.slice(-2000)}`,
-          422,
-        );
+    const packagePath = join(workspaceDir, "package.json");
+    if (existsSync(packagePath)) {
+      const packageJson = readFileSync(packagePath);
+      const packageHash = createHash("sha256").update(packageJson).digest("hex");
+      const installMarker = join(workspaceDir, "node_modules", INSTALL_MARKER);
+      const reason = installReason(workspaceDir, packageJson, packageHash, installMarker);
+      if (reason) {
+        context.log("system", `${reason}: instalando dependencias de Remotion…`);
+        const install = await context.run(["bun", "install"], {
+          cwd: workspaceDir,
+          timeoutMs: 300_000,
+          signal,
+          onStdout: (line) => context.log("stdout", line),
+          onStderr: (line) => context.log("stderr", line),
+        });
+        if (install.exitCode !== 0) {
+          throw new AppError(
+            "ENGINE_INSTALL",
+            `No se pudieron instalar las dependencias de Remotion: ${install.stderr.slice(-2000)}`,
+            422,
+          );
+        }
       }
+      if (existsSync(join(workspaceDir, "node_modules"))) writeFileSync(installMarker, packageHash);
     }
 
     const assetsDir = join(workspaceDir, "assets");

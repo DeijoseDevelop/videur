@@ -355,6 +355,7 @@ Query: `offset` (bytes), `limit` (default 200 KB). Devuelve `text/plain` con el 
   "providerId": "prv_openai",
   "model": "gpt-4.1",
   "maxIterations": 12,
+  "maxTokensPerRun": 800000,
   "visionReview": true
 }
 ```

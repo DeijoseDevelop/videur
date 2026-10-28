@@ -53,6 +53,7 @@ export const StartAgentSchema = z.object({
   providerId: z.string().trim().min(1).optional(),
   model: z.string().trim().min(1).max(200).optional(),
   maxIterations: z.number().int().min(1).max(30).optional(),
+  maxTokensPerRun: z.number().int().min(1000).max(2_000_000).optional(),
   visionReview: z.boolean().optional(),
 });
 

@@ -314,7 +314,11 @@ src/Video.tsx
 
 ### 7.2 Ejecución
 
-1. Si no existe `node_modules`, ejecutar `bun install` (con timeout y sin red si el modo es offline).
+1. Ejecutar `bun install` si no existe `node_modules` o si está desactualizado:
+   con marcador `node_modules/.videur-package-hash` se compara el hash de
+   `package.json`; sin marcador (workspaces previos) se comprueba que cada
+   dependencia exista y que las versiones exactas coincidan. Así, añadir
+   `three`/`@remotion/three` o subir de versión reinstala automáticamente.
 2. Resolver binario:
    - `node_modules/.bin/remotion` si existe.
    - `npx --no-install remotion` como fallback.

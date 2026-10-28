@@ -203,7 +203,15 @@ Límites:
 - `VIDEUR_AGENT_TIMEOUT_MS` (15 min).
 - `VIDEUR_AGENT_MAX_TOKENS` (8192 por respuesta).
 - `VIDEUR_AGENT_MAX_RUN_TOKENS` (400 000 entrada + salida por run).
+- Presupuesto por run: `videur agent ... --budget <tokens>` o `maxTokensPerRun`
+  en `POST /projects/:id/agent` (1 000–2 000 000).
 - Si se supera el presupuesto, el run falla con `AGENT_TOKEN_BUDGET`.
+- Compactación de contexto (`agent/context.ts`): cada turno reenvía toda la
+  conversación, así que las lecturas de un archivo que luego se relee o se
+  escribe se sustituyen por un resumen corto. Solo si el contexto supera
+  ~240 000 caracteres se compactan además los resultados más antiguos
+  (respetando los 3 últimos). No se compacta por antigüedad sin presión: eso
+  provocaba bucles de relectura en los que el agente nunca escribía.
 - El prompt exige un plan de 3-6 pasos antes de escribir y prohíbe inventar cifras.
 - Cancelación por `AbortController`.
 - Si el proveedor falla 3 veces seguidas, se aborta con error.

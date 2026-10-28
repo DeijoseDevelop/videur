@@ -23,6 +23,7 @@ import {
   updateAgentRun,
 } from "../repositories/agent-runs";
 import { newId } from "../utils/id";
+import { compactToolResults } from "./context";
 import { nowIso } from "../utils/time";
 import type { WorkspaceService } from "../services/workspace";
 import type { ProjectService } from "../services/projects";
@@ -94,7 +95,7 @@ export class AgentService {
       projectId,
       prompt: data.prompt,
       maxIterations,
-      maxTokensPerRun: settings.maxTokensPerRun,
+      maxTokensPerRun: data.maxTokensPerRun ?? settings.maxTokensPerRun,
       visionReview: data.visionReview ?? settings.visionReview,
       selection,
       controller,
@@ -229,7 +230,7 @@ export class AgentService {
 
         const response = await provider.chat({
           model: selection.model,
-          messages,
+          messages: compactToolResults(messages),
           tools,
           temperature: 0.4,
           maxTokens: this.deps.config.agent.maxTokens,

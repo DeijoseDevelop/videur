@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "bun:test";
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
@@ -19,6 +19,7 @@ import {
   createProject,
   createQaReport,
   createVideur,
+  installReason,
   isTextExtension,
   openDatabase,
   parseBlackDetect,
@@ -604,6 +605,8 @@ describe("Remotion 3D", () => {
     writeFileSync(join(workspace, "node_modules", ".bin", "remotion"), "#!/bin/sh\n", {
       mode: 0o755,
     });
+    mkdirSync(join(workspace, "node_modules", "remotion"), { recursive: true });
+    writeFileSync(join(workspace, "node_modules", "remotion", "package.json"), JSON.stringify({ version: "4.0.539" }));
 
     const config = createConfig(
       { dataDir: dir, templatesDir: join(dir, "templates") },
@@ -657,5 +660,33 @@ describe("Remotion 3D", () => {
     expect(props.height).toBe(720);
     expect(props.duration).toBe(5);
     expect(result.outputPath).toBe(outputPath);
+  });
+});
+
+describe("Remotion: dependencias del workspace", () => {
+  const setup = (deps: Record<string, string>, installed: Record<string, string>): string => {
+    const dir = tempDir();
+    writeFileSync(join(dir, "package.json"), JSON.stringify({ dependencies: deps }));
+    for (const [name, version] of Object.entries(installed)) {
+      mkdirSync(join(dir, "node_modules", name), { recursive: true });
+      writeFileSync(join(dir, "node_modules", name, "package.json"), JSON.stringify({ version }));
+    }
+    return dir;
+  };
+  const reason = (dir: string, hash = "h1"): string | null =>
+    installReason(dir, readFileSync(join(dir, "package.json")), hash, join(dir, "node_modules", ".videur-package-hash"));
+
+  it("detecta dependencias nuevas o versiones distintas sin marcador", () => {
+    expect(reason(setup({ remotion: "4.0.539" }, { remotion: "4.0.539" }))).toBeNull();
+    expect(reason(setup({ remotion: "4.0.539", three: "0.186.1" }, { remotion: "4.0.539" }))).toBe("Falta three");
+    expect(reason(setup({ remotion: "4.0.539" }, { remotion: "4.0.220" }))).toContain("4.0.220");
+    expect(reason(setup({ react: "^19.0.0" }, { react: "19.1.0" }))).toBeNull();
+  });
+
+  it("usa el hash de package.json cuando hay marcador", () => {
+    const dir = setup({ remotion: "4.0.539" }, { remotion: "4.0.539" });
+    writeFileSync(join(dir, "node_modules", ".videur-package-hash"), "h1");
+    expect(reason(dir, "h1")).toBeNull();
+    expect(reason(dir, "h2")).toBe("package.json cambió");
   });
 });
