@@ -39,6 +39,7 @@ export * from "./media/contact-sheet";
 export * from "./media/blackdetect";
 export * from "./media/freezedetect";
 export * from "./media/loudness";
+export * from "./media/luminance";
 export * from "./media/qa";
 export * from "./media/gltf";
 export * from "./media/model-thumb";

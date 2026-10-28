@@ -15,6 +15,8 @@ export interface QaInput {
   integratedLufs?: number | null;
   truePeakDb?: number | null;
   loudnessChecked?: boolean;
+  /** Luma media del centro del frame en varios instantes (canvas/escena vacía). */
+  centerLuma?: number[];
 }
 
 function check(id: string, status: QaStatus, message: string, details?: Record<string, unknown>): QaCheck {
@@ -149,6 +151,24 @@ export function createQaReport(input: QaInput): QaReport {
       );
     } else {
       checks.push(check("motion", "pass", "Movimiento continuo detectado"));
+    }
+  }
+
+  if (input.centerLuma && input.centerLuma.length > 0) {
+    const max = Math.max(...input.centerLuma);
+    if (max < 14) {
+      checks.push(
+        check(
+          "center_luma",
+          "warn",
+          `El centro del frame está casi negro en todas las muestras (máx YAVG ${max.toFixed(1)}/255): posible canvas WebGL vacío o escena sin contenido. Revisa que el producto/fondo se vean.`,
+          { samples: input.centerLuma },
+        ),
+      );
+    } else {
+      checks.push(
+        check("center_luma", "pass", `Contenido visible en el centro (YAVG ${max.toFixed(1)}/255)`),
+      );
     }
   }
 

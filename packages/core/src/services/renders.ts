@@ -46,6 +46,7 @@ import { detectBlackFrames } from "../media/blackdetect";
 import { generateContactSheet } from "../media/contact-sheet";
 import { detectFreezes } from "../media/freezedetect";
 import { detectLoudness } from "../media/loudness";
+import { measureCenterLuma } from "../media/luminance";
 import { probeMedia } from "../media/ffprobe";
 import { createQaReport } from "../media/qa";
 import type { EngineRegistry } from "../engines/registry";
@@ -422,6 +423,20 @@ export class RenderService {
         appendLog("stderr", `freezedetect falló: ${toErrorMessage(error)}`);
       }
 
+      let centerLuma: number[] | undefined;
+      if (project.engine === "remotion") {
+        try {
+          const luma = await measureCenterLuma(
+            result.outputPath,
+            metadata.duration,
+            this.deps.config.binaries.ffmpeg,
+          );
+          if (luma.checked) centerLuma = luma.samples;
+        } catch (error) {
+          appendLog("stderr", `Medición de luminancia central falló: ${toErrorMessage(error)}`);
+        }
+      }
+
       let loudnessChecked = false;
       let integratedLufs: number | null = null;
       let truePeakDb: number | null = null;
@@ -452,6 +467,7 @@ export class RenderService {
         integratedLufs,
         truePeakDb,
         loudnessChecked,
+        centerLuma,
       });
 
       const metadataPath = join(renderDir, "metadata.json");
