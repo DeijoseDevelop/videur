@@ -5,6 +5,7 @@ import type { EngineInfo } from "@videur/contracts";
 import type { VideurConfig } from "../config";
 import { AppError } from "../errors";
 import { commandVersion, whichBinary } from "../process/binaries";
+import { hashDirectory } from "../storage/paths";
 import type { EngineContext, EngineRunResult, EngineValidation, VideoEngine } from "./types";
 
 type RemotionGl = "angle" | "angle-egl" | "egl" | "swangle" | "swiftshader" | "vulkan";
@@ -82,6 +83,13 @@ interface RemotionRenderConfig {
   concurrency?: number;
   gl?: RemotionGl;
   props?: Record<string, unknown>;
+  /** Frames por segmento en renders largos (0/false desactiva). Default 600. */
+  segmentFrames?: number;
+}
+
+interface PartsState {
+  key: string;
+  done: number[];
 }
 
 export class RemotionEngine implements VideoEngine {
@@ -205,11 +213,11 @@ export class RemotionEngine implements VideoEngine {
 
     const localBin = join(workspaceDir, "node_modules", ".bin", "remotion");
     const concurrency = Math.max(1, Math.min(8, config.concurrency ?? 2));
-    const baseArgs = [
+    const renderArgs = (out: string, frames?: string): string[] => [
       "render",
       entry,
       composition,
-      outputPath,
+      out,
       "--props",
       JSON.stringify(props),
       "--pixel-format",
@@ -218,6 +226,7 @@ export class RemotionEngine implements VideoEngine {
       "bt709",
       "--concurrency",
       String(concurrency),
+      ...(frames ? ["--frames", frames] : []),
     ];
     let prefix: string[];
     if (existsSync(localBin)) {
@@ -234,43 +243,166 @@ export class RemotionEngine implements VideoEngine {
       prefix = [npx, "--no-install", "remotion"];
     }
     const browser = this.resolveBrowser();
-    const buildCommand = (gl: RemotionGl | undefined): string[] => [
+    const buildCommand = (gl: RemotionGl | undefined, out: string, frames?: string): string[] => [
       ...prefix,
-      ...baseArgs,
+      ...renderArgs(out, frames),
       ...(gl ? ["--gl", gl] : []),
       ...(browser ? ["--browser-executable", browser] : []),
     ];
 
+    const totalFrames = Math.max(1, Math.round(context.project.durationTarget * context.project.fps));
+    const segFrames = config.segmentFrames === undefined ? 600 : config.segmentFrames;
+    const ffmpeg = whichBinary(this.config.binaries.ffmpeg);
     const attempts = glAttempts(config.gl);
+    const timeoutMs = config.timeoutMs ?? this.config.renderTimeoutMs;
     let command: string[] = [];
-    for (const [index, gl] of attempts.entries()) {
-      if (gl) context.log("system", `OpenGL de Chromium: ${gl}`);
-      command = buildCommand(gl);
-      const result = await context.run(command, {
-        cwd: workspaceDir,
-        timeoutMs: config.timeoutMs ?? this.config.renderTimeoutMs,
-        signal,
-        onStdout: (line) => context.log("stdout", line),
-        onStderr: (line) => context.log("stderr", line),
-      });
-      if (result.exitCode === 0) break;
-      const next = attempts[index + 1];
-      if (next && !result.timedOut && !signal.aborted && isWebGlFailure(result.stderr + result.stdout)) {
-        context.log("system", `WebGL falló con gl=${gl}; reintentando con gl=${next}`);
-        rmSync(outputPath, { force: true });
-        continue;
-      }
-      throw new AppError(
-        "RENDER_FAILED",
-        result.timedOut ? "Remotion excedió el timeout" : result.stderr.slice(-4000),
-        422,
+
+    if (segFrames > 0 && totalFrames > segFrames * 2 && ffmpeg) {
+      command = await this.renderSegmented(
+        context,
+        attempts,
+        (gl, seg, total) => {
+          const from = seg * segFrames;
+          const to = Math.min(totalFrames, (seg + 1) * segFrames) - 1;
+          return buildCommand(
+            gl,
+            join(workspaceDir, ".videur", "render-parts", `part-${String(seg).padStart(4, "0")}.mp4`),
+            `${from}-${to}`,
+          );
+        },
+        { workspaceDir, outputPath, totalFrames, segFrames, ffmpeg, timeoutMs },
       );
+    } else {
+      for (const [index, gl] of attempts.entries()) {
+        if (gl) context.log("system", `OpenGL de Chromium: ${gl}`);
+        command = buildCommand(gl, outputPath);
+        const result = await context.run(command, {
+          cwd: workspaceDir,
+          timeoutMs,
+          signal,
+          onStdout: (line) => context.log("stdout", line),
+          onStderr: (line) => context.log("stderr", line),
+        });
+        if (result.exitCode === 0) break;
+        const next = attempts[index + 1];
+        if (next && !result.timedOut && !signal.aborted && isWebGlFailure(result.stderr + result.stdout)) {
+          context.log("system", `WebGL falló con gl=${gl}; reintentando con gl=${next}`);
+          rmSync(outputPath, { force: true });
+          continue;
+        }
+        throw new AppError(
+          "RENDER_FAILED",
+          result.timedOut ? "Remotion excedió el timeout" : result.stderr.slice(-4000),
+          422,
+        );
+      }
     }
     if (!existsSync(outputPath)) {
       throw new AppError("ENGINE_OUTPUT", "Remotion terminó sin producir el MP4 esperado", 422);
     }
     context.log("system", `Render Remotion en ${renderDir}`);
     return { command, outputPath };
+  }
+
+  /**
+   * Render largo por segmentos de frames: cada parte se guarda en
+   * `<workspace>/.videur/render-parts/` y un `state.json` las marca como
+   * completas. Si el proceso muere o el render se reintenta, las partes ya
+   * hechas se reutilizan (la clave incluye el hash del workspace, así que un
+   * cambio de código invalida todo). Al final se concatenan con ffmpeg.
+   * Un fallo WebGL descarta las partes y reintenta todo con el siguiente gl.
+   */
+  private async renderSegmented(
+    context: EngineContext,
+    attempts: Array<RemotionGl | undefined>,
+    segCommand: (gl: RemotionGl | undefined, seg: number, total: number) => string[],
+    opts: {
+      workspaceDir: string;
+      outputPath: string;
+      totalFrames: number;
+      segFrames: number;
+      ffmpeg: string;
+      timeoutMs: number;
+    },
+  ): Promise<string[]> {
+    const { workspaceDir, outputPath, totalFrames, segFrames, ffmpeg, timeoutMs } = opts;
+    const { signal } = context;
+    const partsDir = join(workspaceDir, ".videur", "render-parts");
+    const statePath = join(partsDir, "state.json");
+    const segCount = Math.ceil(totalFrames / segFrames);
+    const key = createHash("sha256")
+      .update(JSON.stringify({ totalFrames, segFrames, src: hashDirectory(workspaceDir) }))
+      .digest("hex")
+      .slice(0, 20);
+    const readState = (): PartsState => {
+      try {
+        const parsed = JSON.parse(readFileSync(statePath, "utf8")) as PartsState;
+        if (parsed.key === key && Array.isArray(parsed.done)) return parsed;
+      } catch {
+        /* estado inválido o inexistente */
+      }
+      return { key, done: [] };
+    };
+    let state = readState();
+    if (state.done.length > 0) {
+      context.log("system", `Reanudando render: ${state.done.length}/${segCount} segmentos ya hechos`);
+    }
+
+    let command: string[] = [];
+    for (const [index, gl] of attempts.entries()) {
+      if (gl) context.log("system", `OpenGL de Chromium: ${gl}`);
+      let retryGl = false;
+      for (let seg = 0; seg < segCount; seg += 1) {
+        if (state.done.includes(seg)) continue;
+        mkdirSync(partsDir, { recursive: true });
+        command = segCommand(gl, seg, segCount);
+        const result = await context.run(command, {
+          cwd: workspaceDir,
+          timeoutMs,
+          signal,
+          onStdout: (line) => context.log("stdout", line),
+          onStderr: (line) => context.log("stderr", line),
+        });
+        if (result.exitCode === 0) {
+          state.done.push(seg);
+          writeFileSync(statePath, JSON.stringify(state));
+          context.progress(state.done.length / segCount, "rendering");
+          continue;
+        }
+        rmSync(join(partsDir, `part-${String(seg).padStart(4, "0")}.mp4`), { force: true });
+        const next = attempts[index + 1];
+        if (next && !result.timedOut && !signal.aborted && isWebGlFailure(result.stderr + result.stdout)) {
+          context.log("system", `WebGL falló con gl=${gl}; descartando partes y reintentando con gl=${next}`);
+          rmSync(partsDir, { recursive: true, force: true });
+          state = { key, done: [] };
+          retryGl = true;
+          break;
+        }
+        throw new AppError(
+          "RENDER_FAILED",
+          result.timedOut ? "Remotion excedió el timeout" : result.stderr.slice(-4000),
+          422,
+        );
+      }
+      if (retryGl) continue;
+
+      const listPath = join(partsDir, "list.txt");
+      const partName = (seg: number) => `part-${String(seg).padStart(4, "0")}.mp4`;
+      writeFileSync(
+        listPath,
+        Array.from({ length: segCount }, (_, seg) => `file '${partName(seg)}'`).join("\n"),
+      );
+      const concat = await context.run(
+        [ffmpeg, "-hide_banner", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", listPath, "-c", "copy", "-y", outputPath],
+        { cwd: partsDir, timeoutMs: 120_000, signal },
+      );
+      if (concat.exitCode !== 0) {
+        throw new AppError("ENGINE_OUTPUT", `Concat de segmentos falló: ${concat.stderr.slice(-1000)}`, 422);
+      }
+      rmSync(partsDir, { recursive: true, force: true });
+      return command;
+    }
+    throw new AppError("RENDER_FAILED", "Remotion agotó los fallbacks de gl", 422);
   }
 }
 

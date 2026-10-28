@@ -344,6 +344,12 @@ remotion render src/index.ts VideurVideo <output> \
   `--enable-unsafe-swiftshader` y no usa `--disable-gpu`.
 - Fallback de WebGL automático: `angle` → `swangle` → `swiftshader`, solo si
   el error es de contexto GL (p. ej. `Error creating WebGL context`).
+- Renders largos (>2× segmento; `segmentFrames` en `render.json`, default 600)
+  se dividen en partes `--frames=a-b` bajo `<workspace>/.videur/render-parts/`
+  con `state.json`. Un reintento (o un proceso reiniciado) reanuda solo las
+  partes pendientes y al final se concatenan con `ffmpeg -f concat -c copy`.
+  La clave incluye el hash del workspace: cambiar código invalida las partes.
+  `segmentFrames: 0` lo desactiva. Requiere `ffmpeg` disponible.
 
 ### 7.4 3D real con Three.js
 
