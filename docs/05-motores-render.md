@@ -326,11 +326,11 @@ src/Video.tsx
    - `npx --no-install remotion` como fallback.
 3. Comando:
 
-```bash
-remotion render src/index.ts VideurVideo <output> \
-  --props='{"width":1280,"height":720,"fps":30,"duration":8}' \
-  --gl=angle
-```
+   ```bash
+   remotion render src/index.ts VideurVideo <output> \
+     --props='{"width":1280,"height":720,"fps":30,"duration":8}' \
+     --gl=angle
+   ```
 
 4. Verificar output.
 
@@ -375,7 +375,7 @@ Reglas:
 4. GLB sin Draco/KTX2 externo, o con decoders en `public/`.
 5. Miniaturas de GLB: `GET /projects/:id/asset-thumbnail` (prop `bare`, caché en
    `.videur/thumbs/`).
-5. Revisar hoja de contactos: canvas negro, producto cortado, texto ilegible.
+6. Revisar hoja de contactos: canvas negro, producto cortado, texto ilegible.
 
 Ver [17 · 3D real](17-3d-real.md) para la guía completa.
 

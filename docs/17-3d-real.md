@@ -248,21 +248,21 @@ metal y etiqueta. Es una demo de escena, no un producto real.
 1. Sube `producto.glb` a `assets/` (máx. 100 MB).
 1. Edita `render.json`:
 
-```json
-{
-  "gl": "angle",
-  "props": {
-    "model": "assets/producto.glb",
-    "modelRotation": 0,
-    "modelRotationX": -90,
-    "modelScale": 1,
-    "productName": "AURORA",
-    "tagline": "La luz\nhecha fragancia.",
-    "kicker": "EAU DE PARFUM · 50 ML",
-    "cta": "DESCUBRIR AURORA"
-  }
-}
-```
+   ```json
+   {
+     "gl": "angle",
+     "props": {
+       "model": "assets/producto.glb",
+       "modelRotation": 0,
+       "modelRotationX": -90,
+       "modelScale": 1,
+       "productName": "AURORA",
+       "tagline": "La luz\nhecha fragancia.",
+       "kicker": "EAU DE PARFUM · 50 ML",
+       "cta": "DESCUBRIR AURORA"
+     }
+   }
+   ```
 
 1. Renderiza. El componente `GLTFProduct` normaliza la altura a 1.9, apoya el
    modelo en el suelo y activa sombras.
@@ -362,4 +362,4 @@ Recomendaciones:
 - Claude escribe código, no video:
   <https://sergeichyrkov.com/blog/claude-opus-motion-remotion-threejs>
 - Blender MCP (modelado, no render de video):
-  https://github.com/ahujasid/mcp-for-blender
+  <https://github.com/ahujasid/mcp-for-blender>
