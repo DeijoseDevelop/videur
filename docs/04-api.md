@@ -226,6 +226,17 @@ Lista los assets del proyecto (`assets/`):
 
 `multipart/form-data` con un campo `file`. Límite 100 MB. Formatos: PNG, JPG, WebP, GIF, AVIF, MP4, WebM, MOV, MP3, WAV, OGG, M4A, FLAC, TTF, OTF, WOFF, WOFF2, GLB, GLTF, BIN. Los modelos 3D se devuelven con `kind: "model"`. Devuelve `201` con el asset.
 
+Los GLB/GLTF se validan antes de guardarse (`422` si la cabecera está rota, el archivo truncado, faltan mallas/buffers o requiere una extensión no soportada como `KHR_texture_basisu`). Un `.gltf` debe ser autocontenido (buffers `data:`); se recomienda GLB. En el listado y la subida incluyen `model`:
+
+```json
+"model": {
+  "format": "glb", "ok": true, "errors": [], "warnings": [],
+  "triangles": 682, "textures": 3, "materials": 1,
+  "dimensions": { "x": 0.0426, "y": 0.0629, "z": 0.0276 },
+  "upAxis": "y", "suggestedProps": {}
+}
+```
+
 ### `GET /projects/:id/asset?path=assets/logo.png`
 
 Sirve el binario con su MIME. Soporta `Range` para audio.

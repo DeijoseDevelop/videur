@@ -3,9 +3,11 @@ import { basename, extname } from "node:path";
 import {
   MAX_ASSET_BYTES,
   type AssetKind,
+  type ModelInspection,
   type ProjectAsset,
 } from "@videur/contracts";
 import { NotFoundError, ValidationError } from "../errors";
+import { inspectModelBytes, inspectModelFile } from "../media/gltf";
 import { slugify } from "../utils/slug";
 import type { WorkspaceService } from "./workspace";
 
@@ -52,8 +54,27 @@ export function isAllowedAssetPath(path: string): boolean {
   return path.startsWith("assets/") && assetMime(path) !== null;
 }
 
+function modelFormat(path: string): "glb" | "gltf" | null {
+  const ext = extname(path).toLowerCase();
+  return ext === ".glb" ? "glb" : ext === ".gltf" ? "gltf" : null;
+}
+
 export class AssetService {
+  private readonly inspections = new Map<string, { key: string; value: ModelInspection }>();
+
   constructor(private readonly workspace: WorkspaceService) {}
+
+  /** Inspección de un GLB/GLTF del workspace, cacheada por tamaño y fecha. */
+  inspectModel(projectId: string, path: string, size: number, modifiedAt: string): ModelInspection | undefined {
+    if (!modelFormat(path)) return undefined;
+    const id = `${projectId}:${path}`;
+    const key = `${size}:${modifiedAt}`;
+    const cached = this.inspections.get(id);
+    if (cached?.key === key) return cached.value;
+    const value = inspectModelFile(this.absolute(projectId, path));
+    this.inspections.set(id, { key, value });
+    return value;
+  }
 
   list(projectId: string): ProjectAsset[] {
     return this.workspace
@@ -84,6 +105,16 @@ export class AssetService {
       );
     }
 
+    const format = modelFormat(clean);
+    if (format) {
+      const inspection = inspectModelBytes(data, format);
+      if (!inspection.ok) {
+        throw new ValidationError(
+          `Modelo 3D inválido: ${inspection.errors.join("; ")}. Sube un GLB autocontenido (glTF 2.0).`,
+        );
+      }
+    }
+
     const base = slugify(clean.slice(0, Math.max(0, clean.length - ext.length - 1))) || "asset";
     const path = `assets/${base}-${randomUUID().slice(0, 8)}.${ext}`;
     const written = this.workspace.writeBinary(projectId, path, data);
@@ -112,6 +143,7 @@ export class AssetService {
   ): ProjectAsset {
     const mime = assetMime(path);
     if (!mime) throw new NotFoundError(`Asset no encontrado: ${path}`);
+    const model = this.inspectModel(projectId, path, size, modifiedAt);
     return {
       path,
       name: basename(path),
@@ -120,6 +152,7 @@ export class AssetService {
       size,
       modifiedAt,
       url: `/api/projects/${projectId}/asset?path=${encodeURIComponent(path)}`,
+      ...(model ? { model } : {}),
     };
   }
 }

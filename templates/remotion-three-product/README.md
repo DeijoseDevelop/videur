@@ -31,7 +31,7 @@ copia `assets/` a `public/assets/` y renderiza con `--gl=angle`.
 
 ## Usar un producto real (GLB/GLTF)
 
-1. Sube el modelo a `assets/` (GLB recomendado, sin Draco externo).
+1. Sube el modelo a `assets/` (GLB recomendado; Draco y Meshopt soportados).
 2. En `render.json`, añade las props:
 
 ```json
@@ -52,8 +52,10 @@ copia `assets/` a `public/assets/` y renderiza con `--gl=angle`.
 
 - `modelRotation` gira sobre Y (grados).
 - `modelRotationX` sirve para modelos Z-up exportados de Blender (`-90`).
-- `modelScale` ajusta el tamaño relativo; la altura se normaliza a 1.9.
-- Si `model` no existe, usa el frasco procedural.
+- `modelScale` ajusta el tamaño relativo; se normaliza a alto 1.9 y huella 1.1.
+- `modelSpin` gira el producto (turntable con easing) durante todo el clip.
+- Si `model` no existe o no carga, usa el frasco procedural.
+- La biblioteca de assets inspecciona el GLB y sugiere `modelRotationX`.
 
 ## Props
 
@@ -68,6 +70,7 @@ copia `assets/` a `public/assets/` y renderiza con `--gl=angle`.
 | `modelRotation` | `0` | Grados sobre Y |
 | `modelRotationX` | `0` | Grados sobre X |
 | `modelScale` | `1` | Multiplicador de escala |
+| `modelSpin` | `36` | Grados de turntable en el clip |
 
 ## Reglas 3D
 
@@ -75,8 +78,10 @@ copia `assets/` a `public/assets/` y renderiza con `--gl=angle`.
 - `<ThreeCanvas>` siempre con `width` y `height`.
 - `<Sequence>` dentro del canvas con `layout="none"`.
 - Sin red durante el render: el entorno se genera con Lightformers.
-- Un GLB con Draco/KTX2 necesita decoders locales; usa GLB sin comprimir o
-  añade los decoders a `public/`.
+- Draco: `remotion.config.ts` copia el decoder de `three` a
+  `public/decoders/draco`. Meshopt va embebido. KTX2/Basis no está soportado.
+- El modelo se carga con `useModel()` antes de montar el canvas; no uses
+  `useGLTF`/`useLoader` (en render el canvas no se redibuja al resolver).
 - Para 4K/60fps baja `concurrency` y sube el timeout.
 
 ## Rendimiento

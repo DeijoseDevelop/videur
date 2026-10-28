@@ -17,6 +17,7 @@ export const productVideoSchema = z.object({
   modelRotation: z.number().optional(),
   modelRotationX: z.number().optional(),
   modelScale: z.number().positive().optional(),
+  modelSpin: z.number().min(0).max(360).optional(),
 });
 
 export type ProductVideoProps = z.infer<typeof productVideoSchema>;

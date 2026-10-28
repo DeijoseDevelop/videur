@@ -109,8 +109,11 @@ ffprobe + contact-sheet + QA
 - [x] Cámara órbita + dolly con `useCurrentFrame`.
 - [x] Overlay HTML con safe zones del 10%.
 - [x] `calculateMetadata` para respetar resolución/FPS/duración.
-- [x] Soporte GLB/GLTF en `assets/` con normalización de altura.
-- [x] `modelRotation`, `modelRotationX`, `modelScale`.
+- [x] Soporte GLB/GLTF en `assets/` con normalización de altura y huella.
+- [x] Carga con `useModel()` fuera del canvas + `delayRender()` (verificado).
+- [x] Fallback al frasco procedural si el GLB falla o no existe (verificado).
+- [x] Decoders Draco y Meshopt locales (sin red).
+- [x] `modelRotation`, `modelRotationX`, `modelScale`, `modelSpin` (turntable).
 - [x] Preview y README de plantilla.
 - [ ] Thumbnail automático del GLB en la biblioteca.
 - [ ] Presets de materiales (vidrio, metal cepillado, plástico mate).
@@ -122,9 +125,13 @@ ffprobe + contact-sheet + QA
 - [x] `AssetKind = "model"` y tarjeta 3D en la UI.
 - [x] MIME `model/gltf-binary` y `model/gltf+json`.
 - [x] Límite 100 MB heredado.
-- [ ] Validación de GLB (Draco, KTX2, texturas, polígonos).
+- [x] Validación de GLB/GLTF en la subida (`inspectModelBytes`): cabecera,
+      truncado, chunk BIN, extensiones requeridas (KTX2 rechazado), mallas,
+      buffers/texturas externas y path traversal.
+- [x] Inspección en biblioteca y en `list_assets`: triángulos, texturas,
+      dimensiones, eje vertical y props sugeridas (`modelRotationX`).
 - [ ] Miniatura/render del modelo.
-- [ ] Metadatos de orientación, escala y pivote.
+- [ ] Pivote/orientación editable desde la UI.
 - [ ] HDRI/EXR local como asset.
 
 ### Docker y WebGL
@@ -135,6 +142,8 @@ ffprobe + contact-sheet + QA
 - [x] Render de still con WebGL en Chromium local.
 - [x] Render de video 3D en Docker (verificado con 5 s).
 - [x] Render de 5 s con `gl=angle` + SwiftShader: `rnd_9319da16e69246ac`.
+- [x] Render de 5 s con GLB (Avocado) en Docker: `rnd_56d2d05012ee4d27`.
+- [x] Stills en Docker: Box.glb, GLB corrupto y GLB inexistente (fallback).
 - [ ] Fallback automático a `swangle`/`swiftshader` si `angle` falla.
 - [ ] Medir tiempos de render 720p/1080p/4K.
 - [ ] Probar GPU real y comparar con SwiftShader.
@@ -175,6 +184,10 @@ ffprobe + contact-sheet + QA
 | QA | ✅ duración, resolución, fps, `yuv420p`, movimiento, frames negros, portada, contacto |
 | Peso del MP4 | 759 KB |
 | Tiempo de render 3D sin GPU | 602 s (5 s de video, SwiftShader) |
+| Video 5 s con GLB (Avocado) en Docker | ✅ `rnd_56d2d05012ee4d27`, QA completo, 159 s |
+| GLB visible desde el frame 0 | ✅ sin frames negros ni producto ausente |
+| Box.glb en Docker (still) | ✅ |
+| GLB truncado / inexistente | ✅ fallback al frasco procedural |
 
 El render lento es esperable: SwiftShader rasteriza WebGL por CPU. En una GPU
 real o con `concurrency` ajustada baja bastante. Para producción conviene
@@ -239,6 +252,24 @@ metal y etiqueta. Es una demo de escena, no un producto real.
 | `modelRotation` | number | 0 | Grados sobre Y |
 | `modelRotationX` | number | 0 | Grados sobre X |
 | `modelScale` | number | 1 | Escala relativa |
+| `modelSpin` | number | 36 | Grados de turntable durante el clip (0–360) |
+
+### Por qué el GLB no aparecía
+
+Durante el render `<ThreeCanvas>` usa `frameloop="never"`: solo dibuja al
+crearse y al cambiar de frame. Con `useGLTF`/`useLoader` el modelo resolvía
+después del dibujo inicial; React actualizaba la escena, pero nadie volvía a
+llamar a `advance()` y Remotion capturaba el canvas sin producto.
+
+La solución (`src/scene/useModel.ts`):
+
+1. `delayRender()` en el primer render, antes de montar el canvas.
+2. `GLTFLoader` (con Draco/Meshopt locales) fuera del árbol R3F.
+3. El canvas se monta solo cuando el estado es `ready`, `failed` o `none`;
+   `advanceOnCreated` dibuja la escena ya con el modelo.
+4. `continueRender()` en un efecto posterior al commit; el `delayRender`
+   propio de `<ThreeCanvas>` cubre el hueco hasta que el canvas existe.
+5. Escenas vacías o con bounding box degenerada cuentan como `failed`.
 
 ## Reglas 3D obligatorias
 
@@ -249,7 +280,7 @@ metal y etiqueta. Es una demo de escena, no un producto real.
 5. Sin aleatoriedad no sembrada.
 6. `t = frame / fps` para cualquier movimiento.
 7. Texto importante en overlay HTML, no en geometría 3D.
-8. GLB sin Draco/KTX2 externo, o con decoders locales.
+8. GLB con Draco/Meshopt funciona (decoders locales); KTX2/Basis no.
 9. Si `angle` falla en Docker, probar `swangle` y luego `swiftshader`.
 10. Revisar la hoja de contactos: frames negros, producto cortado, texto
     ilegible, reflejos/sombras ausentes.
@@ -278,7 +309,8 @@ Recomendaciones:
 - No hay HDRI local todavía; el estudio usa Lightformers.
 - No hay profundidad de campo física ni motion blur de shutter.
 - El modelo GLB se normaliza por altura; no detecta orientación automáticamente.
-- No hay thumbnail/validación de GLB en la UI.
+- No hay thumbnail del GLB en la UI (sí validación e inspección).
+- Las animaciones del GLB no se reproducen todavía.
 - El render 3D en Docker sin GPU es lento.
 - La etiqueta procedural es una textura 2D sobre el frasco; para un producto
   real, la marca debe venir en el GLB o en una textura PBR.
@@ -286,7 +318,8 @@ Recomendaciones:
 ## Siguientes pasos
 
 1. **Fase A (completada):** plantilla 3D, GLB y render Docker verificado.
-2. **Fase B:** pipeline de assets 3D (validación, thumbnail, HDRI local).
+2. **Fase B (en curso):** validación e inspección hechas; faltan thumbnail y
+   HDRI local.
 3. **Fase C:** presets de materiales/entornos y QA visual.
 4. **Fase D:** Blender headless/Spline opcional para modelos a medida.
 5. **Fase E:** 4K/60fps, DOF, bloom y motion blur de calidad.

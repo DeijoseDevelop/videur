@@ -40,6 +40,7 @@ export * from "./media/blackdetect";
 export * from "./media/freezedetect";
 export * from "./media/loudness";
 export * from "./media/qa";
+export * from "./media/gltf";
 export * from "./engines/types";
 export * from "./engines/registry";
 export * from "./engines/ffmpeg";

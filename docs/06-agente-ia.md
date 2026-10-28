@@ -119,6 +119,11 @@ finalize({ summary: string, outputPath?: string })
 - Para 3D real, el agente debe usar la plantilla `remotion-three-product` y pasar
   `render.json.props.model = "assets/producto.glb"`. No debe inventar geometría
   fotorrealista: si no hay GLB, usa el producto procedural y dilo.
+- `list_assets` incluye `model` para GLB/GLTF (validez, triángulos,
+  dimensiones, `upAxis`, `suggestedProps`). Si `upAxis` es `z`, el agente debe
+  usar `modelRotationX: -90`; si `ok` es `false`, no debe usar ese modelo.
+- En plantillas R3F propias, cargar el GLB con un `useModel()` fuera del canvas
+  (`delayRender` + montar el canvas cuando resuelve); nunca `useGLTF` en render.
 - `analyze_reference` genera metadata + contact sheet de un video de referencia y, si el
   proveedor tiene visión, devuelve una guía de estilo JSON.
 - `update_project` cambia duración/resolución/FPS/aspecto cuando el usuario pide algo distinto.

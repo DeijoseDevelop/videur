@@ -16,6 +16,7 @@ import { runCommand } from "../process/runner";
 import { resolveInside } from "../storage/paths";
 import type { WorkspaceService } from "../services/workspace";
 import { assetKind, assetMime, isAllowedAssetPath } from "../services/assets";
+import { inspectModelFile } from "../media/gltf";
 import type { ProjectService } from "../services/projects";
 import type { RenderService } from "../services/renders";
 import type { MediaService } from "../services/media";
@@ -142,7 +143,7 @@ export const AGENT_TOOL_DEFINITIONS: ToolDefinition[] = [
   {
     name: "list_assets",
     description:
-      "Lista las imágenes, audios, fuentes, videos y modelos 3D subidos al proyecto. Devuelve path, nombre, mime, tipo y tamaño. Usa esos paths directamente en el código del motor.",
+      "Lista las imágenes, audios, fuentes, videos y modelos 3D subidos al proyecto. Devuelve path, nombre, mime, tipo y tamaño. Los GLB/GLTF incluyen `model`: validez, errores, triángulos, dimensiones, eje vertical y props sugeridas (p. ej. modelRotationX). Usa esos paths directamente en el código del motor.",
     parameters: {
       type: "object",
       properties: {},
@@ -480,12 +481,17 @@ export class AgentToolbox {
       .filter((file) => file.type === "file" && isAllowedAssetPath(file.path))
       .map((file) => {
         const mime = assetMime(file.path) ?? "application/octet-stream";
+        const kind = assetKind(mime);
+        const isGltf = /\.(glb|gltf)$/i.test(file.path);
         return {
           path: file.path,
           name: basename(file.path),
           mime,
-          kind: assetKind(mime),
+          kind,
           size: file.size,
+          ...(isGltf
+            ? { model: inspectModelFile(this.deps.workspace.absolute(this.deps.projectId, file.path)) }
+            : {}),
         };
       });
     return JSON.stringify({ assets, total: assets.length }, null, 2);

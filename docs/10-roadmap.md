@@ -19,7 +19,7 @@
 
 - **Core:** migraciones, repositorios, cola, storage, secretos, QA, eventos.
 - **Motores:** FFmpeg, Pillow y Remotion probados end-to-end. Remotion funciona en Docker con Node/Chromium, audio nativo, 60 fps y **3D WebGL real** con Three.js/R3F. Manim está implementado pero requiere instalar su runtime.
-- **3D real:** `ThreeCanvas` + `@react-three/fiber` + `three`, `gl=angle`, materiales PBR, estudio offline con Lightformers, cyclorama, suelo reflectante, cámara determinista y soporte GLB. Plantilla `remotion-three-product`; render de 5 s verificado en Docker con SwiftShader (QA completo). Ver [17 · 3D real](17-3d-real.md).
+- **3D real:** `ThreeCanvas` + `@react-three/fiber` + `three`, `gl=angle`, materiales PBR, estudio offline con Lightformers, cyclorama, suelo reflectante, cámara determinista y soporte GLB verificado (carga con `delayRender`, fallback procedural, Draco/Meshopt, validación e inspección de modelos). Plantilla `remotion-three-product`; render de 5 s verificado en Docker con SwiftShader (QA completo). Ver [17 · 3D real](17-3d-real.md).
 - **Audio:** un proyecto Remotion puede incluir `public/*.wav` con `<Audio>`; el MP4 sale con AAC sin post-proceso.
 - **Agente:** loop con tools, OpenAI/Anthropic/Gemini, presets DeepSeek/Kimi/GLM/OpenRouter/Ollama, visión vía proveedor, escritura por partes con `append`, guardia contra renders viejos y errores de proveedor fuera del historial.
 - **API:** proyectos, archivos de texto, renders, SSE, agentes, providers, settings, templates, media y portada (`cover`).

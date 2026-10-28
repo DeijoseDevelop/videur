@@ -1751,6 +1751,10 @@
   font-size: 10px;
 }
 
+.asset-card__meta--error {
+  color: var(--danger, #f87171);
+}
+
 .asset-card__path {
   display: block;
   width: 100%;

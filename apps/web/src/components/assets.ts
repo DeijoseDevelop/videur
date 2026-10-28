@@ -1,5 +1,5 @@
 import { html, raw, signal } from "@elurjs/core";
-import type { ProjectAsset } from "@videur/contracts";
+import type { ModelInspection, ProjectAsset } from "@videur/contracts";
 import { appStore } from "../lib/store";
 import { formatBytes } from "../lib/format";
 import { icon } from "../lib/icons";
@@ -30,6 +30,24 @@ const ACCEPT = [
   ".gltf",
   ".bin",
 ].join(",");
+
+function modelSummary(model: ModelInspection) {
+  const dims = model.dimensions
+    ? `${model.dimensions.x} × ${model.dimensions.y} × ${model.dimensions.z}`
+    : "sin bounding box";
+  const issues = [...model.errors, ...model.warnings];
+  return html`
+    <div class="asset-card__meta">
+      ${model.ok ? "GLB válido" : "GLB inválido"} · ${model.triangles.toLocaleString("es")} tris ·
+      ${model.textures} tex · ${dims}
+    </div>
+    ${issues.length > 0
+      ? html`<div class=${model.ok ? "asset-card__meta" : "asset-card__meta asset-card__meta--error"}>
+          ${issues.join(" · ")}
+        </div>`
+      : ""}
+  `;
+}
 
 function assetCard(projectId: string, asset: ProjectAsset) {
   const copy = (): void => {
@@ -70,6 +88,7 @@ function assetCard(projectId: string, asset: ProjectAsset) {
           <span class="asset-card__kind">${asset.kind}</span>
         </div>
         <div class="asset-card__meta">${formatBytes(asset.size)} · ${asset.mime}</div>
+        ${asset.model ? modelSummary(asset.model) : ""}
         <button class="asset-card__path" type="button" title="Copiar ruta" @click=${copy}>
           ${raw(icon("code", 12))} ${asset.path}
         </button>

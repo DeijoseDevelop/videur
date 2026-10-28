@@ -186,7 +186,8 @@ Si tienes visión, abre la hoja de contactos y busca problemas. Si no, usa el QA
 | Manim falla | LaTeX ausente | `Text` en vez de `MathTex` |
 | Remotion falla | Chromium ausente | `npx remotion browser ensure` |
 | Canvas 3D negro | WebGL sin `--gl` | Añade `"gl":"angle"` a `render.json` |
-| GLB no carga | Draco/KTX2 o ruta | GLB sin comprimir en `assets/` |
+| GLB no carga | KTX2, ruta o archivo roto | Revisa `model.errors` en `list_assets`; Draco/Meshopt sí funcionan |
+| Producto ausente en el frame | `useGLTF` dentro del canvas | `useModel()` + montar canvas al resolver |
 | 3D muy lento | SwiftShader | Baja concurrencia, sombras y reflector |
 
 ## Salida esperada
