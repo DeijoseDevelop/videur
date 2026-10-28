@@ -42,17 +42,24 @@ function setup(): { ctx: EngineContext; calls: string[][]; failures: Map<string,
     progress: () => {},
     run: async (command) => {
       calls.push(command);
+      const base = {
+        command,
+        signal: null,
+        aborted: false,
+        durationMs: 1,
+        truncated: false,
+      };
       const framesIdx = command.indexOf("--frames");
       const key = framesIdx >= 0 ? command[framesIdx + 1]! : "concat";
       const fail = failures.get(key);
       if (fail) {
         failures.delete(key);
-        return { exitCode: fail.code, stdout: "", stderr: fail.stderr, timedOut: false };
+        return { ...base, exitCode: fail.code, stdout: "", stderr: fail.stderr, timedOut: false };
       }
       const out = command[0]!.endsWith("remotion") ? command[4]! : command.at(-1)!;
       mkdirSync(join(out, ".."), { recursive: true });
       writeFileSync(out, "mp4");
-      return { exitCode: 0, stdout: "", stderr: "", timedOut: false };
+      return { ...base, exitCode: 0, stdout: "", stderr: "", timedOut: false };
     },
   };
   return { ctx, calls, failures };
