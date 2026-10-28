@@ -90,6 +90,18 @@ projectRoutes.post("/projects/:id/assets", async (c) => {
   return c.json(asset, 201);
 });
 
+projectRoutes.get("/projects/:id/brand", (c) => {
+  const videur = videurOf(c);
+  return c.json({ brand: videur.brand.get(c.req.param("id")) });
+});
+
+projectRoutes.put("/projects/:id/brand", async (c) => {
+  const videur = videurOf(c);
+  const body = (await c.req.json().catch(() => null)) as unknown;
+  const brand = videur.brand.set(c.req.param("id"), body as never);
+  return c.json({ brand });
+});
+
 projectRoutes.patch("/projects/:id/asset-transform", async (c) => {
   const videur = videurOf(c);
   const body = (await c.req.json().catch(() => null)) as {

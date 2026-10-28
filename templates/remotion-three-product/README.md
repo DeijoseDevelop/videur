@@ -77,6 +77,7 @@ copia `assets/` a `public/assets/` y renderiza con `--gl=angle`.
 | `environmentRotation` | `0` | Rotación del entorno (grados) |
 | `environmentBackground` | `false` | Usa el HDRI como fondo con suelo continuo |
 | `envPreset` | `studio` | Look sin HDRI: `studio`, `golden`, `cyber`, `mono` |
+| `brand` | — | Kit de marca (`brand.json` del workspace; lo inyecta el motor). `safeMargin` define el margen del overlay (default `0.1`), `fontFamily` la fuente sans |
 | `bare` | `false` | Solo producto, sin overlay (miniaturas) |
 
 ## Reglas 3D

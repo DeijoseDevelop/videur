@@ -16,6 +16,7 @@ import { SettingsService } from "./services/settings";
 import { ProjectService } from "./services/projects";
 import { WorkspaceService } from "./services/workspace";
 import { AssetService } from "./services/assets";
+import { BrandService } from "./services/brand";
 import { RenderService } from "./services/renders";
 import { MediaService } from "./services/media";
 import { ProviderService } from "./services/providers";
@@ -41,6 +42,7 @@ export class Videur {
   readonly projects: ProjectService;
   readonly workspace: WorkspaceService;
   readonly assets: AssetService;
+  readonly brand: BrandService;
   readonly renders: RenderService;
   readonly media: MediaService;
   readonly providers: ProviderService;
@@ -62,6 +64,7 @@ export class Videur {
     this.projects = new ProjectService(this.db, this.config, this.templates, this.bus);
     this.workspace = new WorkspaceService(this.db, this.config, this.bus);
     this.assets = new AssetService(this.workspace);
+    this.brand = new BrandService(this.workspace);
     this.media = new MediaService(this.config);
     this.providers = new ProviderService(this.db, this.config, secrets);
     this.renders = new RenderService({

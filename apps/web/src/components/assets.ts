@@ -153,6 +153,54 @@ function assetCard(projectId: string, asset: ProjectAsset) {
   `;
 }
 
+function brandCard(projectId: string) {
+  const save = (event: Event): void => {
+    event.preventDefault();
+    const data = new FormData(event.target as HTMLFormElement);
+    const text = (key: string): string | undefined => {
+      const rawValue = data.get(key);
+      const trimmed = rawValue === null ? "" : String(rawValue).trim();
+      return trimmed === "" ? undefined : trimmed;
+    };
+    const marginRaw = Number(data.get("safeMargin"));
+    void appStore.saveBrand(projectId, {
+      accentColor: text("accentColor"),
+      textColor: text("textColor"),
+      fontFamily: text("fontFamily"),
+      safeMargin: Number.isFinite(marginRaw) && marginRaw > 0 ? marginRaw / 100 : undefined,
+    });
+  };
+  const brand = () => appStore.brand.value;
+  const field = (name: string, label: string, value: string | undefined, type = "text") => html`
+    <label class="asset-transform__field">
+      <span>${label}</span>
+      <input name=${name} type=${type} value=${value ?? ""} />
+    </label>
+  `;
+  return html`
+    <form class="asset-transform brand-card" @submit=${save}>
+      <span class="asset-transform__label">Marca</span>
+      ${() => field("accentColor", "Acento", brand()?.accentColor, "color")}
+      ${() => field("textColor", "Texto", brand()?.textColor, "color")}
+      ${() => field("fontFamily", "Fuente", brand()?.fontFamily)}
+      ${() => html`
+        <label class="asset-transform__field">
+          <span>Margen %</span>
+          <input
+            name="safeMargin"
+            type="number"
+            min="0"
+            max="30"
+            step="1"
+            value=${Math.round((brand()?.safeMargin ?? 0.1) * 100)}
+          />
+        </label>
+      `}
+      <button class="link-btn" type="submit">Guardar</button>
+    </form>
+  `;
+}
+
 export function AssetsPanel(projectId: string) {
   const uploading = signal(false);
   const inputId = `asset-upload-${projectId}`;
@@ -193,6 +241,8 @@ export function AssetsPanel(projectId: string) {
           />
         </div>
       </div>
+
+      ${brandCard(projectId)}
 
       <div
         class="assets-drop"

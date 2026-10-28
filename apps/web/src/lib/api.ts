@@ -1,6 +1,7 @@
 import type {
   AgentRun,
   AssetTransform,
+  BrandKit,
   AgentStartResult,
   AppSettings,
   CreateProjectInput,
@@ -177,6 +178,12 @@ export const api = {
       request<ProjectAsset>(`/api/projects/${id}/asset-transform`, {
         method: "PATCH",
         body: JSON.stringify({ path, transform }),
+      }),
+    getBrand: (id: string) => request<{ brand: BrandKit | null }>(`/api/projects/${id}/brand`),
+    setBrand: (id: string, brand: BrandKit) =>
+      request<{ brand: BrandKit }>(`/api/projects/${id}/brand`, {
+        method: "PUT",
+        body: JSON.stringify(brand),
       }),
   },
   renders: {

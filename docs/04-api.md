@@ -269,6 +269,29 @@ Los modelos Z-up se auto-rellenan a `rotX: -90` al inspeccionarlos.
 { "deleted": true, "path": "assets/logo-1a2b3c4d.png" }
 ```
 
+### `GET /projects/:id/brand`
+
+Devuelve el kit de marca del proyecto (`{ "brand": {...} | null }`). Se guarda en
+`brand.json` en la raíz del workspace: lo lee el agente como archivo normal, el
+motor Remotion lo inyecta como prop `brand` en la plantilla de producto
+(`safeMargin` mueve los márgenes del overlay — default `0.1` — y `accentColor` es
+el fallback de `accent`) y la UI lo edita desde el panel de assets.
+
+### `PUT /projects/:id/brand`
+
+```json
+// Request (BrandKitSchema, todo opcional)
+{
+  "accentColor": "#22d3ee",
+  "textColor": "#e2e8f0",
+  "fontFamily": "Inter",
+  "logo": "assets/logo-1a2b3c4d.png",
+  "safeMargin": 0.12,
+  "tone": "minimal y técnico"
+}
+// 200 → { "brand": {...} } · 400 si falla la validación (colores #rrggbb, margen 0–0.3)
+```
+
 ### `DELETE /projects/:id/file?path=render.json`
 
 ```json

@@ -148,6 +148,10 @@ ffprobe + contact-sheet + QA
       `PATCH /projects/:id/asset-transform`). Z-up se auto-rellena a `rotX:-90`;
       el motor Remotion aplica `modelRotationX/modelRotation/modelRotationZ`
       solo donde el código no los fije.
+- [x] Kit de marca por proyecto (`brand.json` en el workspace): colores, fuente,
+      logo, tono y `safeMargin` configurable. El motor lo inyecta como prop
+      `brand`; el overlay lo usa para márgenes (default 10 %) y fuente.
+      Endpoints `GET`/`PUT /projects/:id/brand`; editable en el panel de assets.
 
 ### Docker y WebGL
 

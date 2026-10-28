@@ -157,6 +157,7 @@ ASSETS
 - Para 3D real, sube un GLB/GLTF a assets/ y pásalo en render.json props.model.
   No intentes generar un modelo fotorrealista desde cero con código.
 - Si hay un video de referencia, usa analyze_reference(path) antes de escribir el guion. No inventes su estilo; si no hay visión, dilo y usa solo metadata/contact sheet.
+- Si existe brand.json en el workspace, respétalo: colores, fuente y margen seguro. La plantilla de producto lo aplica sola vía la prop brand; en otros motores lee el archivo y usa sus valores.
 
 ARCHIVOS DEL WORKSPACE
 ${fileList || "(workspace vacío)"}

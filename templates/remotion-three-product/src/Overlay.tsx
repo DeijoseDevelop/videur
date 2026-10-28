@@ -16,6 +16,7 @@ const GRAIN =
 
 export const Overlay: React.FC<ProductVideoProps> = ({
   accent = "#c9a46a",
+  brand: brandKit,
   productName,
   tagline,
   kicker,
@@ -25,8 +26,10 @@ export const Overlay: React.FC<ProductVideoProps> = ({
   const frame = useCurrentFrame();
   const { fps, width, height } = useVideoConfig();
   const landscape = width >= height;
-  const safeX = Math.round(width * 0.1);
-  const safeY = Math.round(height * 0.1);
+  const margin = brandKit?.safeMargin ?? 0.1;
+  const sans = brandKit?.fontFamily ? `"${brandKit.fontFamily}", ${SANS}` : SANS;
+  const safeX = Math.round(width * margin);
+  const safeY = Math.round(height * margin);
   const brand = (productName || title || "AURORA").toUpperCase();
   const lines = (tagline || "La luz\nhecha fragancia.").split("\n");
   const headlineSize = landscape ? Math.round(width * 0.047) : Math.round(width * 0.075);
@@ -105,7 +108,7 @@ export const Overlay: React.FC<ProductVideoProps> = ({
           right: safeX,
           top: safeY,
           ...reveal(0.15),
-          fontFamily: SANS,
+          fontFamily: sans,
           fontSize: 10,
           letterSpacing: 3.2,
           color: "rgba(231, 216, 190, 0.72)",
@@ -151,7 +154,7 @@ export const Overlay: React.FC<ProductVideoProps> = ({
           top: kickerTop,
           width: columnWidth,
           ...reveal(0.75),
-          fontFamily: SANS,
+          fontFamily: sans,
           fontSize: landscape ? 10 : 11,
           letterSpacing: 3.4,
           color: accent,
@@ -170,7 +173,7 @@ export const Overlay: React.FC<ProductVideoProps> = ({
           alignItems: "center",
           gap: 16,
           ...reveal(4.2),
-          fontFamily: SANS,
+          fontFamily: sans,
           fontSize: 10,
           letterSpacing: 3.2,
           color: "#f0e4d0",
@@ -187,7 +190,7 @@ export const Overlay: React.FC<ProductVideoProps> = ({
           right: safeX,
           bottom: safeY,
           ...reveal(0.8),
-          fontFamily: SANS,
+          fontFamily: sans,
           fontSize: 9,
           letterSpacing: 2.8,
           color: "rgba(231, 216, 190, 0.48)",

@@ -225,6 +225,18 @@ export class RemotionEngine implements VideoEngine {
         /* sin transforms guardados */
       }
     }
+    // Kit de marca del workspace (brand.json): se inyecta como prop `brand` y
+    // su accentColor es el fallback del acento.
+    let brand: Record<string, unknown> | undefined;
+    try {
+      const parsed = JSON.parse(readFileSync(join(workspaceDir, "brand.json"), "utf8")) as unknown;
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+        brand = parsed as Record<string, unknown>;
+      }
+    } catch {
+      /* sin brand.json */
+    }
+
     const props = {
       ...customProps,
       // El formato siempre lo manda el proyecto, no un asset ni el agente.
@@ -235,7 +247,13 @@ export class RemotionEngine implements VideoEngine {
       projectId: context.project.id,
       title: projectTitle,
       subtitle: `${projectTitle.toUpperCase()} · ${Math.round(context.project.durationTarget)}S`,
-      accent: typeof customProps.accent === "string" ? customProps.accent : "#22d3ee",
+      accent:
+        typeof customProps.accent === "string"
+          ? customProps.accent
+          : typeof brand?.accentColor === "string"
+            ? brand.accentColor
+            : "#22d3ee",
+      ...(brand ? { brand } : {}),
     };
 
     const localBin = join(workspaceDir, "node_modules", ".bin", "remotion");

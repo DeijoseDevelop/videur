@@ -25,6 +25,18 @@ export const productVideoSchema = z.object({
   environmentBackground: z.boolean().optional(),
   /** Look de iluminación Lightformer cuando no hay HDRI. */
   envPreset: z.enum(["studio", "golden", "cyber", "mono"]).optional(),
+  /** Kit de marca inyectado por el motor desde brand.json del workspace. */
+  brand: z
+    .object({
+      primaryColor: z.string().optional(),
+      accentColor: z.string().optional(),
+      textColor: z.string().optional(),
+      fontFamily: z.string().optional(),
+      logo: z.string().optional(),
+      safeMargin: z.number().min(0).max(0.3).optional(),
+      tone: z.string().optional(),
+    })
+    .optional(),
   /** true = solo el producto (miniaturas); oculta el overlay de texto. */
   bare: z.boolean().optional(),
 });

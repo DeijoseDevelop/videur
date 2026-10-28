@@ -4,6 +4,7 @@ import type {
   AgentRun,
   AppSettings,
   AssetTransform,
+  BrandKit,
   CreateProjectInput,
   DoctorReport,
   EngineId,
@@ -107,6 +108,7 @@ export interface AppState {
   currentProject: ProjectWithLastRender | null;
   files: FileNode[];
   assets: ProjectAsset[];
+  brand: BrandKit | null;
   openFile: OpenFile | null;
   renders: Render[];
   selectedRenderId: string | null;
@@ -137,6 +139,7 @@ const initialState: AppState = {
   currentProject: null,
   files: [],
   assets: [],
+  brand: null,
   openFile: null,
   renders: [],
   selectedRenderId: null,
@@ -401,6 +404,7 @@ export const appStore = createStore(
           s.assets.value = assets.items;
           s.renders.value = renders.items;
           s.messages.value = messages.items;
+          void loadBrand(projectId);
           const selectedRenderId =
             renders.items.find((item) => item.status === "succeeded")?.id ?? renders.items[0]?.id ?? null;
           s.selectedRenderId.value = selectedRenderId;
@@ -648,6 +652,27 @@ export const appStore = createStore(
         }
       };
 
+      const loadBrand = async (projectId: string): Promise<void> => {
+        try {
+          const { brand } = await api.projects.getBrand(projectId);
+          s.brand.value = brand;
+        } catch {
+          s.brand.value = null;
+        }
+      };
+
+      const saveBrand = async (projectId: string, brand: BrandKit): Promise<boolean> => {
+        try {
+          const { brand: saved } = await api.projects.setBrand(projectId, brand);
+          s.brand.value = saved;
+          toast("Kit de marca guardado", "success");
+          return true;
+        } catch (error) {
+          toast(errorMessage(error), "error");
+          return false;
+        }
+      };
+
       const saveSettings = async (patch: UpdateSettingsInput): Promise<boolean> => {
         try {
           s.settings.value = await api.settings.update(patch);
@@ -873,6 +898,8 @@ export const appStore = createStore(
         uploadAssets,
         deleteAsset,
         saveAssetTransform,
+        loadBrand,
+        saveBrand,
         saveSettings,
         saveProvider,
         deleteProvider,
