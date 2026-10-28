@@ -140,9 +140,12 @@ ffprobe + contact-sheet + QA
       y fallback a Lightformers si falta o falla.
 - [x] Presets de entorno sin HDRI: `envPreset` = `studio` (default), `golden`,
       `cyber`, `mono` (Lightformer arrangements, 100% offline).
-- [x] QA 3D: `center_luma` (canvas vacío por luminancia central, signalstats)
-      y `product_framing` (producto llenando borde lateral de la zona útil o
-      demasiado pequeño, por análisis de frames en gris).
+- [x] QA 3D: `center_luma` (canvas vacío por luminancia central),
+      `product_framing` (producto llenando borde lateral de la zona útil o
+      demasiado pequeño) y `overlay_collision` (masa brillante invadiendo la
+      zona de texto del overlay). Los tres extraen frames como PNG en gris —
+      camino único compatible con el ffmpeg mínimo del compositor (sin
+      rawvideo, signalstats ni seek por `-ss`; se filtra con `trim`).
 - [x] Orientación de modelos persistida por asset
       (`.videur/asset-transforms.json`, editable desde la biblioteca y vía
       `PATCH /projects/:id/asset-transform`). Z-up se auto-rellena a `rotX:-90`;

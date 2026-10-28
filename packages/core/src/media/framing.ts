@@ -1,6 +1,7 @@
 import { rmSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { runCommand } from "../process/runner";
+import { decodeGrayPng } from "./png";
 
 export interface BoundsSample {
   /** Límites del contenido que destaca del fondo dentro de la zona útil. */
@@ -13,6 +14,76 @@ export interface BoundsSample {
   edgeRight: number;
 }
 
+export interface ZoneOccupancy {
+  /** Fracción de píxeles brillantes en la zona (0-1). */
+  coverage: number;
+  /** Fracción de filas con cobertura >50% (masa sólida = producto, no texto). */
+  denseRows: number;
+}
+
+/**
+ * Ocupación de contenido brillante en una zona de texto del overlay. El
+ * texto produce filas de cobertura baja-media; un producto invadiendo la
+ * zona genera filas densas y contiguas.
+ */
+export function zoneOccupancy(gray: Uint8Array, w: number, h: number): ZoneOccupancy {
+  let bgSum = 0;
+  let bgN = 0;
+  for (let i = 0; i < gray.length; i += 991) {
+    bgSum += gray[i]!;
+    bgN += 1;
+  }
+  const threshold = bgSum / Math.max(1, bgN) + 24;
+  let bright = 0;
+  let dense = 0;
+  for (let y = 0; y < h; y += 1) {
+    const base = y * w;
+    let rowBright = 0;
+    for (let x = 0; x < w; x += 1) {
+      if (gray[base + x]! > threshold) {
+        rowBright += 1;
+        bright += 1;
+      }
+    }
+    if (rowBright > w * 0.5) dense += 1;
+  }
+  return { coverage: bright / gray.length, denseRows: dense / h };
+}
+
+export interface TextZoneResult {
+  checked: boolean;
+  portrait: boolean;
+  samples: ZoneOccupancy[];
+}
+
+/**
+ * Extrae la zona del overlay donde vive el texto (portrait: banda superior
+ * del 42%; landscape: columna izquierda del 58%) en tres instantes y mide
+ * cuánta masa brillante la ocupa — si el producto 3D la invade, tapa el texto.
+ */
+export async function measureTextZone(
+  videoPath: string,
+  duration: number,
+  width: number,
+  height: number,
+  ffmpeg: string,
+): Promise<TextZoneResult> {
+  const portrait = height > width;
+  const crop = portrait
+    ? `crop=iw:ih*0.42:0:0`
+    : `crop=iw*0.58:ih:0:0`;
+  const regionW = Math.round(width * (portrait ? 1 : 0.58)) & ~1;
+  const regionH = Math.round(height * (portrait ? 0.42 : 1)) & ~1;
+  const samples: ZoneOccupancy[] = [];
+  for (const at of SAMPLES_AT) {
+    const t = Math.max(0, duration * at - 0.05);
+    const gray = await extractGrayFrame(ffmpeg, videoPath, t, crop, regionW, regionH, "tz");
+    if (gray === null) return { checked: false, portrait, samples };
+    samples.push(zoneOccupancy(gray, regionW, regionH));
+  }
+  return { checked: true, portrait, samples };
+}
+
 export interface ProductBoundsResult {
   checked: boolean;
   /** Tamaño de la región útil analizada (70% ancho × 50% alto central). */
@@ -22,6 +93,54 @@ export interface ProductBoundsResult {
 }
 
 const SAMPLES_AT = [0.15, 0.5, 0.85];
+
+/**
+ * Extrae un frame recortado en gris como PNG y lo decodifica. PNG+image2 es el
+ * único camino que tienen tanto el ffmpeg completo como el build mínimo del
+ * compositor de Remotion (sin muxer rawvideo, y el seek con -ss devuelve 0
+ * frames — se usa el filtro trim en su lugar). `tag` diferencia los temporales.
+ */
+export async function extractGrayFrame(
+  ffmpeg: string,
+  videoPath: string,
+  t: number,
+  cropExpr: string,
+  w: number,
+  h: number,
+  tag: string,
+): Promise<Uint8Array | null> {
+  const raw = join(dirname(videoPath), `.videur-${tag}-${process.pid}-${Math.round(t * 1000)}.png`);
+  const result = await runCommand(
+    [
+      ffmpeg,
+      "-hide_banner",
+      "-loglevel",
+      "error",
+      "-i",
+      videoPath,
+      "-vf",
+      `trim=start=${t.toFixed(3)},${cropExpr},format=gray`,
+      "-frames:v",
+      "1",
+      "-update",
+      "1",
+      "-f",
+      "image2",
+      "-c:v",
+      "png",
+      "-y",
+      raw,
+    ],
+    { timeoutMs: 30_000, maxLogBytes: 200_000 },
+  );
+  let gray: Uint8Array | null = null;
+  if (result.exitCode === 0) {
+    const decoded = decodeGrayPng(new Uint8Array(await Bun.file(raw).arrayBuffer()));
+    if (decoded && decoded.w === w && decoded.h === h) gray = decoded.data;
+  }
+  rmSync(raw, { force: true });
+  return result.exitCode === 0 ? gray : null;
+}
 
 /**
  * Devuelve la caja de los píxeles que destacan del fondo (luma > fondo+24)
@@ -92,37 +211,17 @@ export async function measureProductBounds(
   const samples: BoundsSample[] = [];
   for (const at of SAMPLES_AT) {
     const t = Math.max(0, duration * at - 0.05);
-    const raw = join(dirname(videoPath), `.videur-fr-${process.pid}-${samples.length}.gray`);
-    const result = await runCommand(
-      [
-        ffmpeg,
-        "-hide_banner",
-        "-loglevel",
-        "error",
-        "-ss",
-        t.toFixed(3),
-        "-i",
-        videoPath,
-        "-vf",
-        "crop=iw*0.7:ih*0.5:iw*0.15:ih*0.2",
-        "-frames:v",
-        "1",
-        "-f",
-        "rawvideo",
-        "-pix_fmt",
-        "gray",
-        "-y",
-        raw,
-      ],
-      { timeoutMs: 30_000, maxLogBytes: 200_000 },
+    const gray = await extractGrayFrame(
+      ffmpeg,
+      videoPath,
+      t,
+      "crop=iw*0.7:ih*0.5:iw*0.15:ih*0.2",
+      regionW,
+      regionH,
+      "fr",
     );
-    let bounds: BoundsSample | null = null;
-    if (result.exitCode === 0) {
-      const gray = new Uint8Array(await Bun.file(raw).arrayBuffer());
-      if (gray.length === regionW * regionH) bounds = contentBounds(gray, regionW, regionH);
-    }
-    rmSync(raw, { force: true });
-    if (result.exitCode !== 0) return { checked: false, regionW, regionH, samples };
+    if (gray === null) return { checked: false, regionW, regionH, samples };
+    const bounds = contentBounds(gray, regionW, regionH);
     if (bounds) samples.push(bounds);
   }
   return { checked: true, regionW, regionH, samples };

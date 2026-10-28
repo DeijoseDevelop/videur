@@ -1,4 +1,4 @@
-import { runCommand } from "../process/runner";
+import { extractGrayFrame } from "./framing";
 
 export interface CenterLumaResult {
   checked: boolean;
@@ -16,36 +16,28 @@ const SAMPLES_AT = [0.15, 0.5, 0.85];
 export async function measureCenterLuma(
   videoPath: string,
   duration: number,
+  width: number,
+  height: number,
   ffmpeg: string,
 ): Promise<CenterLumaResult> {
+  const regionW = Math.round(width * 0.6) & ~1;
+  const regionH = Math.round(height * 0.5) & ~1;
   const samples: number[] = [];
   for (const at of SAMPLES_AT) {
     const t = Math.max(0, duration * at - 0.05);
-    const result = await runCommand(
-      [
-        ffmpeg,
-        "-hide_banner",
-        "-loglevel",
-        "error",
-        "-ss",
-        t.toFixed(3),
-        "-i",
-        videoPath,
-        "-vf",
-        "crop=iw*0.6:ih*0.5:iw*0.2:ih*0.2,signalstats,metadata=mode=print:file=-",
-        "-frames:v",
-        "1",
-        "-f",
-        "null",
-        "-",
-      ],
-      { timeoutMs: 30_000, maxLogBytes: 200_000 },
+    const gray = await extractGrayFrame(
+      ffmpeg,
+      videoPath,
+      t,
+      "crop=iw*0.6:ih*0.5:iw*0.2:ih*0.2",
+      regionW,
+      regionH,
+      "lu",
     );
-    const match = /lavfi\.signalstats\.YAVG=([\d.]+)/.exec(result.stdout);
-    if (result.exitCode !== 0 || !match) {
-      return { checked: false, samples };
-    }
-    samples.push(Number.parseFloat(match[1]!));
+    if (gray === null) return { checked: false, samples };
+    let sum = 0;
+    for (let i = 0; i < gray.length; i += 1) sum += gray[i]!;
+    samples.push(sum / gray.length);
   }
-  return { checked: samples.length === SAMPLES_AT.length, samples };
+  return { checked: true, samples };
 }

@@ -46,7 +46,12 @@ import { detectBlackFrames } from "../media/blackdetect";
 import { generateContactSheet } from "../media/contact-sheet";
 import { detectFreezes } from "../media/freezedetect";
 import { detectLoudness } from "../media/loudness";
-import { measureProductBounds, type ProductBoundsResult } from "../media/framing";
+import {
+  measureProductBounds,
+  measureTextZone,
+  type ProductBoundsResult,
+  type TextZoneResult,
+} from "../media/framing";
 import { measureCenterLuma } from "../media/luminance";
 import { probeMedia } from "../media/ffprobe";
 import { createQaReport } from "../media/qa";
@@ -426,16 +431,21 @@ export class RenderService {
 
       let centerLuma: number[] | undefined;
       let productBounds: ProductBoundsResult | undefined;
+      let textZone: TextZoneResult | undefined;
       if (project.engine === "remotion") {
-        try {
-          const luma = await measureCenterLuma(
-            result.outputPath,
-            metadata.duration,
-            this.deps.config.binaries.ffmpeg,
-          );
-          if (luma.checked) centerLuma = luma.samples;
-        } catch (error) {
-          appendLog("stderr", `Medición de luminancia central falló: ${toErrorMessage(error)}`);
+        if (metadata.video) {
+          try {
+            const luma = await measureCenterLuma(
+              result.outputPath,
+              metadata.duration,
+              metadata.video.width,
+              metadata.video.height,
+              this.deps.config.binaries.ffmpeg,
+            );
+            if (luma.checked) centerLuma = luma.samples;
+          } catch (error) {
+            appendLog("stderr", `Medición de luminancia central falló: ${toErrorMessage(error)}`);
+          }
         }
         if (existsSync(join(workspaceDir, "src/scene/Studio.tsx")) && metadata.video) {
           try {
@@ -449,6 +459,18 @@ export class RenderService {
             if (bounds.checked) productBounds = bounds;
           } catch (error) {
             appendLog("stderr", `Medición de encuadre del producto falló: ${toErrorMessage(error)}`);
+          }
+          try {
+            const zone = await measureTextZone(
+              result.outputPath,
+              metadata.duration,
+              metadata.video.width,
+              metadata.video.height,
+              this.deps.config.binaries.ffmpeg,
+            );
+            if (zone.checked) textZone = zone;
+          } catch (error) {
+            appendLog("stderr", `Medición de la zona de texto falló: ${toErrorMessage(error)}`);
           }
         }
       }
@@ -485,6 +507,7 @@ export class RenderService {
         loudnessChecked,
         centerLuma,
         productBounds,
+        textZone,
       });
 
       const metadataPath = join(renderDir, "metadata.json");

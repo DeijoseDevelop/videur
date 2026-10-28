@@ -1,6 +1,6 @@
 import type { MediaMetadata, Project, QaCheck, QaReport, QaStatus } from "@videur/contracts";
 import type { BlackInterval } from "./blackdetect";
-import type { ProductBoundsResult } from "./framing";
+import type { ProductBoundsResult, TextZoneResult } from "./framing";
 import type { FreezeInterval } from "./freezedetect";
 
 export interface QaInput {
@@ -20,6 +20,8 @@ export interface QaInput {
   centerLuma?: number[];
   /** Caja del contenido en la zona útil del producto (encuadre 3D). */
   productBounds?: ProductBoundsResult;
+  /** Ocupación de masa brillante en la zona de texto del overlay. */
+  textZone?: TextZoneResult;
 }
 
 function check(id: string, status: QaStatus, message: string, details?: Record<string, unknown>): QaCheck {
@@ -218,6 +220,27 @@ export function createQaReport(input: QaInput): QaReport {
           ),
         );
       }
+    }
+  }
+
+  if (input.textZone && input.textZone.samples.length >= 2) {
+    const { samples, portrait } = input.textZone;
+    const majority = Math.ceil(samples.length / 2);
+    const zone = portrait ? "la banda superior" : "la columna izquierda";
+    const invading = samples.filter((s) => s.denseRows > 0.15 || s.coverage > 0.45);
+    if (invading.length >= majority) {
+      checks.push(
+        check(
+          "overlay_collision",
+          "warn",
+          `Masa brillante ocupa ${zone} del overlay en la mayoría de muestras: el producto probablemente tapa el texto. Reduce modelScale, recentra o aleja la cámara.`,
+          { samples },
+        ),
+      );
+    } else {
+      checks.push(
+        check("overlay_collision", "pass", `La zona de texto (${zone}) está libre del producto`),
+      );
     }
   }
 
