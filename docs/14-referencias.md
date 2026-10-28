@@ -10,7 +10,7 @@
 ## 2. Elur
 
 | Recurso | Enlace |
-|---|---|
+| --- | --- |
 | Documentación | https://elur.dev/ |
 | Repositorio | https://github.com/elurjs/elur |
 | Core | `@elurjs/core` 4.0.5 |
@@ -33,7 +33,7 @@ Referencias internas de la skill:
 ## 3. FFmpeg
 
 | Recurso | Enlace |
-|---|---|
+| --- | --- |
 | Documentación | https://ffmpeg.org/documentation.html |
 | Filtros | https://ffmpeg.org/ffmpeg-filters.html |
 | `drawtext` | https://ffmpeg.org/ffmpeg-filters.html#drawtext |
@@ -45,7 +45,7 @@ Referencias internas de la skill:
 ## 4. Motores
 
 | Motor | Versión | Enlace |
-|---|---|---|
+| --- | --- | --- |
 | Manim Community | 0.22.0 | https://www.manim.community/ · https://github.com/ManimCommunity/manim |
 | Remotion | 4.0.539 | https://www.remotion.dev/ · https://github.com/remotion-dev/remotion |
 | Remotion Skills | — | https://github.com/remotion-dev/skills |
@@ -56,7 +56,7 @@ Referencias internas de la skill:
 ### 4.1 3D real
 
 | Recurso | Versión | Enlace |
-|---|---|---|
+| --- | --- | --- |
 | Three.js | 0.186.1 | https://threejs.org/ |
 | React Three Fiber | 9.8.2 | https://docs.pmnd.rs/react-three-fiber |
 | Drei | 10.7.9 | https://drei.docs.pmnd.rs/ |
@@ -70,7 +70,7 @@ Referencias internas de la skill:
 ## 5. Runtime y librerías
 
 | Recurso | Versión | Enlace |
-|---|---|---|
+| --- | --- | --- |
 | Bun | 1.3.8+ | https://bun.sh/ |
 | Hono | 4.13+ | https://hono.dev/ |
 | Zod | 4.6+ | https://zod.dev/ |
@@ -82,7 +82,7 @@ Referencias internas de la skill:
 ## 6. Proyectos similares (2026)
 
 | Proyecto | Enfoque | Enlace |
-|---|---|---|
+| --- | --- | --- |
 | OpenFilm | HTML + `frame(t)` + editor | https://github.com/openfilm/openfilm |
 | Showtime | HTML/Canvas + Manim + FFmpeg | https://github.com/FavioVazquez/showtime |
 | Orkas VideoStudio | `plan.json` + HyperFrames | https://github.com/Orkas-AI/Orkas-VideoStudio |
@@ -94,7 +94,7 @@ Referencias internas de la skill:
 ## 7. Proveedores de IA
 
 | Proveedor | Base URL | Docs |
-|---|---|---|
+| --- | --- | --- |
 | OpenAI | `https://api.openai.com/v1` | https://platform.openai.com/docs |
 | Anthropic | `https://api.anthropic.com/v1` | https://docs.anthropic.com |
 | Google Gemini | `https://generativelanguage.googleapis.com/v1beta` | https://ai.google.dev/docs |

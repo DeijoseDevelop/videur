@@ -85,7 +85,7 @@ a mano:
 ### Tools
 
 | Tool | Descripción | Argumentos |
-|---|---|---|
+| --- | --- | --- |
 | `videur_doctor` | Diagnóstico de herramientas | — |
 | `videur_list_projects` | Lista proyectos | `query?`, `limit?` |
 | `videur_create_project` | Crea proyecto | `name`, `brief?`, `engine?`, `aspectRatio?`, `duration?`, `templateId?` |
@@ -103,7 +103,7 @@ a mano:
 ### Resources
 
 | URI | Contenido |
-|---|---|
+| --- | --- |
 | `videur://projects` | Lista de proyectos |
 | `videur://projects/<id>` | Proyecto + archivos |
 | `videur://renders/<id>` | Render + QA |
@@ -197,7 +197,7 @@ Es compatible con OpenCode, Codex, Claude Code y Cursor.
 ## 6. Permisos
 
 | Superficie | Lectura | Escritura | Render | Borrado |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | UI | Sí | Sí | Sí | Sí (confirmación) |
 | CLI | Sí | Sí | Sí | Sí (`--force`) |
 | MCP | Sí | Sí | Sí | No en v0.1 |
@@ -208,7 +208,7 @@ MCP no expone borrado en v0.1 para reducir riesgo.
 ## 7. Troubleshooting
 
 | Problema | Solución |
-|---|---|
+| --- | --- |
 | MCP no aparece | Verificar ruta absoluta y `bun` en PATH |
 | `videur` no encontrado | Usar `bun apps/cli/src/index.ts` o `bun link` |
 | El agente no ve imágenes | Proveedor sin visión; usar QA técnico |

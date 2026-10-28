@@ -37,14 +37,14 @@
 ### 3.1 `schema_migrations`
 
 | Columna | Tipo | Notas |
-|---|---|---|
+| --- | --- | --- |
 | `version` | INTEGER PK | Número incremental |
 | `applied_at` | TEXT | ISO UTC |
 
 ### 3.2 `projects`
 
 | Columna | Tipo | Default | Notas |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `id` | TEXT PK | — | `prj_...` |
 | `name` | TEXT | — | 1–120 chars |
 | `slug` | TEXT UNIQUE | — | Derivado del nombre |
@@ -67,7 +67,7 @@
 ### 3.3 `renders`
 
 | Columna | Tipo | Notas |
-|---|---|---|
+| --- | --- | --- |
 | `id` | TEXT PK | `rnd_...` |
 | `project_id` | TEXT FK | `ON DELETE CASCADE` |
 | `engine` | TEXT | Motor usado |
@@ -92,7 +92,7 @@
 ### 3.4 `artifacts`
 
 | Columna | Tipo | Notas |
-|---|---|---|
+| --- | --- | --- |
 | `id` | TEXT PK | `art_...` |
 | `render_id` | TEXT FK | `ON DELETE CASCADE` |
 | `kind` | TEXT | `video\|contact_sheet\|metadata\|qa\|log` |
@@ -106,7 +106,7 @@
 ### 3.5 `messages`
 
 | Columna | Tipo | Notas |
-|---|---|---|
+| --- | --- | --- |
 | `id` | TEXT PK | `msg_...` |
 | `project_id` | TEXT FK | `ON DELETE CASCADE` |
 | `run_id` | TEXT | NULL para mensajes manuales |
@@ -122,7 +122,7 @@
 ### 3.6 `agent_runs`
 
 | Columna | Tipo | Notas |
-|---|---|---|
+| --- | --- | --- |
 | `id` | TEXT PK | `run_...` |
 | `project_id` | TEXT FK | `ON DELETE CASCADE` |
 | `provider_id` | TEXT | NULL si se borró |
@@ -141,7 +141,7 @@
 ### 3.7 `providers`
 
 | Columna | Tipo | Notas |
-|---|---|---|
+| --- | --- | --- |
 | `id` | TEXT PK | `prv_...` |
 | `label` | TEXT | Nombre visible |
 | `preset` | TEXT | `openai\|anthropic\|gemini\|deepseek\|kimi\|glm\|openrouter\|ollama\|lmstudio\|custom` |
@@ -162,7 +162,7 @@
 ### 3.8 `settings`
 
 | Columna | Tipo | Notas |
-|---|---|---|
+| --- | --- | --- |
 | `key` | TEXT PK | Ej. `defaults` |
 | `value_json` | TEXT | Objeto validado |
 | `updated_at` | TEXT | — |
@@ -195,7 +195,7 @@ Claves iniciales:
 ### 3.9 `events`
 
 | Columna | Tipo | Notas |
-|---|---|---|
+| --- | --- | --- |
 | `id` | TEXT PK | `evt_...` |
 | `project_id` | TEXT | NULL para eventos globales |
 | `render_id` | TEXT | NULL |

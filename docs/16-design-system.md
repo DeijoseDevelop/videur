@@ -29,7 +29,7 @@ El archivo fuente es [`apps/web/src/styles/tokens.css`](../apps/web/src/styles/t
 El tema se aplica en `<html data-theme="...">` y se guarda en `localStorage` (`videur.theme`).
 
 | Tema | Sensación | Superficie |
-|---|---|---|
+| --- | --- | --- |
 | `midnight` | azul profundo, el original | `#060a10` |
 | `aurora` | verde glacial | `#04100d` |
 | `ember` | cálido, estudio nocturno | `#0d0806` |
@@ -47,7 +47,7 @@ Para añadir uno:
 El acento vive en `<html data-accent="...">` y se guarda en `videur.accent`. Cambia el par primario/secundario sin tocar los componentes.
 
 | Acento | Primario | Secundario |
-|---|---|---|
+| --- | --- | --- |
 | `cyan` | `#22d3ee` | `#8b5cf6` |
 | `violet` | `#a78bfa` | `#22d3ee` |
 | `emerald` | `#34d399` | `#22d3ee` |
@@ -88,7 +88,7 @@ No se añadió una dependencia de diseño: el sistema es CSS nativo para mantene
 El logo es la **V de Videur** construida como dos tiras de película con un play en negativo. Hay dos variantes para que funcione a cualquier tamaño:
 
 | Archivo | Uso |
-|---|---|
+| --- | --- |
 | [`brand-mark.svg`](../apps/web/public/brand-mark.svg) | Marca principal: README, presentaciones, banners, tamaño grande |
 | [`brand-mark-small.svg`](../apps/web/public/brand-mark-small.svg) | Favicon y sidebar: play blanco, sin agujeros, legible a 16–38 px |
 | [`brand-mark-mono.svg`](../apps/web/public/brand-mark-mono.svg) | Monocromo oscuro para fondos claros |

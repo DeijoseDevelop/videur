@@ -5,7 +5,7 @@ Esta carpeta es la fuente de verdad técnica de Videur. Los documentos se escrib
 ## Lectura recomendada
 
 | # | Documento | Para qué |
-|---|---|---|
+| --- | --- | --- |
 | 00 | [Visión de producto](00-vision-producto.md) | Problema, usuarios, alcance y principios |
 | 01 | [Requisitos](01-requisitos.md) | RF/RNF, historias y criterios de aceptación |
 | 02 | [Arquitectura](02-arquitectura.md) | Componentes, flujos y decisiones de alto nivel |

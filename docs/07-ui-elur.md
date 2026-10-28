@@ -338,7 +338,7 @@ Convención BEM ligera: `.project-card`, `.project-card__title`, `.project-card-
 ## 9. Responsive
 
 | Breakpoint | Cambio |
-|---|---|
+| --- | --- |
 | ≥ 1280 px | Sidebar fija, workspace 3 columnas |
 | 1024–1279 px | Sidebar 220 px, inspector colapsable |
 | 768–1023 px | Sidebar overlay, workspace 2 columnas |
@@ -366,7 +366,7 @@ Convención BEM ligera: `.project-card`, `.project-card__title`, `.project-card-
 ## 12. Estados de UI
 
 | Estado | Representación |
-|---|---|
+| --- | --- |
 | Cargando | Skeleton o spinner con texto |
 | Vacío | Empty state con CTA |
 | Error | Banner rojo + reintentar |

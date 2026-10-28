@@ -3,7 +3,7 @@
 ## Estado actual
 
 | Fase | Entregable | Estado |
-|---|---|---|
+| --- | --- | --- |
 | 0 | Documentación técnica, ADRs y modelo de datos | ✅ |
 | 1 | Core: config, SQLite, repositorios, storage, cola, eventos | ✅ |
 | 2 | Motores: FFmpeg, Pillow, Manim, Remotion | ✅ FFmpeg, Pillow y Remotion probados; Manim requiere runtime |
@@ -235,7 +235,7 @@ No bloquea v0.1. Se prioriza solo si el producto lo necesita.
 ## Prioridades
 
 | Prioridad | Trabajo | Motivo |
-|---|---|---|
+| --- | --- | --- |
 | P0 | FFmpeg + QA + UI básica | Flujo end-to-end |
 | P0 | Seguridad de paths y secretos | Evitar daños |
 | P1 | Agente multi-proveedor | Propuesta de valor |
@@ -252,7 +252,7 @@ No bloquea v0.1. Se prioriza solo si el producto lo necesita.
 ## Métricas por fase
 
 | Fase | Métrica | Objetivo |
-|---|---|---|
+| --- | --- | --- |
 | 1 | Tests core | ≥ 40 |
 | 2 | Renders smoke | 2 motores |
 | 3 | Endpoints | ≥ 25 |

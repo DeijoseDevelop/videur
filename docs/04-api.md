@@ -23,7 +23,7 @@ Base: `http://127.0.0.1:8787/api`
 ### Códigos de error
 
 | HTTP | Código | Cuándo |
-|---|---|---|
+| --- | --- | --- |
 | 400 | `VALIDATION_ERROR` | Body/query inválido |
 | 401 | `UNAUTHORIZED` | Token requerido o inválido |
 | 404 | `NOT_FOUND` | Recurso inexistente |

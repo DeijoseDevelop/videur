@@ -5,7 +5,7 @@
 ### 1.1 Proyectos
 
 | ID | Requisito | Prioridad | Criterio de aceptación |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | RF-001 | Crear proyecto con nombre, brief, motor, aspecto, FPS y duración | Must | `POST /api/projects` devuelve 201 y el proyecto aparece en la lista |
 | RF-002 | Listar y filtrar proyectos | Must | La UI muestra nombre, motor, estado y último render |
 | RF-003 | Editar metadatos del proyecto | Must | `PATCH` actualiza y persiste |
@@ -17,7 +17,7 @@
 ### 1.2 Archivos y workspace
 
 | ID | Requisito | Prioridad | Criterio de aceptación |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | RF-010 | Listar árbol de archivos | Must | `GET /files` devuelve rutas, tamaños y tipo |
 | RF-011 | Leer archivo de texto | Must | `GET /file?path=...` devuelve contenido UTF-8 |
 | RF-012 | Escribir/crear archivo | Must | `PUT /file` valida ruta y tamaño |
@@ -29,7 +29,7 @@
 ### 1.3 Renders
 
 | ID | Requisito | Prioridad | Criterio de aceptación |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | RF-020 | Encolar render | Must | `POST /projects/:id/renders` devuelve 202 y un `renderId` |
 | RF-021 | Ejecutar FFmpeg | Must | Produce `output.mp4` reproducible |
 | RF-022 | Ejecutar Python/Pillow | Must | Produce MP4 con pipe `rgb24` |
@@ -48,7 +48,7 @@
 ### 1.4 QA y metadata
 
 | ID | Requisito | Prioridad | Criterio de aceptación |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | RF-040 | `ffprobe` del MP4 | Must | Guarda codec, resolución, FPS, duración, streams |
 | RF-041 | Validar stream de video | Must | Falla si no hay video o el archivo no existe |
 | RF-042 | Validar `yuv420p` | Should | Advierte si el pixel format no es compatible |
@@ -61,7 +61,7 @@
 ### 1.5 Agente
 
 | ID | Requisito | Prioridad | Criterio de aceptación |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | RF-050 | Configurar proveedores | Must | CRUD y test de conexión |
 | RF-051 | Presets OpenAI/Anthropic/Gemini | Must | Base URL y modelo precargados |
 | RF-052 | Presets DeepSeek/Kimi/GLM/OpenRouter | Must | Funcionan como OpenAI-compatible |
@@ -81,7 +81,7 @@
 ### 1.6 UI
 
 | ID | Requisito | Prioridad | Criterio de aceptación |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | RF-070 | Dashboard con stats | Must | Proyectos, renders,成功率 y salud de motores |
 | RF-071 | Lista de proyectos | Must | Búsqueda y filtro por motor/estado |
 | RF-072 | Wizard de creación | Must | 3 pasos, validación y creación |
@@ -101,7 +101,7 @@
 ### 1.7 Integraciones
 
 | ID | Requisito | Prioridad | Criterio de aceptación |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | RF-090 | CLI `doctor` | Must | Reporta herramientas y versiones |
 | RF-091 | CLI `render` | Must | Renderiza y muestra progreso |
 | RF-092 | CLI `agent` | Should | Ejecuta el agente y transmite logs |
@@ -114,7 +114,7 @@
 ### 1.8 Sistema
 
 | ID | Requisito | Prioridad | Criterio de aceptación |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | RF-100 | Migraciones automáticas | Must | Al arrancar, la DB queda al día |
 | RF-101 | Recuperación tras crash | Must | Renders `running` huérfanos pasan a `failed` |
 | RF-102 | Configuración por env | Must | Todas las rutas/puertos son configurables |
@@ -125,7 +125,7 @@
 ## 2. Requisitos no funcionales
 
 | ID | Requisito | Objetivo |
-|---|---|---|
+| --- | --- | --- |
 | RNF-001 | Rendimiento API | p95 < 100 ms para lecturas locales |
 | RNF-002 | Arranque | < 2 s en frío |
 | RNF-003 | Memoria en reposo | < 150 MB |
@@ -201,7 +201,7 @@
 ## 5. Matriz de trazabilidad resumida
 
 | Módulo | Requisitos | Tests |
-|---|---|---|
+| --- | --- | --- |
 | Proyectos | RF-001..007 | `projects.test.ts`, API integration |
 | Archivos | RF-010..016 | `workspace.test.ts` |
 | Renders | RF-020..032 | `queue.test.ts`, `engines.test.ts` |

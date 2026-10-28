@@ -197,7 +197,7 @@ POST /api/projects/:id/agent {prompt, providerId, model?}
 Tools principales:
 
 | Tool | Efecto | Límite |
-|---|---|---|
+| --- | --- | --- |
 | `list_files` | Lista workspace | 200 entradas |
 | `read_file` | Lee texto | 256 KB |
 | `write_file` | Escribe texto | 1 MB |
@@ -278,7 +278,7 @@ En tests se pasa un `dataDir` temporal y no se toca el entorno real.
 ## 10. Decisiones clave
 
 | Decisión | Alternativas | Motivo |
-|---|---|---|
+| --- | --- | --- |
 | Bun + TS | Node, Python, Rust | Un runtime, SQLite nativo, velocidad, Elur es TS |
 | Hono | Fastify, Elysia, Express | Ligero, tipado, SSE, Bun adapter |
 | SQLite | Postgres, JSON | Local-first, cero infraestructura, transacciones |
@@ -302,7 +302,7 @@ Nada de esto cambia el contrato de motores ni el formato de artefactos.
 ## 12. Riesgos técnicos
 
 | Riesgo | Impacto | Mitigación |
-|---|---|---|
+| --- | --- | --- |
 | Código generado por IA es inseguro | Alto | Docker por defecto para código no confiable; allowlist; límites |
 | FFmpeg tiene sintaxis frágil | Medio | `stderr` completo; plantillas probadas; QA |
 | Manim/Remotion pesan mucho | Medio | Detección opcional; Docker multi-stage; mensajes claros |

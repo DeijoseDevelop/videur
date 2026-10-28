@@ -5,7 +5,7 @@
 Videur ejecuta código generado por IA. Ese código puede ser erróneo, malicioso o simplemente destructivo. Hay dos modos:
 
 | Modo | Confianza | Recomendación |
-|---|---|---|
+| --- | --- | --- |
 | `trusted` (nativo) | El usuario confía en el código y en su máquina | Desarrollo local, plantillas propias |
 | `docker` | El código se ejecuta en un contenedor con límites | Código generado por IA, modelos no confiables, uso compartido |
 
@@ -14,7 +14,7 @@ Videur ejecuta código generado por IA. Ese código puede ser erróneo, malicios
 ## 2. Amenazas
 
 | ID | Amenaza | Impacto | Mitigación |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | T-01 | Comando malicioso borra archivos | Alto | Docker, allowlist, workspace aislado, backups |
 | T-02 | Exfiltración de API keys | Alto | Cifrado, entorno filtrado, nunca en prompts/logs |
 | T-03 | Path traversal (`../../etc/passwd`) | Alto | Resolución canónica + validación de prefijo |
@@ -157,7 +157,7 @@ font-src 'self';
 ## 8. Límites de recursos
 
 | Recurso | Límite |
-|---|---|
+| --- | --- |
 | Archivo editable | 1 MB |
 | Lectura de archivo | 256 KB |
 | Output de tool | 64 KB |

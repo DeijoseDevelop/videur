@@ -17,7 +17,7 @@ Cada proveedor de media implementa una interfaz común y se configura con claves
 ### 2.1 Opciones
 
 | Proveedor | Tipo | Calidad | Costo | Notas |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | **Piper** | Local | Buena | Gratis | Rápido, offline, voces multiidioma |
 | **Edge-TTS** | Cloud no oficial | Muy buena | Gratis | Requiere red; términos de uso |
 | **OpenAI TTS** | Cloud | Muy buena | Pago | `gpt-4o-mini-tts` o similar |
@@ -93,7 +93,7 @@ CREATE TABLE media_jobs (
 ### 3.1 Opciones
 
 | Proveedor | Tipo | Notas |
-|---|---|---|
+| --- | --- | --- |
 | **ComfyUI** | Local | Flujos SDXL/Flux; control total |
 | **OpenAI Images** | Cloud | Rápido, buena calidad |
 | **fal.ai** | Cloud | Flux/SDXL, muchos modelos |
@@ -124,7 +124,7 @@ CREATE TABLE media_jobs (
 ### 4.1 Opciones
 
 | Proveedor | Tipo | Notas |
-|---|---|---|
+| --- | --- | --- |
 | **MusicGen** | Local | Meta; requiere GPU idealmente |
 | **Stable Audio** | Local/Cloud | Generación de audio |
 | **Suno / Udio** | Cloud | Alta calidad; términos comerciales |
@@ -151,7 +151,7 @@ ffmpeg -i voice.wav -i music.wav \
 ### 5.1 Opciones
 
 | Proveedor | Tipo | Notas |
-|---|---|---|
+| --- | --- | --- |
 | **Runway** | Cloud | Gen-4 |
 | **Pika** | Cloud | Clips cortos |
 | **Luma Dream Machine** | Cloud | Video/imagen |
@@ -240,7 +240,7 @@ Este IR permite re-render incremental y edición por agentes.
 ## 10. Fases
 
 | Fase | Alcance | Dependencias |
-|---|---|---|
+| --- | --- | --- |
 | v0.2 | Assets, TTS local/cloud, subtítulos | `assets`, `media_jobs` |
 | v0.2.5 | Imágenes (ComfyUI/OpenAI/fal) | AssetStore |
 | v0.3 | Música/SFX + ducking | Mezcla de audio |

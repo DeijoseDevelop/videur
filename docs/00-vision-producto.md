@@ -31,7 +31,7 @@ Videur une las piezas: **proyecto + código + render + QA visual + agente + UI**
 ## Usuarios
 
 | Persona | Necesidad | Cómo la cubre Videur |
-|---|---|---|
+| --- | --- | --- |
 | Creador técnico | Explicar un concepto con animación matemática | Manim + agente + previsualización |
 | Fundador / marketer | Promo de 15–30 s para un producto | Remotion (3D WebGL) o FFmpeg + plantillas |
 | Analista / científico | Visualizar datos o una simulación | Python/Pillow + pipe a FFmpeg |
@@ -81,7 +81,7 @@ Videur une las piezas: **proyecto + código + render + QA visual + agente + UI**
 ## Métricas de éxito
 
 | Métrica | Objetivo v0.1 |
-|---|---|
+| --- | --- |
 | Primer render exitoso desde cero | < 10 minutos (incluyendo configuración) |
 | Tiempo de render de un clip 720p/6 s | < 60 s en hardware modesto |
 | Tasa de renders exitosos con plantilla | ≥ 95% |
@@ -103,7 +103,7 @@ Videur une las piezas: **proyecto + código + render + QA visual + agente + UI**
 ## Glosario
 
 | Término | Definición |
-|---|---|
+| --- | --- |
 | **Proyecto** | Unidad de trabajo: brief, configuración, archivos y renders. |
 | **Workspace** | Carpeta con el código fuente del proyecto (`data/workspaces/<id>`). |
 | **Render** | Ejecución de un motor que produce un MP4 y artefactos. |

@@ -3,7 +3,7 @@
 ## 1. Requisitos
 
 | Componente | Versión | Obligatorio |
-|---|---|---|
+| --- | --- | --- |
 | Bun | ≥ 1.3 | Sí |
 | Node.js | ≥ 22 | Solo Remotion |
 | FFmpeg | ≥ 6.0 | Sí |
@@ -125,7 +125,7 @@ environment:
 ## 4. Variables de entorno
 
 | Variable | Default | Descripción |
-|---|---|---|
+| --- | --- | --- |
 | `VIDEUR_HOST` | `127.0.0.1` | Interfaz de escucha |
 | `VIDEUR_PORT` | `8787` | Puerto |
 | `VIDEUR_DATA_DIR` | `./data` | Datos persistentes |
@@ -221,7 +221,7 @@ Las migraciones se aplican al arrancar. Hacer backup antes de actualizar.
 ## 8. Troubleshooting
 
 | Síntoma | Causa probable | Solución |
-|---|---|---|
+| --- | --- | --- |
 | `ffmpeg not found` | No instalado o PATH | `bun run doctor`; instalar FFmpeg |
 | `No such filter: drawtext` | Build de FFmpeg sin libfreetype/fontconfig | Usar un build completo (apt, BtbN) o quitar `drawtext` |
 | `ENGINE_UNAVAILABLE` | Manim/Remotion ausente | Instalar o cambiar de motor |

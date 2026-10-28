@@ -3,7 +3,7 @@
 ## 1. Estrategia
 
 | Nivel | Qué prueba | Herramienta | Velocidad |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | Unitario | Lógica pura, schemas, paths, parsers | `bun test` | Rápido |
 | Integración | DB, repositorios, cola, API | `bun test` + Hono | Medio |
 | Smoke | Render real FFmpeg | `bun run smoke` | Lento |

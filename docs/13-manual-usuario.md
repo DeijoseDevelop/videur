@@ -157,7 +157,7 @@ Plantillas:
 ## 10. Solución de problemas
 
 | Problema | Solución |
-|---|---|
+| --- | --- |
 | “FFmpeg no encontrado” | Instala FFmpeg y reinicia; `bun run doctor` |
 | “Motor no disponible” | Instala Manim/Remotion o cambia de motor |
 | El render no avanza | Revisa logs; cancela y reintenta |
@@ -195,7 +195,7 @@ Restaurar: detén la app, reemplaza `data/`, arranca.
 ## 12. Atajos
 
 | Atajo | Acción |
-|---|---|
+| --- | --- |
 | `Ctrl/Cmd + S` | Guardar archivo |
 | `Ctrl/Cmd + Enter` | Enviar prompt |
 | `Esc` | Cerrar modal |

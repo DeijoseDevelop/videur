@@ -26,7 +26,7 @@ AgentService
 ### 3.1 Presets
 
 | Preset | Kind | Base URL | Modelo de ejemplo | Visión | Tools | Notas |
-|---|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- | --- |
 | OpenAI | `openai-compatible` | `https://api.openai.com/v1` | `gpt-4.1` | Sí | Sí | SDK no necesario |
 | Anthropic | `anthropic` | `https://api.anthropic.com/v1` | `claude-sonnet-4-5` | Sí | Sí | `x-api-key` |
 | Gemini | `gemini` | `https://generativelanguage.googleapis.com/v1beta` | `gemini-2.5-pro` | Sí | Sí | `generateContent` |
@@ -77,7 +77,7 @@ export interface ChatProvider {
 ### 3.3 Normalización
 
 | Concepto | OpenAI-compatible | Anthropic | Gemini |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | Sistema | mensaje `system` | `system` | `systemInstruction` |
 | Usuario | `user` | `user` | `user` |
 | Assistant | `assistant` | `assistant` | `model` |
@@ -263,7 +263,7 @@ La UI muestra los tool calls como tarjetas colapsables con duración y resultado
 ## 10. Seguridad del agente
 
 | Riesgo | Mitigación |
-|---|---|
+| --- | --- |
 | Prompt injection en archivos | El system prompt trata archivos como datos; tools limitadas |
 | Borrado accidental | `delete_file` solo dentro del workspace; confirmación en UI |
 | Ejecución arbitraria | `run_command` sin shell + allowlist; Docker para no confiable |

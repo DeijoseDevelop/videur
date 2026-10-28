@@ -60,7 +60,7 @@ copia `assets/` a `public/assets/` y renderiza con `--gl=angle`.
 ## Props
 
 | Prop | Default | Uso |
-|---|---|---|
+| --- | --- | --- |
 | `productName` | `AURORA` | Marca/wordmark y etiqueta |
 | `tagline` | `La luz\nhecha fragancia.` | Titular; `\n` separa líneas |
 | `kicker` | `EAU DE PARFUM · 50 ML` | Línea fina bajo el titular |
