@@ -38,7 +38,7 @@ import {
   setProjectStatus,
 } from "../repositories/projects";
 import { ensureRenderDir, fileSize, hashDirectory, toDataRelative } from "../storage/paths";
-import { ensureWorkspace, getEntrypoint } from "../storage/workspace";
+import { ensureWorkspace, getEntrypoint, workspaceDir as projectWorkspaceDir } from "../storage/workspace";
 import { newId } from "../utils/id";
 import { elapsedMs, nowIso } from "../utils/time";
 import { runCommand, type RunOptions, type RunResult } from "../process/runner";
@@ -110,9 +110,29 @@ export class RenderService {
     return render;
   }
 
-  async waitFor(renderId: string, timeoutMs = 900_000): Promise<Render | null> {
-    await this.queue.waitFor(renderId, timeoutMs);
+  /** Espera un render. Sin timeout explícito usa el efectivo del proyecto + margen. */
+  async waitFor(renderId: string, timeoutMs?: number): Promise<Render | null> {
+    const render = getRender(this.deps.db, renderId);
+    const wait = timeoutMs ?? (render ? this.effectiveTimeoutMs(render.projectId) + 120_000 : 900_000);
+    await this.queue.waitFor(renderId, wait);
     return getRender(this.deps.db, renderId);
+  }
+
+  /**
+   * Timeout real del render: `render.json.timeoutMs` si existe (lo respetan
+   * los motores), si no el de ajustes. Quien espera debe usar este valor; si
+   * espera menos, abandona (y en el CLI cancela) renders largos que iban bien.
+   */
+  effectiveTimeoutMs(projectId: string): number {
+    const fallback = this.deps.settings.renderOptions().timeoutMs;
+    try {
+      const configPath = join(projectWorkspaceDir(this.deps.config, projectId), "render.json");
+      if (!existsSync(configPath)) return fallback;
+      const value = (JSON.parse(readFileSync(configPath, "utf8")) as { timeoutMs?: unknown }).timeoutMs;
+      return typeof value === "number" && Number.isFinite(value) && value > 0 ? Math.max(value, fallback) : fallback;
+    } catch {
+      return fallback;
+    }
   }
 
   get(renderId: string): Render {

@@ -14,13 +14,25 @@ function parseValue(raw: string | undefined): number | null {
   return Number.isFinite(value) ? value : null;
 }
 
+/**
+ * ebur128 imprime una línea por cada 100 ms con el `I:` acumulado (−70 LUFS
+ * al principio) y al final un bloque `Summary:`. Solo el resumen es válido.
+ */
 export function parseLoudness(stderr: string): Omit<LoudnessResult, "checked"> {
-  const integrated = /I:\s*(-?(?:\d+(?:\.\d+)?|inf))\s*LUFS/i.exec(stderr);
-  const peak = /Peak:\s*(-?(?:\d+(?:\.\d+)?|inf))\s*dBFS/i.exec(stderr);
+  const summaryAt = stderr.lastIndexOf("Summary:");
+  const summary = summaryAt >= 0 ? stderr.slice(summaryAt) : stderr;
+  const integrated = lastMatch(/I:\s*(-?(?:\d+(?:\.\d+)?|inf))\s*LUFS/gi, summary);
+  const peak = lastMatch(/Peak:\s*(-?(?:\d+(?:\.\d+)?|inf))\s*dBFS/gi, summary);
   return {
     integratedLufs: parseValue(integrated?.[1]),
     truePeakDb: parseValue(peak?.[1]),
   };
+}
+
+function lastMatch(pattern: RegExp, text: string): RegExpExecArray | null {
+  let last: RegExpExecArray | null = null;
+  for (let match = pattern.exec(text); match; match = pattern.exec(text)) last = match;
+  return last;
 }
 
 export async function detectLoudness(

@@ -405,10 +405,7 @@ export class AgentToolbox {
     const engine = typeof args.engine === "string" ? (args.engine as EngineId) : undefined;
     const render = this.deps.renders.start(this.deps.projectId, engine ? { engine } : {});
     this.latestRenderId = render.id;
-    const final = await this.deps.renders.waitFor(
-      render.id,
-      this.deps.settings.renderOptions().timeoutMs + 30_000,
-    );
+    const final = await this.deps.renders.waitFor(render.id);
     if (this.deps.signal.aborted) {
       await this.deps.renders.cancel(render.id).catch(() => undefined);
       throw new AppError("CANCELLED", "Render cancelado", 499);

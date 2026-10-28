@@ -514,6 +514,22 @@ describe("hardening", () => {
     `);
     expect(silent.integratedLufs).toBeNull();
     expect(silent.truePeakDb).toBeNull();
+
+    // Salida real: líneas por frame con I: -70 antes del Summary.
+    const real = parseLoudness(`
+[Parsed_ebur128_0 @ 0x1] t: 0.1  TARGET:-23 LUFS  M:-120.7 S:-120.7  I: -70.0 LUFS  LRA:  0.0 LU  FTPK: -inf dBFS  TPK: -inf dBFS
+[Parsed_ebur128_0 @ 0x1] t: 0.2  TARGET:-23 LUFS  M: -30.1 S:-120.7  I: -30.1 LUFS  LRA:  0.0 LU  FTPK: -9.0 dBFS  TPK: -9.0 dBFS
+[Parsed_ebur128_0 @ 0x1] Summary:
+
+  Integrated loudness:
+    I:         -16.7 LUFS
+    Threshold: -27.1 LUFS
+
+  True peak:
+    Peak:       -1.8 dBFS
+`);
+    expect(real.integratedLufs).toBe(-16.7);
+    expect(real.truePeakDb).toBe(-1.8);
   });
 
   it("QA: valida loudness y true peak", () => {
@@ -688,5 +704,25 @@ describe("Remotion: dependencias del workspace", () => {
     writeFileSync(join(dir, "node_modules", ".videur-package-hash"), "h1");
     expect(reason(dir, "h1")).toBeNull();
     expect(reason(dir, "h2")).toBe("package.json cambió");
+  });
+});
+
+describe("timeout efectivo de render", () => {
+  it("usa render.json.timeoutMs para esperar renders largos", () => {
+    const dir = tempDir();
+    const app = createVideur({
+      config: { dataDir: dir, templatesDir: join(dir, "templates"), webDist: join(dir, "dist") },
+      env: { ...process.env, VIDEUR_DATA_DIR: dir },
+    });
+    cleanup.push(() => void app.close());
+    const project = app.projects.create(
+      CreateProjectSchema.parse({ name: "Largo", engine: "remotion", aspectRatio: "9:16", durationTarget: 5 }),
+    );
+    const fallback = app.settings.renderOptions().timeoutMs;
+    expect(app.renders.effectiveTimeoutMs(project.id)).toBe(fallback);
+    app.workspace.write(project.id, "render.json", JSON.stringify({ timeoutMs: 7_200_000 }));
+    expect(app.renders.effectiveTimeoutMs(project.id)).toBe(Math.max(7_200_000, fallback));
+    app.workspace.write(project.id, "render.json", "{ roto");
+    expect(app.renders.effectiveTimeoutMs(project.id)).toBe(fallback);
   });
 });
