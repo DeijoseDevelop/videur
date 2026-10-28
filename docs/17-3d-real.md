@@ -138,6 +138,8 @@ ffprobe + contact-sheet + QA
       Props `environment`, `environmentIntensity`, `environmentRotation` y
       `environmentBackground` en la plantilla; `HDRLoader`/`EXRLoader` locales
       y fallback a Lightformers si falta o falla.
+- [x] Presets de entorno sin HDRI: `envPreset` = `studio` (default), `golden`,
+      `cyber`, `mono` (Lightformer arrangements, 100% offline).
 
 ### Docker y WebGL
 
@@ -158,7 +160,8 @@ ffprobe + contact-sheet + QA
 
 - [x] QA técnico existente: resolución, fps, duración, audio, frames negros.
 - [x] Hoja de contactos del render 3D.
-- [ ] Detección específica de canvas WebGL negro.
+- [x] Detección de canvas/escena vacía: QA mide YAVG del centro del frame en
+      3 instantes (`center_luma`); <14/255 = warning de canvas WebGL vacío.
 - [ ] Bounding box del producto dentro del encuadre.
 - [ ] Comparación visual contra referencia.
 - [ ] Chequeo de safe zones/legibilidad del overlay.
@@ -197,6 +200,7 @@ ffprobe + contact-sheet + QA
 | HDRI local (`assets/sunset.hdr`) | ✅ ilumina el GLB; fondo continuo con `environmentBackground` |
 | HDRI inexistente | ✅ fallback a Lightformers |
 | Miniatura GLB on-demand | ✅ still 640×640 en `.videur/thumbs/` |
+| QA `center_luma` | ✅ detecta canvas vacío (YAVG centro < 14) |
 
 El render lento es esperable: SwiftShader rasteriza WebGL por CPU. En una GPU
 real o con `concurrency` ajustada baja bastante. Para producción conviene

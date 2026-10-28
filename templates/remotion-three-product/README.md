@@ -75,6 +75,7 @@ copia `assets/` a `public/assets/` y renderiza con `--gl=angle`.
 | `environmentIntensity` | `1` | Intensidad del entorno (0–10) |
 | `environmentRotation` | `0` | Rotación del entorno (grados) |
 | `environmentBackground` | `false` | Usa el HDRI como fondo con suelo continuo |
+| `envPreset` | `studio` | Look sin HDRI: `studio`, `golden`, `cyber`, `mono` |
 | `bare` | `false` | Solo producto, sin overlay (miniaturas) |
 
 ## Reglas 3D

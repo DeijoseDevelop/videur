@@ -102,6 +102,59 @@ function makeFloorGlow(): THREE.CanvasTexture {
   return texture;
 }
 
+export type EnvPreset = "studio" | "golden" | "cyber" | "mono";
+
+interface FormerDef {
+  form: "rect" | "ring" | "circle";
+  intensity: number;
+  position: [number, number, number];
+  scale: number | [number, number, number];
+  rotation?: [number, number, number];
+  color: string;
+}
+
+/** Presets de iluminación con Lightformer (offline, sin HDRI). */
+const ENV_PRESETS: Record<EnvPreset, { rotationY: number; formers: FormerDef[] }> = {
+  studio: {
+    rotationY: Math.PI / 5,
+    formers: [
+      { form: "rect", intensity: 4, position: [0, 5.5, 2.5], scale: [9, 4, 1], color: "#fff3e0" },
+      { form: "rect", intensity: 2.4, position: [-4.5, 2.2, 2.2], scale: [2.4, 6, 1], rotation: [0, Math.PI / 2, 0], color: "#ffd3a3" },
+      { form: "rect", intensity: 2, position: [4.6, 1.8, -1.5], scale: [2.4, 6, 1], rotation: [0, -Math.PI / 2, 0], color: "#9db7ff" },
+      { form: "rect", intensity: 2.6, position: [0, 2.4, 6], scale: [7, 3, 1], rotation: [0, Math.PI, 0], color: "#fff6e8" },
+      { form: "ring", intensity: 2, position: [0, 2.4, -5], scale: 2.8, color: "#ffffff" },
+    ],
+  },
+  golden: {
+    rotationY: -Math.PI / 6,
+    formers: [
+      { form: "rect", intensity: 5, position: [4.5, 2.8, 2], scale: [4, 7, 1], rotation: [0, -Math.PI / 3, 0], color: "#ffc274" },
+      { form: "rect", intensity: 3, position: [-3.5, 0.8, 3.5], scale: [3, 5, 1], rotation: [0, Math.PI / 2.6, 0], color: "#ff8f3c" },
+      { form: "rect", intensity: 0.8, position: [-4, 3, -3], scale: [3, 4, 1], color: "#6f88c0" },
+      { form: "ring", intensity: 2.4, position: [0, 2.6, -5], scale: 3.2, color: "#ffcf8f" },
+      { form: "rect", intensity: 1.4, position: [0, 6, 0], scale: [8, 3, 1], color: "#ffe9c8" },
+    ],
+  },
+  cyber: {
+    rotationY: Math.PI / 4,
+    formers: [
+      { form: "rect", intensity: 3.2, position: [-4.2, 2, 1.5], scale: [1.6, 6, 1], rotation: [0, Math.PI / 2, 0], color: "#22d3ee" },
+      { form: "rect", intensity: 3.2, position: [4.2, 1.6, -1], scale: [1.6, 6, 1], rotation: [0, -Math.PI / 2, 0], color: "#d946ef" },
+      { form: "rect", intensity: 2.2, position: [0, 5.5, -0.5], scale: [7, 2, 1], color: "#8b5cf6" },
+      { form: "rect", intensity: 1.2, position: [0, 1.5, 5.5], scale: [6, 2, 1], rotation: [0, Math.PI, 0], color: "#0ea5b7" },
+      { form: "ring", intensity: 1.6, position: [0, 2.4, -5], scale: 2.4, color: "#22d3ee" },
+    ],
+  },
+  mono: {
+    rotationY: 0,
+    formers: [
+      { form: "rect", intensity: 4.5, position: [0, 5.8, 1.5], scale: [8, 5, 1], color: "#ffffff" },
+      { form: "rect", intensity: 1.2, position: [0, 0.9, 5.5], scale: [7, 2, 1], rotation: [0, Math.PI, 0], color: "#e8e8e8" },
+      { form: "rect", intensity: 2, position: [0, 2.8, -5], scale: [5, 1.4, 1], color: "#ffffff" },
+    ],
+  },
+};
+
 /**
  * Estudio fotográfico procedural y offline:
  * softboxes con Lightformer, suelo reflectante, sombra de contacto y niebla.
@@ -115,12 +168,14 @@ export const Studio: React.FC<{
   environmentIntensity?: number;
   environmentRotation?: number;
   environmentBackground?: boolean;
+  envPreset?: EnvPreset;
 }> = ({
   focusX = 0.95,
   environment = null,
   environmentIntensity = 1,
   environmentRotation = 0,
   environmentBackground = false,
+  envPreset = "studio",
 }) => {
   const backdrop = useMemo(makeBackdropTexture, []);
   const halo = useMemo(makeHalo, []);
@@ -157,45 +212,18 @@ export const Studio: React.FC<{
       />
     ) : (
       <Environment resolution={256} frames={1}>
-        <group rotation={[0, Math.PI / 5, 0]}>
-          <Lightformer
-            form="rect"
-            intensity={4}
-            position={[0, 5.5, 2.5]}
-            scale={[9, 4, 1]}
-            color="#fff3e0"
-          />
-          <Lightformer
-            form="rect"
-            intensity={2.4}
-            position={[-4.5, 2.2, 2.2]}
-            scale={[2.4, 6, 1]}
-            rotation={[0, Math.PI / 2, 0]}
-            color="#ffd3a3"
-          />
-          <Lightformer
-            form="rect"
-            intensity={2}
-            position={[4.6, 1.8, -1.5]}
-            scale={[2.4, 6, 1]}
-            rotation={[0, -Math.PI / 2, 0]}
-            color="#9db7ff"
-          />
-          <Lightformer
-            form="rect"
-            intensity={2.6}
-            position={[0, 2.4, 6]}
-            scale={[7, 3, 1]}
-            rotation={[0, Math.PI, 0]}
-            color="#fff6e8"
-          />
-          <Lightformer
-            form="ring"
-            intensity={2}
-            position={[0, 2.4, -5]}
-            scale={2.8}
-            color="#ffffff"
-          />
+        <group rotation={[0, ENV_PRESETS[envPreset].rotationY, 0]}>
+          {ENV_PRESETS[envPreset].formers.map((f, i) => (
+            <Lightformer
+              key={i}
+              form={f.form}
+              intensity={f.intensity}
+              position={f.position}
+              scale={f.scale}
+              rotation={f.rotation ?? [0, 0, 0]}
+              color={f.color}
+            />
+          ))}
         </group>
       </Environment>
     )}

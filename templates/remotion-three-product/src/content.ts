@@ -22,6 +22,8 @@ export const productVideoSchema = z.object({
   environmentIntensity: z.number().min(0).max(10).optional(),
   environmentRotation: z.number().optional(),
   environmentBackground: z.boolean().optional(),
+  /** Look de iluminación Lightformer cuando no hay HDRI. */
+  envPreset: z.enum(["studio", "golden", "cyber", "mono"]).optional(),
   /** true = solo el producto (miniaturas); oculta el overlay de texto. */
   bare: z.boolean().optional(),
 });

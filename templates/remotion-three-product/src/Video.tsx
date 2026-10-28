@@ -46,6 +46,7 @@ export const ProductVideo: React.FC<ProductVideoProps> = (props) => {
             environmentIntensity={props.environmentIntensity ?? 1}
             environmentRotation={props.environmentRotation ?? 0}
             environmentBackground={props.environmentBackground ?? false}
+            envPreset={props.envPreset ?? "studio"}
           />
           {model.status === "ready" && model.scene ? (
             <GLTFProduct
